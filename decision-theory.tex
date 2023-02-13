@@ -2,6 +2,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
+\DeclareMathOperator*{\argmin}{argmin}
+
 \title{Decision analysis of toy NAO}
 \author{Daniel P. Rice}
 \date{February 2023}
@@ -17,6 +19,33 @@
 \tableofcontents
 
 \section{Model}
+
+Hypotheses: $H \in \{\text{threat}, \text{not-threat}\}$
+
+Data stream: $\{X_1, X_2, \ldots\}$.
+
+Likelihood function: $p(x | h)$
+
+Loss function:
+\begin{equation}
+    L_i =
+    \begin{tabular}{l c c}
+        & not-threat & threat \\
+        flag & $c$ & $0$ \\
+        wait & $L_{i+1}$ & $d + L_{i+1}$ 
+    \end{tabular}
+\end{equation}
+
+Threshold posterior: $p_{\text{thresh}} = \argmin_{p_t} \mathbb{E}\left\{L_0(p_t)\right\}$ 
+
+Prior: $p_0 = \mathbb{P}\left\{H=\text{threat}\right\}$
+
+Posterior: $P_i = \mathbb{P}\left\{H=\text{threat} | X_1, X_2, \ldots, X_i\right\}$
+
+Updates:
+\begin{equation}
+    P_{i+1} = \frac{P_i}{}
+\end{equation}
 
 \section{Expected losses}
 
