@@ -228,17 +228,23 @@ The strong-data limit is consistent with these results, but takes into account t
 
 \section{Numerics}
 
-\begin{itemize}
-    \item Fredholm equation of the second kind (with a convolution kernel): $u(x) = \int_{0}^{\infty} K(t-x) u(t) dt + f(x)$
-    \item Approximate the integral using Gaussian quadrature: 
-        \begin{equation}
-            u(x) \approx \sum_{j=1}^{n} w_j \exp(t_j) K(x, t_j) u(t_j) + f(x) \label{eq:quad}
-        \end{equation}
-    \item Evaluate both sides at the quadrature nodes $x_i$, gives a linear system, solve for $u_i = u(x_i)$
-        \begin{equation}
-            u_i \approx \sum_{j=1}^{n} w_j \exp(x_j) K(x_i, x_j) u_j + f_i
-        \end{equation}
-    \item To get $u(x)$, sub $u(t_j) = u_j$ into \ref{eq:quad}
-\end{itemize}
+In this section, we outline a numerical approach to calculating the conditional expected loss, that should hold in general.
+Recall that for both $T$ and $NT$, our expected loss is determined by the solution to a Fredholm equation of the second kind:
+\begin{equation}
+    u(x) = \int_{0}^{\infty} K(t-x) u(t) dt + f(x).
+\end{equation}
+We can approximate the integral using Gauss-Laguerre quadrature:
+\begin{equation}
+    u(x) \approx \sum_{j=1}^{n} w_j \exp(t_j) K(x, t_j) u(t_j) + f(x) \label{eq:quad}.
+\end{equation}
+The nodes $t_j$ and weights $w_j$ are given by a standard formula, and the $\exp$ term is required to cancel the implicit weight function $\exp(-x)$.
+
+Evaluating both sides of the equation at the quadrature nodes gives linear system for $u_i = u(x_i)$:
+\begin{equation}
+    u_i \approx \sum_{j=1}^{n} w_j \exp(x_j) K(x_i, x_j) u_j + f_i.
+\end{equation}
+We solve the system for $u_i$.
+
+Finally, we can get a continuous approximation for $u(x)$ by substituting $u(t_j) = u_j$ in the right-hand side of Eq.~\ref{eq:quad}.
 
 \end{document}
