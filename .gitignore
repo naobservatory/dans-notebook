@@ -6,3 +6,4 @@
 *.toc
 env/
 .ipynb_checkpoints
+*.out
