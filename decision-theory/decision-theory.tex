@@ -228,10 +228,10 @@ The strong-data limit is consistent with these results, but takes into account t
 
 \section{Numerics}
 
-In this section, we outline a numerical approach to calculating the conditional expected loss, that should hold in general.
+In this section, we outline a numerical approach to calculating the conditional expected loss, which should hold in general.
 Recall that for both $T$ and $NT$, our expected loss is determined by the solution to a Fredholm equation of the second kind:
 \begin{equation}
-    u(x) = \int_{0}^{\infty} K(t-x) u(t) dt + f(x).
+    u(x) = \int_{0}^{\infty} K(x, t) u(t) dt + f(x).
 \end{equation}
 We can approximate the integral using Gauss-Laguerre quadrature:
 \begin{equation}
