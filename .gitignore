@@ -8,3 +8,4 @@ env/
 .ipynb_checkpoints
 *.out
 scratch
+*/venv
