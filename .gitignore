@@ -4,8 +4,8 @@
 *.log
 *.synctex.gz
 *.toc
-env/
+venv/
 .ipynb_checkpoints
 *.out
-scratch
-*/venv
+
+/.quarto/
