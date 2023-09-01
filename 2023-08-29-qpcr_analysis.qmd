@@ -1,0 +1,24 @@
+---
+title: "2023-08-29 qPCR Analysis"
+author: "Dan Rice"
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+- Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. [TODO: Link to experimental design]
+- Get Dan up to speed with working with this data.
+- Explore options for data analysis workflows.
+
+## Preliminary work
+
+- Ari put the `.eds` files into Google Drive from the lab computer. (He also exported some Excel files but we're not using those.)
+- Dan installed the Google Drive desktop app and Design and Analysis on his Mac, opened the `.eds` files, and fixed some missing data in the plate layout
+- Dan used the "Analyze" in Design and Analysis to automatically calculate thresholds and compute `c_q` values.
+- Dan exported the data to `.csv`.
+
+
+```{r}
+print("Hello world!")
+```
