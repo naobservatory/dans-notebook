@@ -17,6 +17,7 @@ format:
 - Dan installed the Google Drive desktop app and Design and Analysis on his Mac, opened the `.eds` files, and fixed some missing data in the plate layout
 - Dan used the "Analyze" in Design and Analysis to automatically calculate thresholds and compute `c_q` values.
 - Dan exported the data to `.csv`.
+- Symlinked the google drive folder for the airport experiment to `~/airport/` on his computer so I don't have to refer to the whole filepath here.
 
 ## Data import
 
@@ -53,3 +54,8 @@ tidy_data |>
   geom_point() +
   facet_wrap(facets = ~Target)
 ```
+
+## TODO
+
+- Figure out what the `Sample` numbers mean with respect to the different treatments
+- There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
