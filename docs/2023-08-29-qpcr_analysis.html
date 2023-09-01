@@ -134,7 +134,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="objectives" class="level2">
 <h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
 <ul>
-<li>Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. [TODO: Link to experimental design]</li>
+<li>Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. <a href="https://docs.google.com/document/d/10aEcOwlJ0ZZANC93gd5KM6j-u8T8MI4ML7Ibh5uivMo/edit?usp=sharing">Experimental design here</a>.</li>
 <li>Get Dan up to speed with working with this data.</li>
 <li>Explore options for data analysis workflows.</li>
 </ul>
@@ -147,10 +147,113 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Dan used the “Analyze” in Design and Analysis to automatically calculate thresholds and compute <code>c_q</code> values.</li>
 <li>Dan exported the data to <code>.csv</code>.</li>
 </ul>
+</section>
+<section id="data-import" class="level2">
+<h2 class="anchored" data-anchor-id="data-import">Data import</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Hello world!"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>data_dir <span class="ot">&lt;-</span> <span class="st">"~/airport/[2023-08-29] CP Prefilters vs Vacuum Filters/Test 1 qPCR Results/csv/"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>filename_pattern <span class="ot">&lt;-</span> <span class="st">"Results"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data_raw <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                       data_dir,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">pattern =</span> filename_pattern,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                       ) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="cf">function</span>(f) <span class="fu">read_csv</span>(f, <span class="at">skip=</span><span class="dv">23</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 36 Columns: 21
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (8): Well Position, Sample, Target, Task, Reporter, Quencher, Amp Status...
+dbl (8): Well, Amp Score, Cq Confidence, Cq Mean, Cq SD, Threshold, Baseline...
+lgl (5): Omit, Curve Quality, Result Quality Issues, Auto Threshold, Auto Ba...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+Rows: 29 Columns: 21
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (8): Well Position, Sample, Target, Task, Reporter, Quencher, Amp Status...
+dbl (8): Well, Amp Score, Cq Confidence, Cq Mean, Cq SD, Threshold, Baseline...
+lgl (5): Omit, Curve Quality, Result Quality Issues, Auto Threshold, Auto Ba...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(data_raw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "Hello world!"</code></pre>
+<pre><code># A tibble: 65 × 21
+    Well `Well Position` Omit  Sample Target Task    Reporter Quencher
+   &lt;dbl&gt; &lt;chr&gt;           &lt;lgl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;   
+ 1     1 A1              FALSE 1      CrA    UNKNOWN FAM      NFQ-MGB 
+ 2     2 A2              FALSE 1      CrA    UNKNOWN FAM      NFQ-MGB 
+ 3     3 A3              FALSE 1      CrA    UNKNOWN FAM      NFQ-MGB 
+ 4     5 A5              FALSE 1      16S    UNKNOWN FAM      NFQ-MGB 
+ 5     6 A6              FALSE 1      16S    UNKNOWN FAM      NFQ-MGB 
+ 6     7 A7              FALSE 1      16S    UNKNOWN FAM      NFQ-MGB 
+ 7    13 B1              FALSE 2      CrA    UNKNOWN FAM      NFQ-MGB 
+ 8    14 B2              FALSE 2      CrA    UNKNOWN FAM      NFQ-MGB 
+ 9    15 B3              FALSE 2      CrA    UNKNOWN FAM      NFQ-MGB 
+10    17 B5              FALSE 2      16S    UNKNOWN FAM      NFQ-MGB 
+# ℹ 55 more rows
+# ℹ 13 more variables: `Amp Status` &lt;chr&gt;, `Amp Score` &lt;dbl&gt;,
+#   `Curve Quality` &lt;lgl&gt;, `Result Quality Issues` &lt;lgl&gt;, Cq &lt;chr&gt;,
+#   `Cq Confidence` &lt;dbl&gt;, `Cq Mean` &lt;dbl&gt;, `Cq SD` &lt;dbl&gt;,
+#   `Auto Threshold` &lt;lgl&gt;, Threshold &lt;dbl&gt;, `Auto Baseline` &lt;lgl&gt;,
+#   `Baseline Start` &lt;dbl&gt;, `Baseline End` &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="ot">&lt;-</span> data_raw <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Cq =</span> <span class="fu">as.double</span>(Cq))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `Cq = as.double(Cq)`.
+Caused by warning:
+! NAs introduced by coercion</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(tidy_data<span class="sc">$</span>Target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "CrA"  "CrA"  "CrA"  "16S"  "16S"  "16S"  "CrA"  "CrA"  "CrA"  "16S" 
+[11] "16S"  "16S"  "CrA"  "CrA"  "CrA"  "16S"  "16S"  "16S"  "CrA"  "CrA" 
+[21] "CrA"  "16S"  "16S"  "16S"  "CrA"  "CrA"  "CrA"  "16S"  "16S"  "16S" 
+[31] "CrA"  "CrA"  "CrA"  "16S"  "16S"  "16S"  "Cov"  "Cov"  "Cov"  "Noro"
+[41] "Noro" "Cov"  "Cov"  "Cov"  "Noro" "Noro" "Cov"  "Cov"  "Cov"  "Noro"
+[51] "Noro" "Cov"  "Cov"  "Cov"  "Noro" "Noro" "Cov"  "Cov"  "Cov"  "Noro"
+[61] "Noro" "Cov"  "Cov"  "Noro" "Noro"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>Cq, <span class="at">y=</span>Sample)) <span class="sc">+</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="at">facets =</span> <span class="sc">~</span>Target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 11 rows containing missing values (`geom_point()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="2023-08-29-qpcr_analysis_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 

@@ -7,7 +7,7 @@ format:
 ---
 ## Objectives
 
-- Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. [TODO: Link to experimental design]
+- Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. [Experimental design here](https://docs.google.com/document/d/10aEcOwlJ0ZZANC93gd5KM6j-u8T8MI4ML7Ibh5uivMo/edit?usp=sharing).
 - Get Dan up to speed with working with this data.
 - Explore options for data analysis workflows.
 
@@ -18,7 +18,38 @@ format:
 - Dan used the "Analyze" in Design and Analysis to automatically calculate thresholds and compute `c_q` values.
 - Dan exported the data to `.csv`.
 
+## Data import
 
 ```{r}
-print("Hello world!")
+library(readr)
+library(dplyr)
+library(purrr)
+
+data_dir <- "~/airport/[2023-08-29] CP Prefilters vs Vacuum Filters/Test 1 qPCR Results/csv/"
+filename_pattern <- "Results"
+```
+
+```{r}
+data_raw <- list.files(
+                       data_dir,
+                       pattern = filename_pattern,
+                       full.names = TRUE
+                       ) |>
+  map(function(f) read_csv(f, skip=23)) |>
+  list_rbind()
+print(data_raw)
+```
+
+```{r}
+tidy_data <- data_raw |>
+  mutate(Cq = as.double(Cq))
+print(tidy_data$Target)
+```
+
+```{r}
+library(ggplot2)
+tidy_data |>
+  ggplot(mapping = aes(x=Cq, y=Sample)) +
+  geom_point() +
+  facet_wrap(facets = ~Target)
 ```
