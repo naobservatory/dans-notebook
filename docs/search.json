@@ -89,5 +89,26 @@
     "title": "Simple deterministic model of local and global prevalence",
     "section": "Scratch (disregard)",
     "text": "Scratch (disregard)\n\n\nCode\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ndef integral_global(t, r, n):\n    return (np.exp(r * t) - 1) / (n * r)\n\ndef integral_local(t, r, n, f):\n    return integral_global(t, r, n) - integral_global(t, r - f, n)\n\n\n\n\nCode\nrs = [1 / 250, 1 / 800]\nfs = [1 / 300, 1 / 300]\nn = 10\nt_max = 3200\nt = np.linspace(1, t_max, t_max)\nfig, axes = plt.subplots(1, len(rs), sharey=True)\nfor r, f, ax in zip(rs, fs, axes):\n    ax.semilogy(t, integral_global(t, r, n))\n    ax.semilogy(t, integral_local(t, r, n, f))\naxes[0].set_ylim([1, 1e4])\nplt.show()\n\n\n\n\n\nFigure 1: test\n\n\n\n\n\n\nCode\nr = 1 / 60\nf = 1 / 150\nn = 10\nt_max = 300\nt = np.linspace(1, t_max, t_max)\nfig = plt.figure(figsize=(5,5))\nax = fig.add_subplot()\nax.semilogy(t, integral_global(t, r, n), label=\"Airport\")\nax.semilogy(t, integral_local(t, r, n, f), label=\"WWTP\")\nax.legend(frameon=False)\nylim = [1, 1e3]\nax.set_ylim(ylim)\nax.hlines([50], 0, 300, linestyle=\"dashed\", color=\"grey\")\nax.vlines(133, *ylim, linestyle=\"dotted\", color=\"C0\")\nax.vlines(169, *ylim, linestyle=\"dotted\", color=\"C1\")\nax.set_xlabel(\"Days since start of pandemic\")\nax.set_ylabel(\"Total reads matching virus\")\nax.text(0, 55, \"Detection threshold\", color=\"grey\")\nax.text(131, 1.1, \"Detection\\nin airport\", color=\"C0\", ha=\"right\")\n# ax.text(270, 600, \"Airport reads\", color=\"C0\", ha=\"right\")\nax.text(171, 1.1, \"Detection\\nin WWTP\", color=\"C1\")\n# ax.text(215, 100, \"WWTP reads\", color=\"C1\")\nfor spine in ['top', 'right']:\n    ax.spines[spine].set_visible(False)\nplt.show()\n\n\n\n\n\nFigure 2: test\n\n\n\n\n\n\nCode\nr = 0.259\nf = 1 / 300\nn = 1e8\nt_max = 300\nt = np.linspace(1, t_max, t_max)\nfig = plt.figure(figsize=(5,5))\nax = fig.add_subplot()\nax.semilogy(t, integral_global(t, r, n), label=\"Airport\")\nax.semilogy(t, integral_local(t, r, n, f), label=\"WWTP\")\nax.legend(frameon=False)\n# ylim = [1, 1e3]\n# ax.set_ylim(ylim)\nax.hlines([50], 0, 300, linestyle=\"dashed\", color=\"grey\")\nax.vlines(133, *ylim, linestyle=\"dotted\", color=\"C0\")\nax.vlines(169, *ylim, linestyle=\"dotted\", color=\"C1\")\nax.set_xlabel(\"Days since start of pandemic\")\nax.set_ylabel(\"Total reads matching virus\")\nax.text(0, 55, \"Detection threshold\", color=\"grey\")\nax.text(131, 1.1, \"Detection\\nin airport\", color=\"C0\", ha=\"right\")\nax.text(171, 1.1, \"Detection\\nin WWTP\", color=\"C1\")\nfor spine in ['top', 'right']:\n    ax.spines[spine].set_visible(False)\nplt.show()\n\n\n\n\n\ntest"
+  },
+  {
+    "objectID": "2023-08-29-qpcr_analysis.html",
+    "href": "2023-08-29-qpcr_analysis.html",
+    "title": "2023-08-29 qPCR Analysis",
+    "section": "",
+    "text": "Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. [TODO: Link to experimental design]\nGet Dan up to speed with working with this data.\nExplore options for data analysis workflows."
+  },
+  {
+    "objectID": "2023-08-29-qpcr_analysis.html#objectives",
+    "href": "2023-08-29-qpcr_analysis.html#objectives",
+    "title": "2023-08-29 qPCR Analysis",
+    "section": "",
+    "text": "Compare several wastewater filtering options by measuring the nucleic acid content by qPCR. [TODO: Link to experimental design]\nGet Dan up to speed with working with this data.\nExplore options for data analysis workflows."
+  },
+  {
+    "objectID": "2023-08-29-qpcr_analysis.html#preliminary-work",
+    "href": "2023-08-29-qpcr_analysis.html#preliminary-work",
+    "title": "2023-08-29 qPCR Analysis",
+    "section": "Preliminary work",
+    "text": "Preliminary work\n\nAri put the .eds files into Google Drive from the lab computer. (He also exported some Excel files but we’re not using those.)\nDan installed the Google Drive desktop app and Design and Analysis on his Mac, opened the .eds files, and fixed some missing data in the plate layout\nDan used the “Analyze” in Design and Analysis to automatically calculate thresholds and compute c_q values.\nDan exported the data to .csv.\n\n\nprint(\"Hello world!\")\n\n[1] \"Hello world!\""
   }
 ]
