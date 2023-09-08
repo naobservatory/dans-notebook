@@ -1,6 +1,7 @@
 ---
 title: "Airport experiment sequencing cost estimate"
 author: "Dan Rice"
+date: 2023-09-08
 format:
   html:
     code-fold: false

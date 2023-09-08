@@ -1,5 +1,7 @@
 ---
 title: "Simple deterministic model of local and global prevalence"
+author: "Dan Rice"
+date: 2023-08-16
 format:
   html:
     code-fold: true

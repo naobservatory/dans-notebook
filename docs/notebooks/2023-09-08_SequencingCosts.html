@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Dan Rice">
+<meta name="dcterms.date" content="2023-09-08">
 
-<title>untitled</title>
+<title>Airport experiment sequencing cost estimate</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -93,6 +95,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -107,48 +111,136 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Airport experiment sequencing cost estimate</h1>
+</div>
 
 
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dan Rice </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 8, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p>We are planning to sequence samples from four sources (redacted because this is publicly visible). We will receive one sample from each source each day weekday for eight weeks. Thus we will have <span class="math inline">\(8 \times 5 \times 4 = 160\)</span> samples total.</p>
+<p>We will the following steps ourselves:</p>
+<ul>
+<li>Concentrate the samples</li>
+<li>Filter out large particles (to enrich for viruses)</li>
+<li>Extract RNA</li>
+</ul>
+<p>Then we will deliver the RNA extracts to the BioMicroCenter for:</p>
+<ul>
+<li><p>RNA seq library prep:</p>
+<ul>
+<li>Standard RNA prep (not high-throughput), pricing and QC are per sample</li>
+<li>Total RNA sequencing, includes sample QC, ribosomal depletion, generation of cDNA, library construction, indexing and library quality control</li>
+</ul></li>
+<li><p>Sequencing on an Illumina NovaSeq 6000 S4 with 300nt per read pair.</p></li>
+</ul>
+<p>The goal of this doc is to estimate the cost of library prep and sequencing.</p>
+<section id="sources" class="level2">
+<h2 class="anchored" data-anchor-id="sources">Sources</h2>
+<ul>
+<li>The cost of <a href="https://openwetware.org/wiki/BioMicroCenter:Pricing#SHORT_READ_LIBRARY_-_RNA">library prep</a> and <a href="https://openwetware.org/wiki/BioMicroCenter:Pricing#NOVASEQ_SEQUENCING">sequencing</a> come from the BioMicroCenter’s pricing page. We use the MIT prices.</li>
+<li>Characteristics of the NovaSeq come from <a href="https://www.illumina.com/content/dam/illumina/gcs/assembled-assets/marketing-literature/novaseq-6000-spec-sheet-m-gl-00271/novaseq-6000-spec-sheet-m-gl-00271.pdf">illumina</a> (Table 1).</li>
+</ul>
+</section>
+<section id="estimate" class="level2">
+<h2 class="anchored" data-anchor-id="estimate">Estimate</h2>
+<p>Each NovaSeq flow cell has 4 lanes. When run in <code>2 x 150 bp</code> mode, it generates 150 basepair forward and reverse read pairs for 300 bp per read pair. In one run, the flow cell generates 2400–3000 Gb of data. In the following we will make a conservative estimate by using the lower end of the range.</p>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> odeint</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> func(y, t, m, r):</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> np.array([[r <span class="op">-</span> m, <span class="dv">0</span>], [m, r]])</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.dot(A, y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-execution_count="69">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="fl">0.01</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="fl">1e6</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> <span class="fl">1e4</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>y_0 <span class="op">=</span> np.array([<span class="dv">1</span><span class="op">/</span>N, <span class="dv">0</span>])</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>soln <span class="op">=</span> odeint(func, y_0, t, args<span class="op">=</span>(M <span class="op">/</span> N, r))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-execution_count="70">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plt.semilogy(t, soln)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="Untitled_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>lanes_per_flow_cell <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>bp_per_read_pair <span class="op">=</span> <span class="dv">300</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>gb_per_flow_cell <span class="op">=</span> <span class="dv">2400</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>read_pairs_per_flow_cell <span class="op">=</span> gb_per_flow_cell <span class="op">*</span> <span class="fl">1e9</span> <span class="op">/</span> bp_per_read_pair</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>read_pairs_per_lane <span class="op">=</span> read_pairs_per_flow_cell <span class="op">/</span> lanes_per_flow_cell</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"We expect at least </span><span class="sc">{</span>read_pairs_per_lane<span class="op">/</span><span class="fl">1e6</span><span class="sc">}</span><span class="ss"> M read pairs per lane"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>We expect at least 2000.0 M read pairs per lane</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="71">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plt.plot(N <span class="op">*</span> soln[soln[:,<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">1</span> <span class="op">/</span> N, <span class="dv">0</span>], N <span class="op">*</span> soln[soln[:,<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">1</span> <span class="op">/</span> N, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="Untitled_files/figure-html/cell-6-output-1.png" class="img-fluid"></p>
+<p>The smallest unit of NovaSeq sequencing we can buy is one lane, which costs $5,940. We also pay $258.5 per sample for library preparation.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cost_per_lane <span class="op">=</span> <span class="dv">5940</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>library_cost_per_sample <span class="op">=</span> <span class="fl">258.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<div class="cell" data-execution_count="72">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>plt.plot(N <span class="op">*</span> soln[soln[:,<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">1</span> <span class="op">/</span> N, <span class="dv">0</span>], soln[soln[:,<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">1</span> <span class="op">/</span> N, <span class="dv">1</span>] <span class="op">/</span> soln[soln[:,<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">1</span> <span class="op">/</span> N, <span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="Untitled_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+<p>We’ll consider three options:</p>
+<ol type="1">
+<li>Sequencing all 160 samples in 4 lanes</li>
+<li>Sequencing all 160 samples in 8 lanes</li>
+<li>Sequencing MWF only (<span class="math inline">\(160 \times 3/5 = 96\)</span> samples) in 5 lanes</li>
+</ol>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> num_samples, num_lanes <span class="kw">in</span> [(<span class="dv">160</span>, <span class="dv">4</span>), (<span class="dv">160</span>, <span class="dv">8</span>), (<span class="dv">96</span>, <span class="dv">5</span>)]:</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    samples_per_lane <span class="op">=</span> num_samples <span class="op">/</span> num_lanes</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    read_pairs_per_sample <span class="op">=</span> read_pairs_per_lane <span class="op">/</span> samples_per_lane</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    sequencing_cost <span class="op">=</span> cost_per_lane <span class="op">*</span> num_lanes</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    library_cost <span class="op">=</span> library_cost_per_sample <span class="op">*</span> num_samples</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    total_cost <span class="op">=</span> sequencing_cost <span class="op">+</span> library_cost</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    cost_per_sample <span class="op">=</span> total_cost <span class="op">/</span> num_samples</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    cost_per_read_pair <span class="op">=</span> cost_per_sample <span class="op">/</span> read_pairs_per_sample</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"""</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ss">    </span><span class="sc">{</span>num_samples<span class="sc">}</span><span class="ss"> samples in </span><span class="sc">{</span>num_lanes<span class="sc">}</span><span class="ss"> lanes:</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ss">        Million read pairs per sample:</span><span class="ch">\t</span><span class="sc">{</span>read_pairs_per_sample <span class="op">/</span> <span class="fl">1e6</span><span class="sc">:</span><span class="dv">3</span><span class="sc">,</span><span class="fl">.0</span><span class="er">f</span><span class="sc">}</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ss">        Sequencing cost:</span><span class="ch">\t</span><span class="ss">$</span><span class="sc">{</span>sequencing_cost<span class="sc">:</span><span class="dv">7</span><span class="sc">,</span><span class="fl">.0</span><span class="er">f</span><span class="sc">}</span><span class="ss"> </span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ss">        Library prep cost:</span><span class="ch">\t</span><span class="ss">$</span><span class="sc">{</span>library_cost<span class="sc">:</span><span class="dv">7</span><span class="sc">,</span><span class="fl">.0</span><span class="er">f</span><span class="sc">}</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="ss">        Total cost:</span><span class="ch">\t\t\t</span><span class="ss">$</span><span class="sc">{</span>total_cost<span class="sc">:</span><span class="dv">7</span><span class="sc">,</span><span class="fl">.0</span><span class="er">f</span><span class="sc">}</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="ss">        Cost per sample:</span><span class="ch">\t</span><span class="ss">$</span><span class="sc">{</span>cost_per_sample<span class="sc">:</span><span class="dv">7</span><span class="sc">,</span><span class="fl">.0</span><span class="er">f</span><span class="sc">}</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="ss">        Cost per M rp:</span><span class="ch">\t\t</span><span class="ss">$</span><span class="sc">{</span>cost_per_read_pair <span class="op">*</span> <span class="fl">1e6</span><span class="sc">:10.2f}</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="ss">    """</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    160 samples in 4 lanes:
+        Million read pairs per sample:   50
+        Sequencing cost:    $ 23,760 
+        Library prep cost:  $ 41,360
+        Total cost:         $ 65,120
+        Cost per sample:    $    407
+        Cost per M rp:      $      8.14
+    
+
+    160 samples in 8 lanes:
+        Million read pairs per sample:  100
+        Sequencing cost:    $ 47,520 
+        Library prep cost:  $ 41,360
+        Total cost:         $ 88,880
+        Cost per sample:    $    556
+        Cost per M rp:      $      5.56
+    
+
+    96 samples in 5 lanes:
+        Million read pairs per sample:  104
+        Sequencing cost:    $ 29,700 
+        Library prep cost:  $ 24,816
+        Total cost:         $ 54,516
+        Cost per sample:    $    568
+        Cost per M rp:      $      5.45
+    </code></pre>
 </div>
 </div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

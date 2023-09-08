@@ -1,6 +1,7 @@
 ---
 title: "2023-08-29 qPCR Analysis"
 author: "Dan Rice"
+date: 2023-08-29
 format:
   html:
     code-fold: false
