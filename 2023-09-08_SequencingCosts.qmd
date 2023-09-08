@@ -17,7 +17,16 @@ We will the following steps ourselves:
 - Filter out large particles (to enrich for viruses)
 - Extract RNA
 
-Then we will deliver the RNA extracts to the BioMicroCenter for library prep and sequencing on an Illumina NovaSeq 6000.
+Then we will deliver the RNA extracts to the BioMicroCenter for:
+
+- RNA seq library prep:
+
+  - Standard RNA prep (not high-throughput), pricing and QC are per sample
+  - Total RNA sequencing, includes sample QC, ribosomal depletion, generation of cDNA, library construction, indexing and library quality control
+
+- Sequencing on an Illumina NovaSeq 6000 S4 with 300nt per read pair.
+
+
 The goal of this doc is to estimate the cost of library prep and sequencing.
 
 ## Sources

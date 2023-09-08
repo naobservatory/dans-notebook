@@ -130,7 +130,7 @@
     "href": "2023-09-08_SequencingCosts.html",
     "title": "Airport experiment sequencing cost estimate",
     "section": "",
-    "text": "We are planning to sequence samples from four sources (redacted because this is publicly visible). We will receive one sample from each source each day weekday for eight weeks. Thus we will have \\(8 \\times 5 \\times 4 = 160\\) samples total.\nWe will the following steps ourselves:\nThen we will deliver the RNA extracts to the BioMicroCenter for library prep and sequencing on an Illumina NovaSeq 6000. The goal of this doc is to estimate the cost of library prep and sequencing."
+    "text": "We are planning to sequence samples from four sources (redacted because this is publicly visible). We will receive one sample from each source each day weekday for eight weeks. Thus we will have \\(8 \\times 5 \\times 4 = 160\\) samples total.\nWe will the following steps ourselves:\nThen we will deliver the RNA extracts to the BioMicroCenter for:\nThe goal of this doc is to estimate the cost of library prep and sequencing."
   },
   {
     "objectID": "2023-09-08_SequencingCosts.html#sources",
