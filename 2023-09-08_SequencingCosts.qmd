@@ -1,0 +1,78 @@
+---
+title: "Airport experiment sequencing cost estimate"
+author: "Dan Rice"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+
+We are planning to sequence samples from four sources (redacted because this is publicly visible).
+We will receive one sample from each source each day weekday for eight weeks.
+Thus we will have $8 \times 5 \times 4 = 160$ samples total.
+
+We will the following steps ourselves:
+
+- Concentrate the samples
+- Filter out large particles (to enrich for viruses)
+- Extract RNA
+
+Then we will deliver the RNA extracts to the BioMicroCenter for library prep and sequencing on an Illumina NovaSeq 6000.
+The goal of this doc is to estimate the cost of library prep and sequencing.
+
+## Sources
+
+- The cost of [library prep](https://openwetware.org/wiki/BioMicroCenter:Pricing#SHORT_READ_LIBRARY_-_RNA) and [sequencing](https://openwetware.org/wiki/BioMicroCenter:Pricing#NOVASEQ_SEQUENCING) come from the BioMicroCenter's pricing page. We use the MIT prices.
+- Characteristics of the NovaSeq come from [illumina](https://www.illumina.com/content/dam/illumina/gcs/assembled-assets/marketing-literature/novaseq-6000-spec-sheet-m-gl-00271/novaseq-6000-spec-sheet-m-gl-00271.pdf) (Table 1).
+
+## Estimate
+
+Each NovaSeq flow cell has 4 lanes.
+When run in `2 x 150 bp` mode, it generates 150 basepair forward and reverse read pairs for 300 bp per read pair.
+In one run, the flow cell generates 2400--3000 Gb of data.
+In the following we will make a conservative estimate by using the lower end of the range.
+
+```{python}
+lanes_per_flow_cell = 4
+bp_per_read_pair = 300
+gb_per_flow_cell = 2400
+
+read_pairs_per_flow_cell = gb_per_flow_cell * 1e9 / bp_per_read_pair
+read_pairs_per_lane = read_pairs_per_flow_cell / lanes_per_flow_cell
+print(f"We expect at least {read_pairs_per_lane/1e6} M read pairs per lane")
+```
+
+The smallest unit of NovaSeq sequencing we can buy is one lane,
+which costs $5,940.
+We also pay $258.5 per sample for library preparation.
+
+```{python}
+cost_per_lane = 5940
+library_cost_per_sample = 258.5
+```
+
+We'll consider three options:
+
+1. Sequencing all 160 samples in 4 lanes
+1. Sequencing all 160 samples in 8 lanes
+2. Sequencing MWF only ($160 \times 3/5 = 96$ samples) in 5 lanes
+
+```{python}
+for num_samples, num_lanes in [(160, 4), (160, 8), (96, 5)]:
+    samples_per_lane = num_samples / num_lanes
+    read_pairs_per_sample = read_pairs_per_lane / samples_per_lane
+    sequencing_cost = cost_per_lane * num_lanes
+    library_cost = library_cost_per_sample * num_samples
+    total_cost = sequencing_cost + library_cost
+    cost_per_sample = total_cost / num_samples
+    cost_per_read_pair = cost_per_sample / read_pairs_per_sample
+    print(f"""
+    {num_samples} samples in {num_lanes} lanes:
+        Million read pairs per sample:\t{read_pairs_per_sample / 1e6:3,.0f}
+        Sequencing cost:\t${sequencing_cost:7,.0f} 
+        Library prep cost:\t${library_cost:7,.0f}
+        Total cost:\t\t\t${total_cost:7,.0f}
+        Cost per sample:\t${cost_per_sample:7,.0f}
+        Cost per M rp:\t\t${cost_per_read_pair * 1e6:10.2f}
+    """)
+```
