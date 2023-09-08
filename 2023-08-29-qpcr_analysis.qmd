@@ -31,20 +31,30 @@ filename_pattern <- "Results"
 ```
 
 ```{r}
-data_raw <- list.files(
+raw_data <- list.files(
                        data_dir,
                        pattern = filename_pattern,
                        full.names = TRUE
                        ) |>
   map(function(f) read_csv(f, skip=23)) |>
   list_rbind()
-print(data_raw)
+print(raw_data)
 ```
 
 ```{r}
-tidy_data <- data_raw |>
-  mutate(Cq = as.double(Cq))
-print(tidy_data$Target)
+coding = list(
+  "1" = "Normal centrifugation/filtration, regular CP",
+  "2" = "Normal centrifugation/filtration, regular CP",
+  "3" = "Normal centrifugation, no filtration, prefilter CP",
+  "4" = "Normal centrifugation, no filtration, prefilter CP",
+  "5" = "No centrifugation/filtration, prefilter CP",
+  "6" = "No centrifugation/filtration, prefilter CP"
+)
+tidy_data <- raw_data |>
+  mutate(
+    Cq = as.double(Cq),
+    Sample = recode(Sample, !!!coding)
+  )
 ```
 
 ```{r}
@@ -57,5 +67,5 @@ tidy_data |>
 
 ## TODO
 
-- Figure out what the `Sample` numbers mean with respect to the different treatments
+- ~~Figure out what the `Sample` numbers mean with respect to the different treatments~~
 - There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
