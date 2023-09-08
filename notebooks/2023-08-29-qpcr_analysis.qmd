@@ -54,15 +54,15 @@ coding = list(
 tidy_data <- raw_data |>
   mutate(
     Cq = as.double(Cq),
-    Sample = recode(Sample, !!!coding)
+    Treatment = recode(Sample, !!!coding)
   )
 ```
 
 ```{r}
 library(ggplot2)
 tidy_data |>
-  ggplot(mapping = aes(x=Cq, y=Sample)) +
-  geom_point() +
+  ggplot(mapping = aes(x=Cq, y=Treatment, color=Sample)) +
+  geom_point(alpha=0.5) +
   facet_wrap(facets = ~Target)
 ```
 
