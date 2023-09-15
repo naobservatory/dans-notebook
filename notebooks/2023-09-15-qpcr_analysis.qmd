@@ -16,6 +16,7 @@ See [experiment google doc](https://docs.google.com/document/d/1Po6eE3LHc9svHC4y
 - Olivia put the `.eds` files in `NAO qPCR data/Olivia` on Google Drive and shared the folder with Dan.
 - Google Drive for desktop only syncs shared drives, not shared folders in other drives, so Dan figured out a work around. He made a shortcut to the shared folder in his own google drive so it would sync locally.
 - Opened up the `.eds` files in Design and Analysis locally and exported to `.csv` and saved those in the airport experiment folder on the main google drive.
+- Found a Google Sheet with metadata, downloaded as CSV and added the CSV back to the Google Drive
 
 ## Data import
 
