@@ -26,6 +26,7 @@ library(dplyr)
 library(purrr)
 library(stringr)
 library(ggplot2)
+library(tidyr)
 ```
 
 ```{r}
@@ -53,24 +54,25 @@ glimpse(metadata)
 tidy_data <- raw_data |>
   mutate(
     Cq = as.double(Cq),
-    replicate = str_extract(Sample, "[A-Z]")
+    replicate = str_extract(Sample, "[A-Z]"),
+    Sample_ID = str_split_i(Sample, "/", 1),
+    dilution = as.integer(str_split_i(Sample, "/", 2)),
   ) |>
+  mutate(dilution = replace_na(dilution, 1)) |>
   left_join(
     metadata,
-    by=join_by(Sample == Sample_ID)
+    by=join_by(Sample_ID)
   )
 glimpse(tidy_data)
-```
-
-```{r}
-sort(unique(tidy_data$Sample))
 ```
 
 ### With equal Cq axes
 
 ```{r}
 tidy_data |>
-  filter(!is.na(Extraction_kit)) |>
+  filter(!is.na(Extraction_kit),
+         dilution == 1,
+         ) |>
   ggplot(mapping = aes(x=Cq,
                        y=Extraction_kit,
                        color=replicate,
@@ -90,7 +92,9 @@ tidy_data |>
 
 ```{r}
 tidy_data |>
-  filter(!is.na(Extraction_kit)) |>
+  filter(!is.na(Extraction_kit),
+         dilution == 1,
+         ) |>
   ggplot(mapping = aes(x=Cq,
                        y=Extraction_kit,
                        color=replicate,
@@ -111,7 +115,7 @@ Check that the overlapping points really do have three values
 ```{r}
 tidy_data |>
   filter(!is.na(Extraction_kit), is.na(Cq)) |>
-  count(Target, Extraction_kit, Sample) |>
+  count(Target, Extraction_kit, Sample_ID, dilution) |>
   print()
 ```
 
