@@ -1,0 +1,79 @@
+---
+title: "2023-09-13 Extraction Experiment 2 qPCR Analysis"
+author: "Dan Rice"
+date: 2023-09-15
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+Testing the efficacy of RNA extraction kits.
+See [experiment google doc](https://docs.google.com/document/d/1Po6eE3LHc9svHC4yfnDak-B-sKa7o1Pc1noFMoSbFSE/edit?usp=sharing).
+
+## Preliminary work
+
+- Olivia put the `.eds` files in `NAO qPCR data/Olivia` on Google Drive and shared the folder with Dan.
+- Google Drive for desktop only syncs shared drives, not shared folders in other drives, so Dan figured out a work around. He made a shortcut to the shared folder in his own google drive so it would sync locally.
+- Opened up the `.eds` files in Design and Analysis locally and exported to `.csv` and saved those in the airport experiment folder on the main google drive.
+
+## Data import
+
+```{r}
+library(readr)
+library(dplyr)
+library(purrr)
+
+data_dir <- "~/airport/[2023-09-06] Extraction experiment 2: Settled Solids/"
+filename_pattern <- "Results"
+```
+
+```{r}
+raw_data <- list.files(
+                       paste(data_dir, "qpcr", sep=""),
+                       pattern = filename_pattern,
+                       full.names = TRUE
+                       ) |>
+  map(function(f) read_csv(f, skip=23)) |>
+  list_rbind()
+print(raw_data)
+```
+
+```{r}
+metadata <- read_csv(paste(data_dir, "[2023-09-11] Extraction Experiment 2 templates and results - sampleMetadata.csv", sep=""))
+glimpse(metadata)
+```
+
+```{r}
+tidy_data <- raw_data |>
+  mutate(
+    Cq = as.double(Cq),
+  ) |>
+  left_join(
+    metadata,
+    by=join_by(Sample == Sample_ID)
+  )
+glimpse(tidy_data)
+```
+
+```{r}
+library(ggplot2)
+tidy_data |>
+  filter(!is.na(Extraction_kit)) |>
+  ggplot(mapping = aes(x=Cq, y=Extraction_kit, color=Elution_format)) +
+  geom_point(alpha=0.5) +
+  facet_wrap(facets = ~Target)
+```
+
+```{r}
+library(ggplot2)
+tidy_data |>
+  filter(!is.na(Extraction_kit)) |>
+  ggplot(mapping = aes(x=Cq, y=Extraction_kit, color=Elution_format)) +
+  geom_point(alpha=0.5) +
+  facet_wrap(facets = ~Target, scales="free_x")
+```
+
+## TODO
+
+- There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
