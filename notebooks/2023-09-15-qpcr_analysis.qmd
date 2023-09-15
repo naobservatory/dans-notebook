@@ -56,6 +56,8 @@ tidy_data <- raw_data |>
 glimpse(tidy_data)
 ```
 
+### With equal Cq axes
+
 ```{r}
 library(ggplot2)
 tidy_data |>
@@ -64,6 +66,8 @@ tidy_data |>
   geom_point(alpha=0.5) +
   facet_wrap(facets = ~Target)
 ```
+
+### With free Cq axes
 
 ```{r}
 library(ggplot2)
@@ -77,3 +81,5 @@ tidy_data |>
 ## TODO
 
 - There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
+- Standard curve data
+- Amplification curves
