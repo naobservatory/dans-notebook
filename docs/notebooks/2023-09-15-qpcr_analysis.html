@@ -274,22 +274,25 @@ $ FP_sampleID    &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicate =</span> <span class="fu">str_extract</span>(Sample, <span class="st">"[A-Z]"</span>),</span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample_ID =</span> <span class="fu">str_split_i</span>(Sample, <span class="st">"/"</span>, <span class="dv">1</span>),</span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">dilution =</span> <span class="fu">as.integer</span>(<span class="fu">str_split_i</span>(Sample, <span class="st">"/"</span>, <span class="dv">2</span>)),</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dilution =</span> <span class="fu">replace_na</span>(dilution, <span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    metadata,</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">by=</span><span class="fu">join_by</span>(Sample_ID)</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quantity =</span> <span class="fu">as.double</span>(Sample),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dilution =</span> <span class="fu">replace_na</span>(dilution, <span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    metadata,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">by=</span><span class="fu">join_by</span>(Sample_ID)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: There was 1 warning in `mutate()`.
+<pre><code>Warning: There were 2 warnings in `mutate()`.
+The first warning was:
 ℹ In argument: `Cq = as.double(Cq)`.
 Caused by warning:
-! NAs introduced by coercion</code></pre>
+! NAs introduced by coercion
+ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(tidy_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 288
-Columns: 32
+Columns: 33
 $ Well                    &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,…
 $ `Well Position`         &lt;chr&gt; "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"…
 $ Omit                    &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS…
@@ -314,6 +317,7 @@ $ `Baseline End`          &lt;dbl&gt; 29, 32, 30, 31, 31, 31, 31, 31, 31, 21, 21
 $ replicate               &lt;chr&gt; "A", "A", "A", "C", "C", "C", "B", "B", "B", N…
 $ Sample_ID               &lt;chr&gt; "1A", "1A", "1A", "3C", "3C", "3C", "6B", "6B"…
 $ dilution                &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+$ quantity                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, 1000, 1000…
 $ Extraction_kit          &lt;chr&gt; "Zymo quick-RNA", "Zymo quick-RNA", "Zymo quic…
 $ Short_kit               &lt;chr&gt; "1_ZR", "1_ZR", "1_ZR", "3_IPL", "3_IPL", "3_I…
 $ `Kit Batch`             &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 3, 3, 3, NA, NA, NA, 1, 1, 1…
@@ -414,7 +418,7 @@ $ FP_sampleID             &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>           Target<span class="sc">==</span><span class="st">"CrA"</span>, replicate<span class="sc">==</span><span class="st">"A"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="at">width=</span><span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 32
+<pre><code># A tibble: 3 × 33
    Well `Well Position` Omit  Sample Target Task    Reporter Quencher
   &lt;dbl&gt; &lt;chr&gt;           &lt;lgl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;   
 1     1 A1              FALSE 1A     CrA    UNKNOWN FAM      NFQ-MGB 
@@ -430,29 +434,87 @@ $ FP_sampleID             &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 1           0.989      21.1  0.0535 TRUE                 0.175 TRUE           
 2           0.989      21.1  0.0535 TRUE                 0.175 TRUE           
 3           0.989      21.1  0.0535 TRUE                 0.175 TRUE           
-  `Baseline Start` `Baseline End` replicate Sample_ID dilution Extraction_kit
-             &lt;dbl&gt;          &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;        &lt;int&gt; &lt;chr&gt;         
-1                3             16 A         1A               1 Zymo quick-RNA
-2                3             15 A         1A               1 Zymo quick-RNA
-3                3             16 A         1A               1 Zymo quick-RNA
-  Short_kit `Kit Batch` Elution_volume Elution_format Brand NA_Target
-  &lt;chr&gt;           &lt;dbl&gt;          &lt;dbl&gt; &lt;chr&gt;          &lt;chr&gt; &lt;chr&gt;    
-1 1_ZR                1             30 15*2           Zymo  RNA      
-2 1_ZR                1             30 15*2           Zymo  RNA      
-3 1_ZR                1             30 15*2           Zymo  RNA      
-  FP_sampleID
-  &lt;lgl&gt;      
-1 NA         
-2 NA         
-3 NA         </code></pre>
+  `Baseline Start` `Baseline End` replicate Sample_ID dilution quantity
+             &lt;dbl&gt;          &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;        &lt;int&gt;    &lt;dbl&gt;
+1                3             16 A         1A               1       NA
+2                3             15 A         1A               1       NA
+3                3             16 A         1A               1       NA
+  Extraction_kit Short_kit `Kit Batch` Elution_volume Elution_format Brand
+  &lt;chr&gt;          &lt;chr&gt;           &lt;dbl&gt;          &lt;dbl&gt; &lt;chr&gt;          &lt;chr&gt;
+1 Zymo quick-RNA 1_ZR                1             30 15*2           Zymo 
+2 Zymo quick-RNA 1_ZR                1             30 15*2           Zymo 
+3 Zymo quick-RNA 1_ZR                1             30 15*2           Zymo 
+  NA_Target FP_sampleID
+  &lt;chr&gt;     &lt;lgl&gt;      
+1 RNA       NA         
+2 RNA       NA         
+3 RNA       NA         </code></pre>
 </div>
 </div>
 </section>
+</section>
+<section id="standard-curves" class="level2">
+<h2 class="anchored" data-anchor-id="standard-curves">Standard curves</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Task <span class="sc">==</span> <span class="st">"STANDARD"</span>,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>         dilution <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">|&gt;</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>quantity,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">y=</span>Cq,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>                       )</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.min =</span> min,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.max =</span> max,</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun =</span> median,</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.2</span>),</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">0.2</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">'lm'</span>) <span class="sc">+</span> </span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans=</span><span class="st">'log10'</span>) <span class="sc">+</span> </span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="at">facets =</span> <span class="sc">~</span>Target, <span class="at">scales=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 4 rows containing non-finite values (`stat_summary()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 4 rows containing non-finite values (`stat_smooth()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="2023-09-15-qpcr_analysis_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Not sure what the units of the X-axis are</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>fits <span class="ot">&lt;-</span> <span class="fu">tibble</span>()</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (target <span class="cf">in</span> <span class="fu">unique</span>(tidy_data<span class="sc">$</span>Target)){</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(Cq <span class="sc">~</span> <span class="fu">log10</span>(quantity),</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">data=</span><span class="fu">filter</span>(tidy_data, Task<span class="sc">==</span><span class="st">"STANDARD"</span>, Target<span class="sc">==</span>target)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tidy</span>() <span class="sc">|&gt;</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Target=</span>target, <span class="at">efficiency=</span><span class="dv">10</span><span class="sc">^-</span>(<span class="dv">1</span><span class="sc">/</span>estimate) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    fits <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(fits, fit)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fits <span class="sc">|&gt;</span> <span class="fu">filter</span>(term <span class="sc">==</span> <span class="st">"log10(quantity)"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 7
+  term            estimate std.error statistic  p.value Target efficiency
+  &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;       &lt;dbl&gt;
+1 log10(quantity)    -2.61    0.143      -18.2 1.23e-10 Cov2         1.42
+2 log10(quantity)    -2.85    0.108      -26.4 5.34e-12 Noro         1.24
+3 log10(quantity)    -2.59    0.0703     -36.8 1.58e-14 CrA          1.43</code></pre>
+</div>
+</div>
+<p>These match the Design &amp; Analysis software.</p>
 </section>
 <section id="todo" class="level2">
 <h2 class="anchored" data-anchor-id="todo">TODO</h2>
 <ul>
-<li>Boxplots</li>
+<li><del>Boxplots</del></li>
 <li>There are a few NaNs that show up as missing points and aren’t evident in the plot. Will investigate later.</li>
 <li>Standard curve data</li>
 <li>Amplification curves</li>
