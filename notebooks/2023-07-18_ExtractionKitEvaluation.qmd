@@ -1,0 +1,291 @@
+---
+title: "Examine extraction-kit comparison experiment"
+author: "Dan Rice"
+date: "2023-09-18"
+---
+
+# Background
+
+[Drive folder](https://drive.google.com/drive/folders/1HiqKmpoS34gTtL5MQ3WYiochFiRqut7L)
+
+
+# Setup
+
+```{r}
+library(tidyverse)
+# library(googlesheets4)
+library(fs)
+library(here)
+library(knitr)
+library(broom)
+
+# plotting libraries
+library(cowplot)
+library(patchwork)
+library(ggbeeswarm)
+
+# Custon qPCR helpers
+library(naowetlab)
+# source('_functions.R')
+
+# Plotting setup #
+
+theme_set(theme_cowplot())
+
+# Okabe Ito color scheme with amber for yellow; see https://easystats.github.io/see/reference/scale_color_okabeito.html
+colors_oi <- grDevices::palette.colors()  
+colors_oi['yellow'] <- "#F5C710"
+```
+
+# Data import
+
+
+```{r}
+data_path <- here('_data/2023-07-18-extraction-kit-evaluation')
+```
+
+## metadata
+
+```{r}
+meta_samples <- path(data_path, 'qpcr', 'meta_samples.csv') %>%
+  read_csv %>%
+  rename(sample_qpcr = sample_qPCR) %>%
+  janitor::clean_names() %>%
+  glimpse
+meta_targets <- path(data_path, 'qpcr', 'meta_target.csv') %>%
+  read_csv %>%
+  rename(target_qpcr = target_qPCR) %>%
+  janitor::clean_names() %>%
+  glimpse
+```
+
+## qPCR
+
+```{r}
+fns <- data_path %>%
+  dir_ls(recurse = TRUE, glob = '*_Standard Curve Result_*.csv')
+fns %>% path_file
+```
+
+```{r}
+results_raw <- tibble(file = fns) %>%
+  mutate(.keep = 'unused',
+    data = map(file, read_qpcr_results_csv)
+  ) %>%
+  unnest(data)
+```
+
+```{r}
+results <- results_raw %>%
+  rename(target_qpcr = target) %>%
+  left_join(meta_samples, by = c('sample' = 'sample_qpcr')) %>%
+  left_join(meta_targets, by = 'target_qpcr') %>%
+  mutate(
+  )
+```
+
+### amp curves
+
+```{r}
+fns_amp <- data_path %>%
+  dir_ls(recurse = TRUE, glob = '*_Amplification Data_*.csv') %>%
+  str_subset(negate = TRUE, 'Raw')
+
+amp1 <- tibble(file = fns_amp) %>%
+  mutate(.keep = 'unused',
+    data = map(file, read_qpcr_amplification_csv)
+  ) %>%
+  unnest(data) %>%
+  rename(target_qpcr = target) %>%
+  left_join(results)
+```
+
+### Second experiment
+
+```{r}
+data_path2 <- here('_data/2023-07-13-volume-and-dilution')
+
+meta_samples2 <- path(data_path2, 'qpcr', 'meta_samples.csv') %>%
+  read_csv %>%
+  rename(sample_qpcr = sample_qPCR) %>%
+  janitor::clean_names()
+
+meta_targets2 <- path(data_path2, 'qpcr', 'meta_target.csv') %>%
+  read_csv %>%
+  rename(target_qpcr = target_qPCR) %>%
+  janitor::clean_names()
+
+fns2 <- data_path2 %>%
+  dir_ls(recurse = TRUE, glob = '*_Standard Curve Result_*.csv')
+fns2 %>% path_file
+
+results_raw2 <- tibble(file = fns2) %>%
+  mutate(.keep = 'unused',
+    data = map(file, read_qpcr_results_csv)
+  ) %>%
+  unnest(data)
+
+results2 <- results_raw2 %>%
+  rename(target_qpcr = target) %>%
+  left_join(meta_samples2, by = c('sample' = 'sample_qpcr')) %>%
+  left_join(meta_targets2, by = 'target_qpcr') %>%
+  mutate(
+  )
+
+fns_amp2 <- data_path2 %>%
+  dir_ls(recurse = TRUE, glob = '*_Amplification Data_*.csv') %>%
+  str_subset(negate = TRUE, 'Raw')
+
+amp2 <- tibble(file = fns_amp2) %>%
+  mutate(.keep = 'unused',
+    data = map(file, read_qpcr_amplification_csv)
+  ) %>%
+  unnest(data) %>%
+  rename(target_qpcr = target) %>%
+  left_join(results2)
+```
+
+```{r}
+data_path3 <- here('_data/2023-06-13-concentration')
+
+meta_samples3 <- path(data_path3, 'qpcr', 'meta_samples.csv') %>%
+  read_csv %>%
+  mutate(treatment_group=as.character(treatment_group)) %>%
+  # rename(sample_qpcr = sample_qPCR) %>%
+  janitor::clean_names()
+
+meta_targets3 <- path(data_path3, 'qpcr', 'meta_target.csv') %>%
+  read_csv %>%
+  rename(target_qpcr = target_qPCR) %>%
+  janitor::clean_names()
+
+fns3 <- data_path3 %>%
+  dir_ls(recurse = TRUE, glob = '*_Standard Curve Result_*.csv')
+fns3 %>% path_file
+
+results_raw3 <- tibble(file = fns3) %>%
+  mutate(.keep = 'unused',
+    data = map(file, read_qpcr_results_csv)
+  ) %>%
+  unnest(data)
+print(unique(results_raw3$sample))
+print(unique(results_raw3$target))
+
+results3 <- results_raw3 %>%
+  rename(target_qpcr = target) %>%
+  left_join(meta_samples3, by = c('sample' = 'sample_qpcr')) %>%
+  left_join(meta_targets3, by = 'target_qpcr') %>%
+  mutate(
+  )
+
+fns_amp3 <- data_path3 %>%
+  dir_ls(recurse = TRUE, glob = '*_Amplification Data_*.csv') %>%
+  str_subset(negate = TRUE, 'Raw')
+
+
+amp3 <- tibble(file = fns_amp3) %>%
+  mutate(.keep = 'unused',
+    data = map(file, read_qpcr_amplification_csv)
+  ) %>%
+  unnest(data) %>%
+  rename(target_qpcr = target) %>%
+  left_join(results3)
+```
+
+```{r}
+amp1$experiment <- 1
+amp2$experiment <- 2
+amp3$experiment <- 3
+amp <- bind_rows(amp1, amp2, amp3)
+# amp <- bind_rows(amp1, amp2)
+```
+
+# Analyze qPCR data
+
+## Inspect SARS2 amplification curves
+
+```{r, fig.dim = c(6,4)*1.5}
+delta_rn_min <- 1e-3
+ct_threshold <- results %>% filter(target == 'SARS-CoV-2') %>% pull(threshold) %>% unique
+stopifnot(length(ct_threshold) == 1)
+
+amp %>%
+  filter(
+    target == 'SARS-CoV-2',
+    !is.na(treatment_group)
+  ) %>%
+  ggplot(aes(cycle_number, pmax(d_rn, delta_rn_min), color = treatment_group)) +
+  # scale_color_manual(values = colors_oi %>% unname) +
+  scale_y_log10() +
+  geom_line(aes(group = well)) +
+  geom_hline(yintercept = ct_threshold, alpha = 0.3) +
+  facet_wrap(~experiment) +
+  # scale_color_brewer(type = 'qual') +
+  # geom_point(data = baselines, aes(shape = baseline_boundary), size = 3) +
+  # scale_shape_manual(values = c(1, 4)) +
+  labs(y = 'Delta Rn', x = 'Cycle', color = 'Target')
+```
+
+```{r, fig.dim = c(6,4)*1.5}
+amp %>%
+  filter(
+    target == 'SARS-CoV-2',
+    task %in% c('STANDARD', 'UNKNOWN')
+  ) %>%
+  ggplot(aes(cycle_number, pmax(d_rn, delta_rn_min), color = treatment_group)) +
+  facet_wrap(~treatment_group) +
+  # scale_color_manual(values = colors_oi %>% unname) +
+  scale_x_continuous(limits = c(25, 40)) +
+  scale_y_log10() +
+  geom_line(aes(group = well)) +
+  geom_hline(yintercept = ct_threshold, alpha = 0.3) +
+  labs(y = 'Delta Rn', x = 'Cycle', color = 'Target')
+```
+
+```{r, fig.dim = c(6,4)*1.5}
+amp %>%
+  filter(
+    target == 'SARS-CoV-2',
+    task == 'STANDARD'
+  ) %>%
+  ggplot(aes(cycle_number, pmax(d_rn, delta_rn_min), color = sample)) +
+  # scale_color_manual(values = colors_oi %>% unname) +
+  # scale_x_continuous(limits = c(25, 40)) +
+  scale_y_log10() +
+  geom_line(aes(group = well)) +
+  geom_hline(yintercept = ct_threshold, alpha = 0.3) +
+  labs(y = 'Delta Rn', x = 'Cycle', color = 'Target')
+```
+
+### Check SC versus target samples
+
+```{r, fig.dim = c(6,4)*1.5}
+amp %>%
+  filter(
+    target == 'SARS-CoV-2',
+    task %in% c('STANDARD', 'UNKNOWN')
+  ) %>%
+  ggplot(aes(cycle_number, pmax(d_rn, delta_rn_min), color = interaction(task, experiment))) +
+  scale_color_manual(values = colors_oi %>% unname) +
+  scale_x_continuous(limits = c(15, 40)) +
+  scale_y_log10() +
+  geom_line(aes(group = interaction(well, experiment))) +
+  geom_hline(yintercept = ct_threshold, alpha = 0.3) +
+  labs(y = 'Delta Rn', x = 'Cycle', color = 'Target')
+```
+
+```{r, fig.dim = c(6,4)*1.5}
+amp %>%
+  filter(
+    # target == 'SARS-CoV-2',
+    task %in% c('STANDARD', 'UNKNOWN')
+  ) %>%
+  ggplot(aes(cycle_number, pmax(d_rn, delta_rn_min), color = interaction(task, experiment))) +
+  facet_wrap(~target) + 
+  scale_color_manual(values = colors_oi %>% unname) +
+  scale_x_continuous(limits = c(15, 40)) +
+  scale_y_log10() +
+  geom_line(aes(group = interaction(well, experiment))) +
+  geom_hline(yintercept = ct_threshold, alpha = 0.3) +
+  labs(y = 'Delta Rn', x = 'Cycle', color = 'Target')
+```
