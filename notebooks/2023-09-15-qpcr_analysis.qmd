@@ -24,7 +24,11 @@ See [experiment google doc](https://docs.google.com/document/d/1Po6eE3LHc9svHC4y
 library(readr)
 library(dplyr)
 library(purrr)
+library(stringr)
+library(ggplot2)
+```
 
+```{r}
 data_dir <- "~/airport/[2023-09-06] Extraction experiment 2: Settled Solids/"
 filename_pattern <- "Results"
 ```
@@ -49,6 +53,7 @@ glimpse(metadata)
 tidy_data <- raw_data |>
   mutate(
     Cq = as.double(Cq),
+    replicate = str_extract(Sample, "[A-Z]")
   ) |>
   left_join(
     metadata,
@@ -57,30 +62,70 @@ tidy_data <- raw_data |>
 glimpse(tidy_data)
 ```
 
+```{r}
+sort(unique(tidy_data$Sample))
+```
+
 ### With equal Cq axes
 
 ```{r}
-library(ggplot2)
 tidy_data |>
   filter(!is.na(Extraction_kit)) |>
-  ggplot(mapping = aes(x=Cq, y=Extraction_kit, color=Elution_format)) +
-  geom_point(alpha=0.5) +
+  ggplot(mapping = aes(x=Cq,
+                       y=Extraction_kit,
+                       color=replicate,
+                       )
+  ) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) + 
   facet_wrap(facets = ~Target)
 ```
 
 ### With free Cq axes
 
 ```{r}
-library(ggplot2)
 tidy_data |>
   filter(!is.na(Extraction_kit)) |>
-  ggplot(mapping = aes(x=Cq, y=Extraction_kit, color=Elution_format)) +
-  geom_point(alpha=0.5) +
+  ggplot(mapping = aes(x=Cq,
+                       y=Extraction_kit,
+                       color=replicate,
+                       )
+  ) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) + 
   facet_wrap(facets = ~Target, scales="free_x")
+```
+
+Check that the overlapping points really do have three values
+
+```{r}
+tidy_data |>
+  filter(!is.na(Extraction_kit), is.na(Cq)) |>
+  count(Target, Extraction_kit, Sample) |>
+  print()
+```
+
+```{r}
+tidy_data |>
+    filter(Extraction_kit=="Zymo quick-RNA",
+           Target=="CrA", replicate=="A") |>
+    print(width=Inf)
 ```
 
 ## TODO
 
+- Boxplots
 - There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
 - Standard curve data
 - Amplification curves
+- Diluted samples
