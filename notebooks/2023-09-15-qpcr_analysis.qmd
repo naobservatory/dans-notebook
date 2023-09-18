@@ -30,19 +30,29 @@ library(tidyr)
 ```
 
 ```{r}
-data_dir <- "~/airport/[2023-09-06] Extraction experiment 2: Settled Solids/"
+data_dir <- "~/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/"
 filename_pattern <- "Results"
 ```
 
 ```{r}
+col_types <- list(
+                  Target=col_character(),
+                  Cq=col_double()
+                  )
 raw_data <- list.files(
                        paste(data_dir, "qpcr", sep=""),
                        pattern = filename_pattern,
-                       full.names = TRUE
+                       full.names = TRUE,
                        ) |>
-  map(function(f) read_csv(f, skip=23)) |>
+  map(function(f) read_csv(f, skip=23,
+                       col_types=col_types,
+                       )) |>
   list_rbind()
 print(raw_data)
+```
+
+```{r}
+raw_data
 ```
 
 ```{r}
@@ -167,11 +177,34 @@ print(fits |> filter(term == "log10(quantity)"))
 ```
 These match the Design & Analysis software.
 
+## Dilution series
+
+```{r}
+tidy_data |>
+  filter(Task == "UNKNOWN", dilution > 1) |>
+  count(Target, Extraction_kit, dilution)
+```
+
+```{r}
+tidy_data |>
+  filter(Task == "UNKNOWN",
+         ) |>
+  ggplot(mapping = aes(x=dilution,
+                       y=Cq,
+                       )
+  ) +
+  geom_point() + 
+  geom_smooth(method='lm') + 
+  scale_x_continuous(trans='log10') + 
+  facet_grid(rows=vars(Extraction_kit), cols=vars(Target))
+```
+
+## Amplification curves
 
 ## TODO
 
 - ~~Boxplots~~
 - There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
-- Standard curve data
-- Amplification curves
+- ~Standard curve data~
 - Diluted samples
+- Amplification curves
