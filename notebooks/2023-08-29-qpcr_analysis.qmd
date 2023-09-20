@@ -33,17 +33,17 @@ filename_pattern <- "Results"
 
 ```{r}
 raw_data <- list.files(
-                       data_dir,
-                       pattern = filename_pattern,
-                       full.names = TRUE
-                       ) |>
-  map(function(f) read_csv(f, skip=23)) |>
+  data_dir,
+  pattern = filename_pattern,
+  full.names = TRUE
+) |>
+  map(function(f) read_csv(f, skip = 23)) |>
   list_rbind()
 print(raw_data)
 ```
 
 ```{r}
-coding = list(
+coding <- list(
   "1" = "Normal centrifugation/filtration, regular CP",
   "2" = "Normal centrifugation/filtration, regular CP",
   "3" = "Normal centrifugation, no filtration, prefilter CP",
@@ -61,8 +61,8 @@ tidy_data <- raw_data |>
 ```{r}
 library(ggplot2)
 tidy_data |>
-  ggplot(mapping = aes(x=Cq, y=Treatment, color=Sample)) +
-  geom_point(alpha=0.5) +
+  ggplot(mapping = aes(x = Cq, y = Treatment, color = Sample)) +
+  geom_point(alpha = 0.5) +
   facet_wrap(facets = ~Target)
 ```
 

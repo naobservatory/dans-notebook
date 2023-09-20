@@ -79,7 +79,7 @@ for num_samples, num_lanes in [(160, 4), (160, 8), (96, 5)]:
     print(f"""
     {num_samples} samples in {num_lanes} lanes:
         Million read pairs per sample:\t{read_pairs_per_sample / 1e6:3,.0f}
-        Sequencing cost:\t${sequencing_cost:7,.0f} 
+        Sequencing cost:\t${sequencing_cost:7,.0f}
         Library prep cost:\t${library_cost:7,.0f}
         Total cost:\t\t\t${total_cost:7,.0f}
         Cost per sample:\t${cost_per_sample:7,.0f}

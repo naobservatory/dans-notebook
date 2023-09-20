@@ -91,14 +91,14 @@ If our current log-odds is $q$, then before we collect data $X_i$, we can calcul
 \end{align}
 The integration kernel $K(q, q')$ is the probability density of updating $Q$ from $q$ to $q'$.
 Because our model is time-homogeneous, we can set the expectations on both sides equal to one another.
-This gives us 
+This gives us
 \begin{align}
     \mathbb{E}[L(q) | NT] & = c u_{NT}(q_t - q) \\
-    \mathbb{E}[L(q) | T] & = d u_{T}(q_t - q) 
+    \mathbb{E}[L(q) | T] & = d u_{T}(q_t - q)
 \end{align}
 where the functions $u$ solve the Fredholm integral equations:
 \begin{align}
-    u_{NT}(x) & = \int_{0}^{\infty} K_{NT}(t - x) u_{NT}(t) dt + \int_{-\infty}^{0} K(t - x) dt 
+    u_{NT}(x) & = \int_{0}^{\infty} K_{NT}(t - x) u_{NT}(t) dt + \int_{-\infty}^{0} K(t - x) dt
     \label{eq:fredholm_nt} \\
     u_{T}(x) & = \int_{0}^{\infty} K_{T}(t - x) u_{T}(t) dt + 1.
     \label{eq:fredholm_t}
@@ -148,7 +148,7 @@ Fig.~\ref{fig:large_updates} shows the expected cost of delay if there is a thre
 
 Substituting Eq.~\ref{eq:ln_series} into Eq.~\ref{eq:optimum}, and use the Gaussian model, we get a condition for the optimal threshold:
 \begin{align}
-    (1 - p_0) c \sum_{n=1}^{\infty} \frac{1}{\sqrt{n\tau}} \phi\left(\frac{q_t - q_0 + n \tau / 2)}{\sqrt{n\tau}} \right) & = 
+    (1 - p_0) c \sum_{n=1}^{\infty} \frac{1}{\sqrt{n\tau}} \phi\left(\frac{q_t - q_0 + n \tau / 2)}{\sqrt{n\tau}} \right) & =
     p_0 d \sum_{n=1}^{\infty} \frac{1}{\sqrt{n\tau}} \phi\left(\frac{q_t - q_0 - n \tau / 2)}{\sqrt{n\tau}} \right)
 \end{align}
 where $\phi$ is the standard Gaussian density.
@@ -174,7 +174,7 @@ We now turn to the case where we have to consider more than a few updates, eithe
 In this case, the Liouville-Neumann series (Eq.~\ref{eq:ln_series}) converges slowly, so we need a different approximation.
 Since we're concerned with behavior far from the threshold, we'll look for the asymptotic behavior of $u(x)$ as $x \to \infty$.
 
-First, we look at expected cost in the non-threat case. 
+First, we look at expected cost in the non-threat case.
 Here, $f(x) \to 0$ rapidly, so the dominant balance for large $x$ is given by
 \begin{align}
     u(x) \sim \int_0^{\infty} K(t - x) u(t) dt.

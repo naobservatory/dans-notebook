@@ -22,7 +22,7 @@ Some assumptions:
 
 We'll use the variable $P$ to be the absolute prevalence, i.e. the raw number of people infected, and $p$ to be the relative prevalence, i.e., the fraction of a given population that is infected.
 The subscript $l$ refers to the *local* population of the monitored city and $nl$ refers to the *non-local* population.
-We use the subscript $g$ to refer to the *total*. 
+We use the subscript $g$ to refer to the *total*.
 So $P_{g}$ is the total number of people currently infected.
 
 Parameters:
