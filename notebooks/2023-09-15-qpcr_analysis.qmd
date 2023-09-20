@@ -2,6 +2,7 @@
 title: "2023-09-13 Extraction Experiment 2 qPCR Analysis"
 author: "Dan Rice"
 date: 2023-09-15
+toc: true
 format:
   html:
     code-fold: false
@@ -27,6 +28,7 @@ library(purrr)
 library(stringr)
 library(ggplot2)
 library(tidyr)
+library(broom)
 ```
 
 ```{r}
@@ -147,13 +149,14 @@ decreases $C_q$ by $\log_{2}(x)$.
 
 If a method has elution volume $v$ and we dilute it to total volume $V$,
 this reduces its final concentration by a factor $v / V$.
-If the final volume is the same across methods, we can put different
-methods on the same footing by adding $\log_{2}(v)$ to $C_q$
+We can put different
+methods on the same footing by adding $\log_{2}(v/V)$ to $C_q$
 (so that large elution volumes are penalized with a higher adjusted $C_q$).
 
 ```{r}
+final_volume <- 100
 tidy_data |>
-  mutate(elution_adjusted_Cq=Cq + log2(Elution_volume)) |>
+  mutate(elution_adjusted_Cq=Cq + log2(Elution_volume / final_volume)) |>
   filter(!is.na(Extraction_kit),
          dilution == 1,
          ) |>
@@ -197,7 +200,6 @@ tidy_data |>
 Not sure what the units of the X-axis are
 
 ```{r}
-library(broom)
 fits <- tibble()
 for (target in unique(tidy_data$Target)){
     fit <- lm(Cq ~ log10(quantity),
@@ -234,6 +236,37 @@ tidy_data |>
 ```
 
 ## Amplification curves
+
+```{r}
+amp_data <- list.files(
+                       paste(data_dir, "qpcr", sep=""),
+                       pattern = "Amplification Data",
+                       full.names = TRUE,
+                       ) |>
+  map(function(f) read_csv(f, skip=23,
+                       col_types=col_types,
+                       )) |>
+  list_rbind() |>
+  mutate(
+    replicate = str_extract(Sample, "[A-Z]"),
+    Sample_ID = str_split_i(Sample, "/", 1),
+    dilution = as.integer(str_split_i(Sample, "/", 2)),
+    quantity = as.double(Sample),
+  ) |>
+  mutate(dilution = replace_na(dilution, 1)) |>
+  left_join(
+    metadata,
+    by=join_by(Sample_ID)
+  )
+print(amp_data)
+```
+
+```{r}
+amp_data |>
+    ggplot(mapping=aes(x=`Cycle Number`, y=dRn, color=replicate)) + 
+    geom_line() +
+    facet_grid(rows=vars(Extraction_kit), cols=vars(Target))
+```
 
 ## TODO
 
