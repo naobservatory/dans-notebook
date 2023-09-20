@@ -50,6 +50,7 @@ raw_data <- list.files(
   recursive = TRUE,
   full.names = TRUE,
 ) |>
+  print() |>
   map(function(f) {
     read_csv(f,
       skip = 22,

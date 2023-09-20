@@ -43,10 +43,11 @@ col_types <- list(
   Cq = col_double()
 )
 raw_data <- list.files(
-  paste(data_dir, "qpcr", sep = ""),
+  paste0(data_dir, "qpcr"),
   pattern = filename_pattern,
   full.names = TRUE,
 ) |>
+  print() |>
   map(function(f) {
     read_csv(f,
       skip = 23,
@@ -260,7 +261,7 @@ tidy_data |>
 
 ```{r}
 amp_data <- list.files(
-  paste(data_dir, "qpcr", sep = ""),
+  paste0(data_dir, "qpcr"),
   pattern = "Amplification Data",
   full.names = TRUE,
 ) |>
