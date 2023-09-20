@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dan Rice">
+<meta name="dcterms.date" content="2023-09-20">
+
+<title>2023-07-18 Extraction Experiment 1 qPCR Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#objectives" id="toc-objectives" class="nav-link active" data-scroll-target="#objectives">Objectives</a></li>
+  <li><a href="#preliminary-work" id="toc-preliminary-work" class="nav-link" data-scroll-target="#preliminary-work">Preliminary work</a></li>
+  <li><a href="#data-import" id="toc-data-import" class="nav-link" data-scroll-target="#data-import">Data import</a></li>
+  <li><a href="#kit-comparison" id="toc-kit-comparison" class="nav-link" data-scroll-target="#kit-comparison">Kit comparison</a>
+  <ul class="collapse">
+  <li><a href="#adjusting-for-elution-volume" id="toc-adjusting-for-elution-volume" class="nav-link" data-scroll-target="#adjusting-for-elution-volume">Adjusting for elution volume</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">2023-07-18 Extraction Experiment 1 qPCR Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dan Rice </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 20, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="objectives" class="level2">
+<h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
+<p>Testing the efficacy of RNA extraction kits in influent samples. See <a href="https://docs.google.com/document/d/1KOAolQzHvCE8dHVn9bxrBJwm7sLAHeJQQjzc_lslBf0/edit?usp=sharing">experiment google doc</a>.</p>
+</section>
+<section id="preliminary-work" class="level2">
+<h2 class="anchored" data-anchor-id="preliminary-work">Preliminary work</h2>
+<ul>
+<li>Someone else already exported qPCR results as CSV</li>
+<li>I copied the file <code>meta_samples.csv</code> and manually added elution volumes that I found in <a href="https://docs.google.com/document/d/1AJfbucGj1frkfl2jfVNSlLgP2pjnAYZwiYy91Oy_wzg/edit#bookmark=id.atrajjxwxf20">this doc</a> and saved the results in <code>meta_samples_with_elution_volumes.csv</code>.</li>
+</ul>
+</section>
+<section id="data-import" class="level2">
+<h2 class="anchored" data-anchor-id="data-import">Data import</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data_dir <span class="ot">&lt;-</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"~/airport/[2023-07-18] Extraction-kit comparison 1: Influent/qPCR results/"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>filename_pattern <span class="ot">&lt;-</span> <span class="st">"_Results_"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Not sure why I had to change <code>skip</code> from 23 to 22.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>col_types <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Target =</span> <span class="fu">col_character</span>(),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Cq =</span> <span class="fu">col_double</span>()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  data_dir,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">pattern =</span> filename_pattern,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">recursive =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="cf">function</span>(f) {</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">read_csv</span>(f,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">skip =</span> <span class="dv">22</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">col_types =</span> col_types,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: One or more parsing issues, call `problems()` on your data frame for details,
+e.g.:
+  dat &lt;- vroom(...)
+  problems(dat)
+One or more parsing issues, call `problems()` on your data frame for details,
+e.g.:
+  dat &lt;- vroom(...)
+  problems(dat)
+One or more parsing issues, call `problems()` on your data frame for details,
+e.g.:
+  dat &lt;- vroom(...)
+  problems(dat)
+One or more parsing issues, call `problems()` on your data frame for details,
+e.g.:
+  dat &lt;- vroom(...)
+  problems(dat)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(raw_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 333 × 21
+    Well `Well Position` Omit  Sample  Target Task    Reporter Quencher
+   &lt;dbl&gt; &lt;chr&gt;           &lt;lgl&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;   
+ 1     1 A1              FALSE 1_ZR_A  Cov2   UNKNOWN FAM      NFQ-MGB 
+ 2     2 A2              FALSE 1_ZR_B  Cov2   UNKNOWN FAM      NFQ-MGB 
+ 3     3 A3              FALSE 1_ZR_C  Cov2   UNKNOWN FAM      NFQ-MGB 
+ 4     4 A4              FALSE 2_ZDR_A Cov2   UNKNOWN FAM      NFQ-MGB 
+ 5     5 A5              FALSE 2_ZDR_B Cov2   UNKNOWN FAM      NFQ-MGB 
+ 6     6 A6              FALSE 2_ZDR_C Cov2   UNKNOWN FAM      NFQ-MGB 
+ 7     7 A7              FALSE 3_IP_A  Cov2   UNKNOWN FAM      NFQ-MGB 
+ 8     8 A8              FALSE 3_IP_B  Cov2   UNKNOWN FAM      NFQ-MGB 
+ 9     9 A9              FALSE 3_IP_C  Cov2   UNKNOWN FAM      NFQ-MGB 
+10    10 A10             FALSE 4_NV_A  Cov2   UNKNOWN FAM      NFQ-MGB 
+# ℹ 323 more rows
+# ℹ 13 more variables: `Amp Status` &lt;chr&gt;, `Amp Score` &lt;dbl&gt;,
+#   `Curve Quality` &lt;lgl&gt;, `Result Quality Issues` &lt;lgl&gt;, Cq &lt;dbl&gt;,
+#   `Cq Confidence` &lt;dbl&gt;, `Cq Mean` &lt;dbl&gt;, `Cq SD` &lt;dbl&gt;,
+#   `Auto Threshold` &lt;lgl&gt;, Threshold &lt;dbl&gt;, `Auto Baseline` &lt;lgl&gt;,
+#   `Baseline Start` &lt;dbl&gt;, `Baseline End` &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="sc">|&gt;</span> <span class="fu">count</span>(Target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  Target     n
+  &lt;chr&gt;  &lt;int&gt;
+1 Cov2      71
+2 CrA       95
+3 Noro      71
+4 Phg       96</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>metadata_file <span class="ot">&lt;-</span> <span class="fu">paste0</span>(data_dir, <span class="st">"meta_samples_with_elution_volumes.csv"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(metadata_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 27 Columns: 9
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (7): sample_qPCR, Kit, treatment_group, LPA, other_treatment, Virus_spec...
+dbl (2): group, Elution_volume
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 27
+Columns: 9
+$ sample_qPCR     &lt;chr&gt; "1_ZR_A", "1_ZR_B", "1_ZR_C", "2_ZDR_A", "2_ZDR_B", "2…
+$ Kit             &lt;chr&gt; "Zymo RNA", "Zymo RNA", "Zymo RNA", "Zymo RNA/DNA", "Z…
+$ treatment_group &lt;chr&gt; "ZQ-RNA", "ZQ-RNA", "ZQ-RNA", "ZQ-RNADNA", "ZQ-RNADNA"…
+$ LPA             &lt;chr&gt; "No", "No", "No", "No", "No", "No", "No", "No", "No", …
+$ group           &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+$ other_treatment &lt;chr&gt; "Shield", "Shield", "Shield", "Shield", "Shield", "Shi…
+$ Virus_specific  &lt;chr&gt; "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No", "No", …
+$ FP_Data         &lt;chr&gt; "No", "Yes", "No", "No", "Yes", "No", "No", "Yes", "No…
+$ Elution_volume  &lt;dbl&gt; 15, 15, 15, 50, 50, 50, 100, 100, 100, 30, 30, 30, 100…</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicate =</span> <span class="fu">str_extract</span>(Sample, <span class="st">"[A-Z]$"</span>),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    metadata,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(Sample <span class="sc">==</span> sample_qPCR)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(tidy_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 333
+Columns: 30
+$ Well                    &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,…
+$ `Well Position`         &lt;chr&gt; "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"…
+$ Omit                    &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS…
+$ Sample                  &lt;chr&gt; "1_ZR_A", "1_ZR_B", "1_ZR_C", "2_ZDR_A", "2_ZD…
+$ Target                  &lt;chr&gt; "Cov2", "Cov2", "Cov2", "Cov2", "Cov2", "Cov2"…
+$ Task                    &lt;chr&gt; "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "U…
+$ Reporter                &lt;chr&gt; "FAM", "FAM", "FAM", "FAM", "FAM", "FAM", "FAM…
+$ Quencher                &lt;chr&gt; "NFQ-MGB", "NFQ-MGB", "NFQ-MGB", "NFQ-MGB", "N…
+$ `Amp Status`            &lt;chr&gt; "Amp", "Amp", "Amp", "Amp", "Amp", "Amp", "Amp…
+$ `Amp Score`             &lt;dbl&gt; 1.1919015, 1.2241620, 1.3026766, 1.3064751, 1.…
+$ `Curve Quality`         &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+$ `Result Quality Issues` &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+$ Cq                      &lt;dbl&gt; 33.59224, 33.85453, 32.88852, 32.32325, 35.019…
+$ `Cq Confidence`         &lt;dbl&gt; 0.9630252, 0.9623811, 0.9919308, 0.9907208, 0.…
+$ `Cq Mean`               &lt;dbl&gt; 33.98352, 33.89186, 33.66943, 33.92028, 34.152…
+$ `Cq SD`                 &lt;dbl&gt; 0.55335254, 0.05279505, 1.10437933, 2.25853860…
+$ `Auto Threshold`        &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+$ Threshold               &lt;dbl&gt; 0.04098764, 0.04098764, 0.04098764, 0.04098764…
+$ `Auto Baseline`         &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+$ `Baseline Start`        &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3…
+$ `Baseline End`          &lt;dbl&gt; 31, 30, 30, 29, 32, 31, 31, 31, 30, 32, 33, 31…
+$ replicate               &lt;chr&gt; "A", "B", "C", "A", "B", "C", "A", "B", "C", "…
+$ Kit                     &lt;chr&gt; "Zymo RNA", "Zymo RNA", "Zymo RNA", "Zymo RNA/…
+$ treatment_group         &lt;chr&gt; "ZQ-RNA", "ZQ-RNA", "ZQ-RNA", "ZQ-RNADNA", "ZQ…
+$ LPA                     &lt;chr&gt; "No", "No", "No", "No", "No", "No", "No", "No"…
+$ group                   &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 3, 3, 3, 3…
+$ other_treatment         &lt;chr&gt; "Shield", "Shield", "Shield", "Shield", "Shiel…
+$ Virus_specific          &lt;chr&gt; "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No"…
+$ FP_Data                 &lt;chr&gt; "No", "Yes", "No", "No", "Yes", "No", "No", "Y…
+$ Elution_volume          &lt;dbl&gt; 15, 15, 15, 50, 50, 50, 100, 100, 100, 30, 30,…</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Sample, Kit, LPA, Target, replicate) <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 126 × 6
+    Sample      Kit                 LPA   Target replicate     n
+    &lt;chr&gt;       &lt;chr&gt;               &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt;
+  1 1.0         &lt;NA&gt;                &lt;NA&gt;  Cov2   &lt;NA&gt;          3
+  2 1.0         &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          3
+  3 10.0        &lt;NA&gt;                &lt;NA&gt;  Cov2   &lt;NA&gt;          3
+  4 10.0        &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          3
+  5 100.0       &lt;NA&gt;                &lt;NA&gt;  Cov2   &lt;NA&gt;          3
+  6 100.0       &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          3
+  7 1000.0      &lt;NA&gt;                &lt;NA&gt;  Cov2   &lt;NA&gt;          3
+  8 1000.0      &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          3
+  9 10000.0     &lt;NA&gt;                &lt;NA&gt;  Cov2   &lt;NA&gt;          2
+ 10 10000.0     &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          2
+ 11 1_ZR_A      Zymo RNA            No    Cov2   A             2
+ 12 1_ZR_A      Zymo RNA            No    CrA    A             3
+ 13 1_ZR_A      Zymo RNA            No    Noro   A             2
+ 14 1_ZR_A      Zymo RNA            No    Phg    A             3
+ 15 1_ZR_B      Zymo RNA            No    Cov2   B             2
+ 16 1_ZR_B      Zymo RNA            No    CrA    B             3
+ 17 1_ZR_B      Zymo RNA            No    Noro   B             2
+ 18 1_ZR_B      Zymo RNA            No    Phg    B             3
+ 19 1_ZR_C      Zymo RNA            No    Cov2   C             2
+ 20 1_ZR_c      &lt;NA&gt;                &lt;NA&gt;  CrA    &lt;NA&gt;          3
+ 21 1_ZR_c      &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          2
+ 22 1_ZR_c      &lt;NA&gt;                &lt;NA&gt;  Phg    &lt;NA&gt;          3
+ 23 20          &lt;NA&gt;                &lt;NA&gt;  CrA    &lt;NA&gt;          3
+ 24 200         &lt;NA&gt;                &lt;NA&gt;  CrA    &lt;NA&gt;          3
+ 25 2000        &lt;NA&gt;                &lt;NA&gt;  CrA    &lt;NA&gt;          3
+ 26 20000       &lt;NA&gt;                &lt;NA&gt;  CrA    &lt;NA&gt;          3
+ 27 2_ZDR_A     Zymo RNA/DNA        No    Cov2   A             2
+ 28 2_ZDR_A     Zymo RNA/DNA        No    CrA    A             3
+ 29 2_ZDR_A     Zymo RNA/DNA        No    Noro   A             2
+ 30 2_ZDR_A     Zymo RNA/DNA        No    Phg    A             3
+ 31 2_ZDR_B     Zymo RNA/DNA        No    Cov2   B             2
+ 32 2_ZDR_B     Zymo RNA/DNA        No    CrA    B             2
+ 33 2_ZDR_B     Zymo RNA/DNA        No    Noro   B             2
+ 34 2_ZDR_B     Zymo RNA/DNA        No    Phg    B             3
+ 35 2_ZDR_C     Zymo RNA/DNA        No    Cov2   C             2
+ 36 2_ZDR_C     Zymo RNA/DNA        No    CrA    C             3
+ 37 2_ZDR_C     Zymo RNA/DNA        No    Noro   C             2
+ 38 2_ZDR_C     Zymo RNA/DNA        No    Phg    C             3
+ 39 3_IP_A      Invitrogen Purelink No    Cov2   A             2
+ 40 3_IP_A      Invitrogen Purelink No    CrA    A             3
+ 41 3_IP_A      Invitrogen Purelink No    Noro   A             2
+ 42 3_IP_A      Invitrogen Purelink No    Phg    A             3
+ 43 3_IP_B      Invitrogen Purelink No    Cov2   B             2
+ 44 3_IP_B      Invitrogen Purelink No    CrA    B             3
+ 45 3_IP_B      Invitrogen Purelink No    Noro   B             2
+ 46 3_IP_B      Invitrogen Purelink No    Phg    B             3
+ 47 3_IP_C      Invitrogen Purelink No    Cov2   C             2
+ 48 3_IP_C      Invitrogen Purelink No    CrA    C             3
+ 49 3_IP_C      Invitrogen Purelink No    Noro   C             2
+ 50 3_IP_C      Invitrogen Purelink No    Phg    C             3
+ 51 4_NV_A      Nucleospin Virus    No    Cov2   A             2
+ 52 4_NV_A      Nucleospin Virus    No    CrA    A             3
+ 53 4_NV_A      Nucleospin Virus    No    Noro   A             2
+ 54 4_NV_A      Nucleospin Virus    No    Phg    A             3
+ 55 4_NV_B      Nucleospin Virus    No    Cov2   B             2
+ 56 4_NV_B      Nucleospin Virus    No    CrA    B             3
+ 57 4_NV_B      Nucleospin Virus    No    Noro   B             2
+ 58 4_NV_B      Nucleospin Virus    No    Phg    B             3
+ 59 4_NV_C      Nucleospin Virus    No    Cov2   C             2
+ 60 4_NV_C      Nucleospin Virus    No    CrA    C             3
+ 61 4_NV_C      Nucleospin Virus    No    Noro   C             2
+ 62 4_NV_C      Nucleospin Virus    No    Phg    C             3
+ 63 5_QM_A      QIAamp MinElute     No    Cov2   A             2
+ 64 5_QM_A      QIAamp MinElute     No    CrA    A             3
+ 65 5_QM_A      QIAamp MinElute     No    Noro   A             2
+ 66 5_QM_A      QIAamp MinElute     No    Phg    A             3
+ 67 5_QM_B      QIAamp MinElute     No    Cov2   B             2
+ 68 5_QM_B      QIAamp MinElute     No    CrA    B             3
+ 69 5_QM_B      QIAamp MinElute     No    Noro   B             2
+ 70 5_QM_B      QIAamp MinElute     No    Phg    B             3
+ 71 5_QM_C      QIAamp MinElute     No    Cov2   C             2
+ 72 5_QM_C      QIAamp MinElute     No    CrA    C             3
+ 73 5_QM_C      QIAamp MinElute     No    Noro   C             2
+ 74 5_QM_C      QIAamp MinElute     No    Phg    C             3
+ 75 6_QVR_A     QIAamp Viral RNA    No    Cov2   A             2
+ 76 6_QVR_A     QIAamp Viral RNA    No    CrA    A             3
+ 77 6_QVR_A     QIAamp Viral RNA    No    Noro   A             2
+ 78 6_QVR_A     QIAamp Viral RNA    No    Phg    A             3
+ 79 6_QVR_B     QIAamp Viral RNA    No    Cov2   B             2
+ 80 6_QVR_B     QIAamp Viral RNA    No    CrA    B             3
+ 81 6_QVR_B     QIAamp Viral RNA    No    Noro   B             2
+ 82 6_QVR_B     QIAamp Viral RNA    No    Phg    B             3
+ 83 6_QVR_C     QIAamp Viral RNA    No    Cov2   C             2
+ 84 6_QVR_C     QIAamp Viral RNA    No    CrA    C             3
+ 85 6_QVR_C     QIAamp Viral RNA    No    Noro   C             2
+ 86 6_QVR_C     QIAamp Viral RNA    No    Phg    C             3
+ 87 7_NV-car_A  Nucleospin Virus    Yes   Cov2   A             2
+ 88 7_NV-car_A  Nucleospin Virus    Yes   CrA    A             3
+ 89 7_NV-car_A  Nucleospin Virus    Yes   Noro   A             2
+ 90 7_NV-car_A  Nucleospin Virus    Yes   Phg    A             3
+ 91 7_NV-car_B  Nucleospin Virus    Yes   Cov2   B             2
+ 92 7_NV-car_B  Nucleospin Virus    Yes   CrA    B             3
+ 93 7_NV-car_B  Nucleospin Virus    Yes   Noro   B             2
+ 94 7_NV-car_B  Nucleospin Virus    Yes   Phg    B             3
+ 95 7_NV-car_C  Nucleospin Virus    Yes   Cov2   C             2
+ 96 7_NV-car_C  Nucleospin Virus    Yes   CrA    C             3
+ 97 7_NV-car_C  Nucleospin Virus    Yes   Noro   C             2
+ 98 7_NV-car_C  Nucleospin Virus    Yes   Phg    C             3
+ 99 8_QM-car_A  QIAamp MinElute     Yes   Cov2   A             2
+100 8_QM-car_A  QIAamp MinElute     Yes   CrA    A             3
+101 8_QM-car_A  QIAamp MinElute     Yes   Noro   A             2
+102 8_QM-car_A  QIAamp MinElute     Yes   Phg    A             3
+103 8_QM-car_B  QIAamp MinElute     Yes   Cov2   B             2
+104 8_QM-car_B  QIAamp MinElute     Yes   CrA    B             3
+105 8_QM-car_B  QIAamp MinElute     Yes   Noro   B             2
+106 8_QM-car_B  QIAamp MinElute     Yes   Phg    B             3
+107 8_QM-car_C  QIAamp MinElute     Yes   Cov2   C             2
+108 8_QM-car_C  QIAamp MinElute     Yes   CrA    C             3
+109 8_QM-car_C  QIAamp MinElute     Yes   Noro   C             2
+110 8_QM-car_C  QIAamp MinElute     Yes   Phg    C             3
+111 9_QVR-car_A QIAamp Viral RNA    Yes   Cov2   A             2
+112 9_QVR-car_A QIAamp Viral RNA    Yes   CrA    A             3
+113 9_QVR-car_A QIAamp Viral RNA    Yes   Noro   A             2
+114 9_QVR-car_A QIAamp Viral RNA    Yes   Phg    A             3
+115 9_QVR-car_B QIAamp Viral RNA    Yes   Cov2   B             2
+116 9_QVR-car_B QIAamp Viral RNA    Yes   CrA    B             3
+117 9_QVR-car_B QIAamp Viral RNA    Yes   Noro   B             2
+118 9_QVR-car_B QIAamp Viral RNA    Yes   Phg    B             3
+119 9_QVR-car_C QIAamp Viral RNA    Yes   Cov2   C             2
+120 9_QVR-car_C QIAamp Viral RNA    Yes   CrA    C             3
+121 9_QVR-car_C QIAamp Viral RNA    Yes   Noro   C             2
+122 9_QVR-car_C QIAamp Viral RNA    Yes   Phg    C             3
+123 &lt;NA&gt;        &lt;NA&gt;                &lt;NA&gt;  Cov2   &lt;NA&gt;          3
+124 &lt;NA&gt;        &lt;NA&gt;                &lt;NA&gt;  CrA    &lt;NA&gt;          3
+125 &lt;NA&gt;        &lt;NA&gt;                &lt;NA&gt;  Noro   &lt;NA&gt;          3
+126 &lt;NA&gt;        &lt;NA&gt;                &lt;NA&gt;  Phg    &lt;NA&gt;         15</code></pre>
+</div>
+</div>
+</section>
+<section id="kit-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="kit-comparison">Kit comparison</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Kit)) <span class="sc">|&gt;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> Cq,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> Kit,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">interaction</span>(replicate, LPA),</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.min =</span> min,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.max =</span> max,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun =</span> median,</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.2</span>),</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">0.2</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="at">facets =</span> <span class="sc">~</span>Target, <span class="at">scales =</span> <span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 15 rows containing non-finite values (`stat_summary()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="2023-09-20-qpcr_analysis_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="adjusting-for-elution-volume" class="level3">
+<h3 class="anchored" data-anchor-id="adjusting-for-elution-volume">Adjusting for elution volume</h3>
+<p>Assume the amplification efficiency is 100%, so that an increase in initial concentration by a factor of <span class="math inline">\(x\)</span> decreases <span class="math inline">\(C_q\)</span> by <span class="math inline">\(\log_{2}(x)\)</span>.</p>
+<p>If a method has elution volume <span class="math inline">\(v\)</span> and we dilute it to total volume <span class="math inline">\(V\)</span>, this reduces its final concentration by a factor <span class="math inline">\(v / V\)</span>. We can put different methods on the same footing by adding <span class="math inline">\(\log_{2}(v/V)\)</span> to <span class="math inline">\(C_q\)</span> (so that large elution volumes are penalized with a higher adjusted <span class="math inline">\(C_q\)</span>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>final_volume <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">elution_adjusted_Cq =</span> Cq <span class="sc">+</span> <span class="fu">log2</span>(Elution_volume <span class="sc">/</span> final_volume)) <span class="sc">|&gt;</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Kit)) <span class="sc">|&gt;</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> elution_adjusted_Cq,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> Kit,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">interaction</span>(replicate, LPA),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.min =</span> min,</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.max =</span> max,</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun =</span> median,</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.2</span>),</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">0.2</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="at">facets =</span> <span class="sc">~</span>Target, <span class="at">scales =</span> <span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 15 rows containing non-finite values (`stat_summary()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="2023-09-20-qpcr_analysis_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

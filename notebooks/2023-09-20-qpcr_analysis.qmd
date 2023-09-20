@@ -1,0 +1,141 @@
+---
+title: "2023-07-18 Extraction Experiment 1 qPCR Analysis"
+author: "Dan Rice"
+date: 2023-09-20
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+Testing the efficacy of RNA extraction kits in influent samples.
+See [experiment google doc](https://docs.google.com/document/d/1KOAolQzHvCE8dHVn9bxrBJwm7sLAHeJQQjzc_lslBf0/edit?usp=sharing).
+
+## Preliminary work
+
+- Someone else already exported qPCR results as CSV
+- I copied the file `meta_samples.csv` and manually added elution volumes
+  that I found in [this doc](https://docs.google.com/document/d/1AJfbucGj1frkfl2jfVNSlLgP2pjnAYZwiYy91Oy_wzg/edit#bookmark=id.atrajjxwxf20)
+  and saved the results in `meta_samples_with_elution_volumes.csv`.
+
+## Data import
+
+```{r}
+library(readr)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+```
+
+```{r}
+data_dir <-
+  "~/airport/[2023-07-18] Extraction-kit comparison 1: Influent/qPCR results/"
+filename_pattern <- "_Results_"
+```
+
+Not sure why I had to change `skip` from 23 to 22.
+
+```{r}
+col_types <- list(
+  Target = col_character(),
+  Cq = col_double()
+)
+raw_data <- list.files(
+  data_dir,
+  pattern = filename_pattern,
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  map(function(f) {
+    read_csv(f,
+      skip = 22,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind()
+print(raw_data)
+```
+
+```{r}
+raw_data |> count(Target)
+```
+
+```{r}
+metadata_file <- paste0(data_dir, "meta_samples_with_elution_volumes.csv")
+metadata <- read_csv(metadata_file)
+glimpse(metadata)
+```
+
+```{r}
+tidy_data <- raw_data |>
+  mutate(
+    replicate = str_extract(Sample, "[A-Z]$"),
+  ) |>
+  left_join(
+    metadata,
+    by = join_by(Sample == sample_qPCR)
+  )
+glimpse(tidy_data)
+```
+
+```{r}
+tidy_data |>
+  count(Sample, Kit, LPA, Target, replicate) |>
+  print(n = Inf)
+```
+
+## Kit comparison
+
+```{r}
+tidy_data |>
+  filter(!is.na(Kit)) |>
+  ggplot(mapping = aes(
+    x = Cq,
+    y = Kit,
+    color = interaction(replicate, LPA),
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x")
+```
+
+### Adjusting for elution volume
+
+Assume the amplification efficiency is 100%, so that
+an increase in initial concentration by a factor of $x$
+decreases $C_q$ by $\log_{2}(x)$.
+
+If a method has elution volume $v$ and we dilute it to total volume $V$,
+this reduces its final concentration by a factor $v / V$.
+We can put different
+methods on the same footing by adding $\log_{2}(v/V)$ to $C_q$
+(so that large elution volumes are penalized with a higher adjusted $C_q$).
+
+```{r}
+final_volume <- 100
+tidy_data |>
+  mutate(elution_adjusted_Cq = Cq + log2(Elution_volume / final_volume)) |>
+  filter(!is.na(Kit)) |>
+  ggplot(mapping = aes(
+    x = elution_adjusted_Cq,
+    y = Kit,
+    color = interaction(replicate, LPA),
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x")
+```

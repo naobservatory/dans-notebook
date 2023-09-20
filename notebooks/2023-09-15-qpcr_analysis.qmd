@@ -9,7 +9,7 @@ format:
 ---
 ## Objectives
 
-Testing the efficacy of RNA extraction kits.
+Testing the efficacy of RNA extraction kits in settled solid samples.
 See [experiment google doc](https://docs.google.com/document/d/1Po6eE3LHc9svHC4yfnDak-B-sKa7o1Pc1noFMoSbFSE/edit?usp=sharing).
 
 ## Preliminary work
@@ -58,7 +58,9 @@ print(raw_data)
 ```
 
 ```{r}
-raw_data
+raw_data |>
+  count(Sample) |>
+  print(n = Inf)
 ```
 
 ```{r}
@@ -74,10 +76,9 @@ glimpse(metadata)
 ```{r}
 tidy_data <- raw_data |>
   mutate(
-    Cq = as.double(Cq),
-    replicate = str_extract(Sample, "[A-Z]"),
     Sample_ID = str_split_i(Sample, "/", 1),
     dilution = as.integer(str_split_i(Sample, "/", 2)),
+    replicate = str_extract(Sample_ID, "[A-Z]$"),
     quantity = as.double(Sample),
   ) |>
   mutate(dilution = replace_na(dilution, 1)) |>
@@ -86,6 +87,12 @@ tidy_data <- raw_data |>
     by = join_by(Sample_ID)
   )
 glimpse(tidy_data)
+```
+
+```{r}
+tidy_data |>
+  count(Sample_ID, Target, dilution, replicate) |>
+  print(n = Inf)
 ```
 
 ## Kit comparison
