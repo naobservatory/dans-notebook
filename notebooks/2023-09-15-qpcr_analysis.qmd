@@ -32,7 +32,8 @@ library(broom)
 ```
 
 ```{r}
-data_dir <- "~/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/"
+data_dir <-
+  "~/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/"
 filename_pattern <- "Results"
 ```
 
@@ -61,7 +62,12 @@ raw_data
 ```
 
 ```{r}
-metadata <- read_csv(paste(data_dir, "[2023-09-11] Extraction Experiment 2 templates and results - sampleMetadata.csv", sep = ""))
+metadata_file <- paste0(
+  data_dir,
+  "[2023-09-11] Extraction Experiment 2 templates and results",
+  " - sampleMetadata.csv"
+)
+metadata <- read_csv(metadata_file)
 glimpse(metadata)
 ```
 
@@ -282,7 +288,9 @@ amp_data |>
     group = Well
   )) +
   geom_line() +
-  facet_grid(cols = vars(Extraction_kit), rows = vars(Target), scales = "free_y")
+  facet_grid(
+    cols = vars(Extraction_kit), rows = vars(Target), scales = "free_y"
+  )
 ```
 
 ## TODO

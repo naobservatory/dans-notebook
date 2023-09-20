@@ -1,3 +1,4 @@
+exclude: ^docs/
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
@@ -13,3 +14,5 @@ repos:
     rev: v0.3.2.9021
     hooks:
     -   id: style-files
+    -   id: lintr
+        files: .qmd|.R
