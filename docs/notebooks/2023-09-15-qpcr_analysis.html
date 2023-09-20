@@ -690,11 +690,16 @@ Caused by warning:
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>amp_data <span class="sc">|&gt;</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="at">mapping=</span><span class="fu">aes</span>(<span class="at">x=</span><span class="st">`</span><span class="at">Cycle Number</span><span class="st">`</span>, <span class="at">y=</span>dRn, <span class="at">color=</span>replicate)) <span class="sc">+</span> </span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="at">rows=</span><span class="fu">vars</span>(Extraction_kit), <span class="at">cols=</span><span class="fu">vars</span>(Target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Extraction_kit)) <span class="sc">|&gt;</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="at">mapping=</span><span class="fu">aes</span>(<span class="at">x=</span><span class="st">`</span><span class="at">Cycle Number</span><span class="st">`</span>,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">y=</span>dRn,</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">color=</span><span class="fu">as.factor</span>(dilution),</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">group=</span>Well</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>                       )) <span class="sc">+</span> </span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="at">cols=</span><span class="fu">vars</span>(Extraction_kit), <span class="at">rows=</span><span class="fu">vars</span>(Target), <span class="at">scales=</span><span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="2023-09-15-qpcr_analysis_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+<p><img src="2023-09-15-qpcr_analysis_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="1344"></p>
 </div>
 </div>
 </section>
@@ -702,10 +707,16 @@ Caused by warning:
 <h2 class="anchored" data-anchor-id="todo">TODO</h2>
 <ul>
 <li><del>Boxplots</del></li>
-<li>There are a few NaNs that show up as missing points and aren’t evident in the plot. Will investigate later.</li>
-<li>~Standard curve data~</li>
-<li>~Diluted samples~</li>
-<li>Amplification curves</li>
+<li><del>Standard curve data</del></li>
+<li><del>Diluted samples</del></li>
+<li><del>Amplification curves</del></li>
+<li>Relabel flipped norovirus dilution samples</li>
+<li>Investigate the threshold</li>
+<li>Investigate the efficiency caluculations: compare amp curves, standard curves, and dilution series</li>
+<li>Check amplification curves, including autothreshold in linear phase. (Possibly adjust)</li>
+<li>Check negative controls (may need to use raw Rns rather than delta to avoid baseline subtraction issues)</li>
+<li>Be aware of non-control samples with no amplification detected (no Cq values). Summary stats of which this is true for.</li>
+<li>Plot baseline start and stop (determines the interval used for baseline subtraction)</li>
 </ul>
 
 

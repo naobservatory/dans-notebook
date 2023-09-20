@@ -261,17 +261,28 @@ amp_data <- list.files(
 print(amp_data)
 ```
 
-```{r}
+```{r, fig.width=14}
 amp_data |>
-    ggplot(mapping=aes(x=`Cycle Number`, y=dRn, color=replicate)) + 
+    filter(!is.na(Extraction_kit)) |>
+    ggplot(mapping=aes(x=`Cycle Number`,
+                       y=dRn,
+                       color=as.factor(dilution),
+                       group=Well
+                       )) + 
     geom_line() +
-    facet_grid(rows=vars(Extraction_kit), cols=vars(Target))
+    facet_grid(cols=vars(Extraction_kit), rows=vars(Target), scales="free_y")
 ```
 
 ## TODO
 
 - ~~Boxplots~~
-- There are a few NaNs that show up as missing points and aren't evident in the plot. Will investigate later.
-- ~Standard curve data~
-- ~Diluted samples~
-- Amplification curves
+- ~~Standard curve data~~
+- ~~Diluted samples~~
+- ~~Amplification curves~~
+- Relabel flipped norovirus dilution samples
+- Investigate the threshold
+- Investigate the efficiency caluculations: compare amp curves, standard curves, and dilution series
+- Check amplification curves, including autothreshold in linear phase. (Possibly adjust)
+- Check negative controls (may need to use raw Rns rather than delta to avoid baseline subtraction issues)
+- Be aware of non-control samples with no amplification detected (no Cq values). Summary stats of which this is true for.
+- Plot baseline start and stop (determines the interval used for baseline subtraction) 
