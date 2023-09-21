@@ -3,3 +3,11 @@ project:
   output-dir: docs
 execute:
   freeze: auto  # re-render only when source changes
+website:
+  navbar:
+    search: true
+    background: primary
+    collapse: false
+    left:
+      - text: "Home"
+        file: index.qmd
