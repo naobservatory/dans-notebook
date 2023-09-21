@@ -58,9 +58,42 @@ raw_data <- list.files(
 print(raw_data)
 ```
 
+There were some wells mixed up between the intended plate layout and
+the actual plate for Norovirus. See [Results doc](https://docs.google.com/document/d/1tW-D4xxeYafqgjE4Sw0WGtCAkgf_qGxNhoWq2x7zHY4/edit#bookmark=id.jgbgdox3hte1).
+
 ```{r}
-raw_data |>
-  count(Sample) |>
+corrected_samples <- tribble(
+  ~`Well Position`, ~Sample,
+  "F7",             "empty",
+  "F8",             "empty",
+  "F9",             "empty",
+  "F10",            "empty",
+  "F11",            "empty",
+  "F12",            "empty",
+  "G7",             "6C/100",
+  "G8",             "6C/10",
+  "G9",             "7C/100",
+  "G10",            "7C/10",
+  "G11",            "3C/100",
+  "G12",            "3C/10",
+  "H7",             "NTC",
+  "H8",             "NTC",
+  "H9",             "1C/100",
+  "H10",            "1C/10",
+  "H11",            "1C/100",
+  "H12",            "1C/10",
+)
+corrected_samples$Target <- "Noro"
+print(corrected_samples)
+```
+
+```{r}
+corrected_raw_data <- raw_data |>
+  left_join(corrected_samples, by = join_by(`Well Position`, Target)) |>
+  mutate(Sample = ifelse(is.na(Sample.y), Sample.x, Sample.y)) |>
+  print()
+corrected_raw_data |>
+  count(Target, Sample) |>
   print(n = Inf)
 ```
 
@@ -75,7 +108,7 @@ glimpse(metadata)
 ```
 
 ```{r}
-tidy_data <- raw_data |>
+tidy_data <- corrected_raw_data |>
   mutate(
     Sample_ID = str_split_i(Sample, "/", 1),
     dilution = as.integer(str_split_i(Sample, "/", 2)),

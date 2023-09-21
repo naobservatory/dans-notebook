@@ -65,6 +65,8 @@ print(raw_data)
 raw_data |> count(Target)
 ```
 
+TODO: use other metadata table
+
 ```{r}
 metadata_file <- paste0(data_dir, "meta_samples_with_elution_volumes.csv")
 metadata <- read_csv(metadata_file)
