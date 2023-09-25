@@ -1,0 +1,189 @@
+---
+title: "2023-09-13 PMMoV qPCR Analysis"
+author: "Dan Rice"
+date: 2023-09-25
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+NOTE: Need sample metadata. I don't know what the samples are.
+
+- Test qPCR of PMMoV
+- Test duplexed qPCR
+- See [Google Doc](https://docs.google.com/document/d/1I2nfbLJ1Tdn6ZVpB1IlCTdRf3yLC83hpvgsY2NiXgrg/edit?usp=sharing)
+
+## Preliminary work
+
+- Dan copied the `.eds` file from the `NAO qPCR data` directory to the experiment directory and exported `.csv` files.
+
+## Data import
+
+```{r}
+library(readr)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+```
+
+```{r}
+data_dir <-
+  "~/airport/[2023-09-13] PMMoV and Multiplex qPCR/"
+filename_pattern <- "Results"
+```
+
+```{r}
+col_types <- list(
+  Target = col_character(),
+  Cq = col_double()
+)
+raw_data <- list.files(
+  paste0(data_dir, "qpcr"),
+  pattern = filename_pattern,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind()
+print(raw_data)
+```
+
+It looks like the software splits duplexed targets into two rows, but doesn't save the information about multiplexing.
+
+```{r}
+raw_data |> count(Target, Reporter, Sample, Quencher)
+```
+
+```{r}
+raw_data |>
+  count(`Well Position`) |>
+  print(n = Inf)
+```
+
+We can count the multiplexing and save it as a column:
+
+```{r}
+with_counts <- raw_data |>
+  left_join(count(raw_data, Well, name = "n_multiplex"), by = join_by(Well))
+```
+
+It looks like the multiplexed wells didn't amplifiy well.
+No N2 wells amplified. It also looks like there was poor amp in general.
+
+```{r}
+with_counts |>
+  count(Target, Reporter, Sample, n_multiplex, `Amp Status`) |>
+  print(n = Inf)
+```
+
+```{r}
+with_counts |>
+  count(Target, n_multiplex, `Amp Status`) |>
+  print(n = Inf)
+```
+
+Check that the thresholds are the same for every well with the same target
+
+```{r}
+with_counts |>
+  count(Target, Threshold) |>
+  print(n = Inf)
+```
+
+## Amplification curves
+
+```{r}
+amp_data <- list.files(
+  paste0(data_dir, "qpcr"),
+  pattern = "Amplification Data",
+  full.names = TRUE,
+) |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind() |>
+  left_join(with_counts,
+    by = join_by(Well, `Well Position`, Sample, Target)
+  ) |>
+  print()
+```
+
+### Amplification curves by sample
+
+The one that amplified:
+
+```{r, fig.width=14}
+amp_data |>
+  filter(`Amp Status` == "AMP") |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    group = Well,
+    color = as.factor(n_multiplex),
+  )) +
+  geom_line() +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold,
+  )) +
+  scale_y_log10() +
+  facet_grid(
+    rows = vars(Target), cols = vars(Sample), scales = "free_y"
+  )
+```
+
+The ones that didn't:
+
+```{r, fig.width=14}
+amp_data |>
+  filter(`Amp Status` == "NO_AMP") |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    group = Well,
+    color = as.factor(n_multiplex),
+  )) +
+  geom_line() +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold,
+  )) +
+  scale_y_log10() +
+  facet_grid(
+    rows = vars(Target), cols = vars(Sample), scales = "free_y"
+  )
+```
+
+### Amplification curves by well
+
+```{r, fig.width=14, fig.height=14}
+amp_data |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    color = as.factor(Target),
+  )) +
+  geom_line() +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  )) +
+  geom_vline(aes(xintercept = `Cq`, color = as.factor(Target)),
+    linetype = "dashed"
+  ) +
+  scale_y_log10() +
+  facet_wrap(~`Well Position`, scales = "free")
+```
