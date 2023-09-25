@@ -76,12 +76,12 @@ corrected_samples <- tribble(
   "G10",            "7C/10",
   "G11",            "3C/100",
   "G12",            "3C/10",
-  "H7",             "NTC",
-  "H8",             "NTC",
+  "H7",             "1C/100",
+  "H8",             "1C/10",
   "H9",             "1C/100",
   "H10",            "1C/10",
-  "H11",            "1C/100",
-  "H12",            "1C/10",
+  "H11",            "NTC",
+  "H12",            "NTC",
 )
 corrected_samples$Target <- "Noro"
 print(corrected_samples)
@@ -274,20 +274,53 @@ These match the Design & Analysis software.
 ```{r}
 tidy_data |>
   filter(Task == "UNKNOWN", dilution > 1) |>
-  count(Target, Extraction_kit, dilution)
+  count(Target, Extraction_kit, dilution) |>
+  print(n = Inf)
 ```
 
+Looks like we have dilution series for four kits.
+
 ```{r}
+dilution_kits <- c(
+  "Invitrogen PureLink RNA",
+  "QIAamp Viral RNA mini kit",
+  "Qiagen AllPrep PowerViral DNA/RNA",
+  "Zymo quick-RNA"
+)
 tidy_data |>
-  filter(Task == "UNKNOWN", ) |>
+  filter(
+    Task == "UNKNOWN",
+    Target != "16S",
+    is.element(Extraction_kit, dilution_kits)
+  ) |>
   ggplot(mapping = aes(
     x = dilution,
     y = Cq,
   )) +
-  geom_point() +
+  geom_point(mapping = aes(color = replicate)) +
   geom_smooth(method = "lm") +
   scale_x_continuous(trans = "log10") +
-  facet_grid(rows = vars(Extraction_kit), cols = vars(Target))
+  facet_grid(cols = vars(Extraction_kit), rows = vars(Target), scale = "free_y")
+```
+
+```{r}
+fits <- tibble()
+for (target in unique(tidy_data$Target)) {
+  for (kit in dilution_kits) {
+    fit <- lm(Cq ~ log10(dilution),
+      data = filter(tidy_data, Target == target, Extraction_kit == kit)
+    ) |>
+      tidy() |>
+      mutate(
+        Target = target,
+        Extraction_kit = kit,
+        # Changed sign because we have dilution factor not quantity
+        efficiency = 10^(1 / estimate) - 1
+      )
+    fits <- bind_rows(fits, fit)
+  }
+}
+print(fits |> filter(Target != "16S", term == "log10(dilution)"))
 ```
 
 ## Amplification curves
@@ -334,6 +367,25 @@ amp_data |>
   )
 ```
 
+## Background fluorescence
+
+```{r}
+raw_qpcr_data <- list.files(
+  paste0(data_dir, "qpcr"),
+  pattern = "_Multicomponent_",
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind() |>
+  print()
+```
+
 ## TODO
 
 - ~~Boxplots~~
@@ -347,3 +399,4 @@ amp_data |>
 - Check negative controls (may need to use raw Rns rather than delta to avoid baseline subtraction issues)
 - Be aware of non-control samples with no amplification detected (no Cq values). Summary stats of which this is true for.
 - Plot baseline start and stop (determines the interval used for baseline subtraction)
+- Background fluorescence

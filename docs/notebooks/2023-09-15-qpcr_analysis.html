@@ -140,6 +140,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#standard-curves" id="toc-standard-curves" class="nav-link" data-scroll-target="#standard-curves">Standard curves</a></li>
   <li><a href="#dilution-series" id="toc-dilution-series" class="nav-link" data-scroll-target="#dilution-series">Dilution series</a></li>
   <li><a href="#amplification-curves" id="toc-amplification-curves" class="nav-link" data-scroll-target="#amplification-curves">Amplification curves</a></li>
+  <li><a href="#background-fluorescence" id="toc-background-fluorescence" class="nav-link" data-scroll-target="#background-fluorescence">Background fluorescence</a></li>
   <li><a href="#todo" id="toc-todo" class="nav-link" data-scroll-target="#todo">TODO</a></li>
   </ul>
 </nav>
@@ -296,12 +297,12 @@ e.g.:
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"G10"</span>,            <span class="st">"7C/10"</span>,</span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"G11"</span>,            <span class="st">"3C/100"</span>,</span>
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"G12"</span>,            <span class="st">"3C/10"</span>,</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H7"</span>,             <span class="st">"NTC"</span>,</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H8"</span>,             <span class="st">"NTC"</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H7"</span>,             <span class="st">"1C/100"</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H8"</span>,             <span class="st">"1C/10"</span>,</span>
 <span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H9"</span>,             <span class="st">"1C/100"</span>,</span>
 <span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H10"</span>,            <span class="st">"1C/10"</span>,</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H11"</span>,            <span class="st">"1C/100"</span>,</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H12"</span>,            <span class="st">"1C/10"</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H11"</span>,            <span class="st">"NTC"</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"H12"</span>,            <span class="st">"NTC"</span>,</span>
 <span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>corrected_samples<span class="sc">$</span>Target <span class="ot">&lt;-</span> <span class="st">"Noro"</span></span>
 <span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(corrected_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -321,12 +322,12 @@ e.g.:
 10 G10             7C/10  Noro  
 11 G11             3C/100 Noro  
 12 G12             3C/10  Noro  
-13 H7              NTC    Noro  
-14 H8              NTC    Noro  
+13 H7              1C/100 Noro  
+14 H8              1C/10  Noro  
 15 H9              1C/100 Noro  
 16 H10             1C/10  Noro  
-17 H11             1C/100 Noro  
-18 H12             1C/10  Noro  </code></pre>
+17 H11             NTC    Noro  
+18 H12             NTC    Noro  </code></pre>
 </div>
 </div>
 <div class="cell">
@@ -796,20 +797,18 @@ $ FP_sampleID             &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Target, Extraction_kit, Sample_ID, dilution) <span class="sc">|&gt;</span></span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 11 × 5
-   Target Extraction_kit                    Sample_ID dilution     n
-   &lt;chr&gt;  &lt;chr&gt;                             &lt;chr&gt;        &lt;int&gt; &lt;int&gt;
- 1 Cov2   Invitrogen PureLink RNA           3C              10     2
- 2 Cov2   Invitrogen PureLink RNA           3C             100     2
- 3 Cov2   NucleoSpin Virus                  4B               1     2
- 4 Cov2   QIAamp Viral RNA mini kit         6A               1     1
- 5 Cov2   QIAamp Viral RNA mini kit         6C              10     1
- 6 Cov2   QIAamp Viral RNA mini kit         6C             100     2
- 7 Cov2   Qiagen AllPrep PowerViral DNA/RNA 7A               1     1
- 8 Cov2   Qiagen AllPrep PowerViral DNA/RNA 7C              10     2
- 9 Cov2   Qiagen AllPrep PowerViral DNA/RNA 7C             100     2
-10 Noro   Zymo quick-RNA                    1C              10     1
-11 Noro   Zymo quick-RNA                    1C             100     1</code></pre>
+<pre><code># A tibble: 9 × 5
+  Target Extraction_kit                    Sample_ID dilution     n
+  &lt;chr&gt;  &lt;chr&gt;                             &lt;chr&gt;        &lt;int&gt; &lt;int&gt;
+1 Cov2   Invitrogen PureLink RNA           3C              10     2
+2 Cov2   Invitrogen PureLink RNA           3C             100     2
+3 Cov2   NucleoSpin Virus                  4B               1     2
+4 Cov2   QIAamp Viral RNA mini kit         6A               1     1
+5 Cov2   QIAamp Viral RNA mini kit         6C              10     1
+6 Cov2   QIAamp Viral RNA mini kit         6C             100     2
+7 Cov2   Qiagen AllPrep PowerViral DNA/RNA 7A               1     1
+8 Cov2   Qiagen AllPrep PowerViral DNA/RNA 7C              10     2
+9 Cov2   Qiagen AllPrep PowerViral DNA/RNA 7C             100     2</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -952,7 +951,8 @@ $ FP_sampleID             &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Task <span class="sc">==</span> <span class="st">"UNKNOWN"</span>, dilution <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Target, Extraction_kit, dilution)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Target, Extraction_kit, dilution) <span class="sc">|&gt;</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 21 × 4
    Target Extraction_kit                    dilution     n
@@ -967,60 +967,117 @@ $ FP_sampleID             &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA
  8 CrA    Invitrogen PureLink RNA                100     2
  9 CrA    QIAamp Viral RNA mini kit               10     2
 10 CrA    QIAamp Viral RNA mini kit              100     2
-# ℹ 11 more rows</code></pre>
+11 CrA    Qiagen AllPrep PowerViral DNA/RNA       10     2
+12 CrA    Qiagen AllPrep PowerViral DNA/RNA      100     4
+13 CrA    Zymo quick-RNA                          10     2
+14 Noro   Invitrogen PureLink RNA                 10     1
+15 Noro   Invitrogen PureLink RNA                100     1
+16 Noro   QIAamp Viral RNA mini kit               10     1
+17 Noro   QIAamp Viral RNA mini kit              100     1
+18 Noro   Qiagen AllPrep PowerViral DNA/RNA       10     1
+19 Noro   Qiagen AllPrep PowerViral DNA/RNA      100     1
+20 Noro   Zymo quick-RNA                          10     1
+21 Noro   Zymo quick-RNA                         100     1</code></pre>
 </div>
 </div>
+<p>Looks like we have dilution series for four kits.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Task <span class="sc">==</span> <span class="st">"UNKNOWN"</span>, ) <span class="sc">|&gt;</span></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> dilution,</span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> Cq,</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">"log10"</span>) <span class="sc">+</span></span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(Extraction_kit), <span class="at">cols =</span> <span class="fu">vars</span>(Target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>dilution_kits <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Invitrogen PureLink RNA"</span>,</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"QIAamp Viral RNA mini kit"</span>,</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Qiagen AllPrep PowerViral DNA/RNA"</span>,</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Zymo quick-RNA"</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    Task <span class="sc">==</span> <span class="st">"UNKNOWN"</span>,</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>    Target <span class="sc">!=</span> <span class="st">"16S"</span>,</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.element</span>(Extraction_kit, dilution_kits)</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> dilution,</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> Cq,</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">color =</span> replicate)) <span class="sc">+</span></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">"log10"</span>) <span class="sc">+</span></span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(Extraction_kit), <span class="at">rows =</span> <span class="fu">vars</span>(Target), <span class="at">scale =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 23 rows containing non-finite values (`stat_smooth()`).</code></pre>
+<pre><code>Warning: Removed 13 rows containing non-finite values (`stat_smooth()`).</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 23 rows containing missing values (`geom_point()`).</code></pre>
+<pre><code>Warning: Removed 13 rows containing missing values (`geom_point()`).</code></pre>
 </div>
 <div class="cell-output-display">
 <p><img src="2023-09-15-qpcr_analysis_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>fits <span class="ot">&lt;-</span> <span class="fu">tibble</span>()</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (target <span class="cf">in</span> <span class="fu">unique</span>(tidy_data<span class="sc">$</span>Target)) {</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (kit <span class="cf">in</span> dilution_kits) {</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(Cq <span class="sc">~</span> <span class="fu">log10</span>(dilution),</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">filter</span>(tidy_data, Target <span class="sc">==</span> target, Extraction_kit <span class="sc">==</span> kit)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tidy</span>() <span class="sc">|&gt;</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">Target =</span> target,</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">Extraction_kit =</span> kit,</span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Changed sign because we have dilution factor not quantity</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">efficiency =</span> <span class="dv">10</span><span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> estimate) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>    fits <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(fits, fit)</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fits <span class="sc">|&gt;</span> <span class="fu">filter</span>(Target <span class="sc">!=</span> <span class="st">"16S"</span>, term <span class="sc">==</span> <span class="st">"log10(dilution)"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 8
+   term  estimate std.error statistic   p.value Target Extraction_kit efficiency
+   &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;               &lt;dbl&gt;
+ 1 log1…    NA      NA          NA    NA        Cov2   Invitrogen Pu…     NA    
+ 2 log1…     2.51    0.869       2.88  2.35e- 2 Cov2   QIAamp Viral …      1.51 
+ 3 log1…    NA      NA          NA    NA        Cov2   Qiagen AllPre…     NA    
+ 4 log1…    NA      NA          NA    NA        Cov2   Zymo quick-RNA     NA    
+ 5 log1…     2.92    0.0778     37.6   3.30e-11 Noro   Invitrogen Pu…      1.20 
+ 6 log1…     3.07    0.151      20.3   7.80e- 9 Noro   QIAamp Viral …      1.12 
+ 7 log1…     3.20    0.118      27.1   6.24e-10 Noro   Qiagen AllPre…      1.05 
+ 8 log1…     2.69    0.0772     34.8   1.31e-12 Noro   Zymo quick-RNA      1.35 
+ 9 log1…     3.59    0.205      17.5   2.24e- 9 CrA    Invitrogen Pu…      0.898
+10 log1…     3.58    0.0852     42.0   1.68e-13 CrA    QIAamp Viral …      0.902
+11 log1…     2.84    0.330       8.61  9.92e- 7 CrA    Qiagen AllPre…      1.25 
+12 log1…     5.14    0.644       7.98  2.25e- 5 CrA    Zymo quick-RNA      0.565</code></pre>
 </div>
 </div>
 </section>
 <section id="amplification-curves" class="level2">
 <h2 class="anchored" data-anchor-id="amplification-curves">Amplification curves</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>amp_data <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(data_dir, <span class="st">"qpcr"</span>),</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">pattern =</span> <span class="st">"Amplification Data"</span>,</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="cf">function</span>(f) {</span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">read_csv</span>(f,</span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">skip =</span> <span class="dv">23</span>,</span>
-<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">col_types =</span> col_types,</span>
-<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
-<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
-<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicate =</span> <span class="fu">str_extract</span>(Sample, <span class="st">"[A-Z]"</span>),</span>
-<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample_ID =</span> <span class="fu">str_split_i</span>(Sample, <span class="st">"/"</span>, <span class="dv">1</span>),</span>
-<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">dilution =</span> <span class="fu">as.integer</span>(<span class="fu">str_split_i</span>(Sample, <span class="st">"/"</span>, <span class="dv">2</span>)),</span>
-<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">quantity =</span> <span class="fu">as.double</span>(Sample),</span>
-<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dilution =</span> <span class="fu">replace_na</span>(dilution, <span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a>    metadata,</span>
-<span id="cb50-22"><a href="#cb50-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(Sample_ID)</span>
-<span id="cb50-23"><a href="#cb50-23" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>amp_data <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(data_dir, <span class="st">"qpcr"</span>),</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">pattern =</span> <span class="st">"Amplification Data"</span>,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="cf">function</span>(f) {</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">read_csv</span>(f,</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">skip =</span> <span class="dv">23</span>,</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">col_types =</span> col_types,</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">replicate =</span> <span class="fu">str_extract</span>(Sample, <span class="st">"[A-Z]"</span>),</span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample_ID =</span> <span class="fu">str_split_i</span>(Sample, <span class="st">"/"</span>, <span class="dv">1</span>),</span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">dilution =</span> <span class="fu">as.integer</span>(<span class="fu">str_split_i</span>(Sample, <span class="st">"/"</span>, <span class="dv">2</span>)),</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">quantity =</span> <span class="fu">as.double</span>(Sample),</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dilution =</span> <span class="fu">replace_na</span>(dilution, <span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>    metadata,</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(Sample_ID)</span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: The following named parsers don't match the column names: Cq
 The following named parsers don't match the column names: Cq
@@ -1033,7 +1090,7 @@ The following named parsers don't match the column names: Cq</code></pre>
 Caused by warning:
 ! NAs introduced by coercion</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(amp_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(amp_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 14,760 × 20
     Well `Well Position` `Cycle Number` Target    Rn      dRn Sample Omit 
@@ -1056,20 +1113,68 @@ Caused by warning:
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>amp_data <span class="sc">|&gt;</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Extraction_kit)) <span class="sc">|&gt;</span></span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">`</span><span class="at">Cycle Number</span><span class="st">`</span>,</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> dRn,</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">as.factor</span>(dilution),</span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> Well</span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
-<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(</span>
-<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">vars</span>(Extraction_kit), <span class="at">rows =</span> <span class="fu">vars</span>(Target), <span class="at">scales =</span> <span class="st">"free_y"</span></span>
-<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>amp_data <span class="sc">|&gt;</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Extraction_kit)) <span class="sc">|&gt;</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">`</span><span class="at">Cycle Number</span><span class="st">`</span>,</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> dRn,</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">as.factor</span>(dilution),</span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> Well</span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(</span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">vars</span>(Extraction_kit), <span class="at">rows =</span> <span class="fu">vars</span>(Target), <span class="at">scales =</span> <span class="st">"free_y"</span></span>
+<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="2023-09-15-qpcr_analysis_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="1344"></p>
+<p><img src="2023-09-15-qpcr_analysis_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="1344"></p>
+</div>
+</div>
+</section>
+<section id="background-fluorescence" class="level2">
+<h2 class="anchored" data-anchor-id="background-fluorescence">Background fluorescence</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>raw_qpcr_data <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(data_dir, <span class="st">"qpcr"</span>),</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">pattern =</span> <span class="st">"_Multicomponent_"</span>,</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>() <span class="sc">|&gt;</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="cf">function</span>(f) {</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">read_csv</span>(f,</span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">skip =</span> <span class="dv">23</span>,</span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">col_types =</span> col_types,</span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "/Users/dan/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/qpcr/2023-09-14_Cov2_extractions_Multicomponent_20230915_100200.csv"
+[2] "/Users/dan/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/qpcr/2023-09-14_Noro_Extractions_Multicomponent_20230915_100255.csv"
+[3] "/Users/dan/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/qpcr/2023-09-15_CrA_extractions_Multicomponent_20230915_105855.csv" 
+[4] "/Users/dan/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/qpcr/2023-09-18_16S_extractions_Multicomponent_20230918_151203.csv" </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The following named parsers don't match the column names: Target, Cq
+The following named parsers don't match the column names: Target, Cq
+The following named parsers don't match the column names: Target, Cq
+The following named parsers don't match the column names: Target, Cq</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 14,760 × 7
+    Well `Well Position` `Stage Number` `Step Number` `Cycle Number`     FAM
+   &lt;dbl&gt; &lt;chr&gt;                    &lt;dbl&gt;         &lt;dbl&gt;          &lt;dbl&gt;   &lt;dbl&gt;
+ 1     1 A1                           2             2              1 326798.
+ 2     1 A1                           2             2              2 323795.
+ 3     1 A1                           2             2              3 318092 
+ 4     1 A1                           2             2              4 314307.
+ 5     1 A1                           2             2              5 312277.
+ 6     1 A1                           2             2              6 309855.
+ 7     1 A1                           2             2              7 307088.
+ 8     1 A1                           2             2              8 305802.
+ 9     1 A1                           2             2              9 303988.
+10     1 A1                           2             2             10 302549.
+# ℹ 14,750 more rows
+# ℹ 1 more variable: ROX &lt;dbl&gt;</code></pre>
 </div>
 </div>
 </section>
@@ -1087,6 +1192,7 @@ Caused by warning:
 <li>Check negative controls (may need to use raw Rns rather than delta to avoid baseline subtraction issues)</li>
 <li>Be aware of non-control samples with no amplification detected (no Cq values). Summary stats of which this is true for.</li>
 <li>Plot baseline start and stop (determines the interval used for baseline subtraction)</li>
+<li>Background fluorescence</li>
 </ul>
 
 
