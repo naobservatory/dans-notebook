@@ -129,6 +129,11 @@ tidy_data |>
   print(n = Inf)
 ```
 
+```{r}
+tidy_data |>
+  count(`Result Quality Issues`)
+```
+
 ## Kit comparison
 
 ### With equal Cq axes
