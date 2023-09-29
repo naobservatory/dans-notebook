@@ -1,0 +1,207 @@
+---
+title: "2023-09-28 qPCR Quality Control"
+author: "Dan Rice"
+date: 2023-09-28
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+Putting together a standard set of quality control checks and plots for qPCR.
+Includes standard curves and dilution series.
+
+## Preliminary work
+
+This is the same data as in [this analysis](2023-09-15-qpcr_analysis.html).
+
+## Data import
+
+```{r}
+library(readr)
+library(dplyr)
+library(purrr)
+library(tibble)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+```
+
+```{r}
+read_data <- function(dir, pattern, col_types) {
+  list.files(
+    dir,
+    pattern = pattern,
+    full.names = TRUE,
+  ) |>
+    map(function(f) {
+      read_csv(f, skip = 23, col_types = col_types, ) |>
+        mutate(plate = str_extract(basename(f), "(.*)_(.*)_[0-9]{8}_[0-9]{6}\\.csv", group = 1))
+    }) |>
+    list_rbind() |>
+    separate_wider_regex(
+      `Well Position`,
+      c(well_row = "[A-Z]+", well_col = "[0-9]+"),
+      cols_remove = FALSE,
+    ) |>
+    mutate(well_col = as.integer(well_col))
+}
+```
+
+There were some wells mixed up between the intended plate layout and
+the actual plate for Norovirus. See [Results doc](https://docs.google.com/document/d/1tW-D4xxeYafqgjE4Sw0WGtCAkgf_qGxNhoWq2x7zHY4/edit#bookmark=id.jgbgdox3hte1).
+
+```{r}
+corrected_samples <- tribble(
+  ~`Well Position`, ~Sample,
+  "F7",             "empty",
+  "F8",             "empty",
+  "F9",             "empty",
+  "F10",            "empty",
+  "F11",            "empty",
+  "F12",            "empty",
+  "G7",             "6C/100",
+  "G8",             "6C/10",
+  "G9",             "7C/100",
+  "G10",            "7C/10",
+  "G11",            "3C/100",
+  "G12",            "3C/10",
+  "H7",             "1C/100",
+  "H8",             "1C/10",
+  "H9",             "1C/100",
+  "H10",            "1C/10",
+  "H11",            "NTC",
+  "H12",            "NTC",
+) |>
+  add_column(plate = "2023-09-14_Noro_Extractions")
+correct_samples <- function(df, corrected_samples) {
+  left_join(df, corrected_samples, by = join_by(`Well Position`, plate)) |>
+    mutate(Sample = ifelse(is.na(Sample.y), Sample.x, Sample.y), .keep = "unused")
+}
+```
+
+```{r}
+data_dir <-
+  "~/airport/[2023-09-06] Extraction-kit comparison 2: Settled Solids/"
+```
+
+```{r}
+metadata_file <- paste0(
+  data_dir,
+  "[2023-09-11] Extraction Experiment 2 templates and results",
+  " - sampleMetadata.csv"
+)
+metadata <- read_csv(metadata_file) |> glimpse()
+```
+
+```{r}
+col_types <- list(
+  Target = col_character(),
+  Cq = col_double()
+)
+res_data <- read_data(
+  paste0(data_dir, "qpcr"),
+  pattern = "Results",
+  col_types = col_types
+) |>
+  correct_samples(corrected_samples) |>
+  separate_wider_regex(
+    Sample,
+    c(Sample_ID = ".+", "/", dilution = "[0-9]+$"),
+    too_few = "align_start",
+  ) |>
+  mutate(
+    replicate = str_extract(Sample_ID, "[A-Z]$"),
+    quantity = as.double(Sample_ID),
+    dilution = as.integer(dilution) |> replace_na(1),
+  ) |>
+  left_join(metadata, by = join_by(Sample_ID)) |>
+  glimpse()
+```
+
+```{r}
+amp_data <- read_data(
+  paste0(data_dir, "qpcr"),
+  pattern = "Amplification Data",
+  col_types = col_types
+) |>
+  correct_samples(corrected_samples) |>
+  mutate(
+    replicate = str_extract(Sample, "[A-Z]"),
+    Sample_ID = str_split_i(Sample, "/", 1),
+    dilution = str_split_i(Sample, "/", 2) |> as.integer() |> replace_na(1),
+    quantity = as.double(Sample),
+  ) |>
+  left_join(metadata, by = join_by(Sample_ID)) |>
+  glimpse()
+```
+
+## Amplification curves
+
+```{r, fig.width=14}
+amp_data |>
+  filter(!is.na(Extraction_kit)) |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    color = as.factor(dilution),
+    group = Well
+  )) +
+  geom_line() +
+  facet_grid(
+    cols = vars(Extraction_kit), rows = vars(Target), scales = "free_y"
+  )
+```
+
+```{r, fig.width=8}
+amp_data |>
+  filter(!is.na(quantity)) |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    color = as.factor(quantity),
+    group = interaction(plate, Well),
+  )) +
+  geom_line() +
+  facet_wrap(~Target, scales = "free_y")
+```
+
+### Standard ruler
+
+Maximum efficiency means doubling every cycle.
+The standard curve points here represent 10x dilutions.
+We can compare the amplification curves for the standard curve samples against a standard ruler: a set of idealized curves $y(c) = y_0 2^c$ with $y_0$ spaced $10\times$ apart.
+
+```{r}
+plot_amp_with_ruler <- function(target, y0_from) {
+  y0 <- 10^seq(from = y0_from, by = -1, length.out = 5)
+  ruler <- crossing(`Cycle Number` = amp_data$`Cycle Number`, y0 = y0) |>
+    mutate(dRn = y0 * 2^`Cycle Number`)
+  amp_data |>
+    filter(!is.na(quantity), Target == target) |>
+    ggplot(mapping = aes(
+      x = `Cycle Number`,
+      y = dRn,
+    )) +
+    geom_line(mapping = aes(
+      color = as.factor(quantity),
+      group = interaction(plate, Well),
+    )) +
+    geom_line(
+      data = ruler,
+      mapping = aes(group = y0),
+      color = "black"
+    ) +
+    scale_y_log10(limits = c(1e-3, 1e1)) +
+    labs(title = target)
+}
+```
+
+```{r}
+plot_amp_with_ruler("16S", -6)
+plot_amp_with_ruler("CrA", -5)
+plot_amp_with_ruler("Noro", -8)
+plot_amp_with_ruler("Cov2", -9)
+```
