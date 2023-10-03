@@ -175,33 +175,62 @@ The standard curve points here represent 10x dilutions.
 We can compare the amplification curves for the standard curve samples against a standard ruler: a set of idealized curves $y(c) = y_0 2^c$ with $y_0$ spaced $10\times$ apart.
 
 ```{r}
-plot_amp_with_ruler <- function(target, y0_from) {
-  y0 <- 10^seq(from = y0_from, by = -1, length.out = 5)
-  ruler <- crossing(`Cycle Number` = amp_data$`Cycle Number`, y0 = y0) |>
-    mutate(dRn = y0 * 2^`Cycle Number`)
-  amp_data |>
-    filter(!is.na(quantity), Target == target) |>
-    ggplot(mapping = aes(
-      x = `Cycle Number`,
-      y = dRn,
-    )) +
+plot_amp <- function(data, color) {
+  ggplot(data, aes(x = `Cycle Number`, y = dRn)) +
     geom_line(mapping = aes(
-      color = as.factor(quantity),
+      color = as.factor({{ color }}),
       group = interaction(plate, Well),
     )) +
-    geom_line(
-      data = ruler,
-      mapping = aes(group = y0),
-      color = "black"
-    ) +
-    scale_y_log10(limits = c(1e-3, 1e1)) +
+    scale_y_log10(limits = c(1e-3, 1e1))
+}
+
+ruler <- function(y0_from, num_rules) {
+  y0 <- 10^seq(from = y0_from, by = -1, length.out = num_rules)
+  rules <- crossing(`Cycle Number` = amp_data$`Cycle Number`, y0 = y0) |>
+    mutate(dRn = y0 * 2^`Cycle Number`)
+  geom_line(
+    data = rules,
+    mapping = aes(group = y0),
+    color = "black"
+  )
+}
+
+plot_amp_with_ruler <- function(target, y0_from, num_rules) {
+  amp_data |>
+    filter(!is.na(quantity), Target == target) |>
+    plot_amp(quantity) +
+    ruler(y0_from, num_rules) +
     labs(title = target)
 }
 ```
 
 ```{r}
-plot_amp_with_ruler("16S", -6)
-plot_amp_with_ruler("CrA", -5)
-plot_amp_with_ruler("Noro", -8)
-plot_amp_with_ruler("Cov2", -9)
+plot_amp_with_ruler("16S", -6, 5)
+plot_amp_with_ruler("CrA", -5, 5)
+plot_amp_with_ruler("Noro", -8, 5)
+plot_amp_with_ruler("Cov2", -9, 5)
+```
+
+```{r}
+dilution_kits <- c(
+  "Invitrogen PureLink RNA",
+  "QIAamp Viral RNA mini kit",
+  "Qiagen AllPrep PowerViral DNA/RNA",
+  "Zymo quick-RNA"
+)
+target <- "Noro"
+amp_data |>
+  filter(Target == target, is.element(Extraction_kit, dilution_kits)) |>
+  plot_amp(dilution) +
+  ruler(-9, 3) +
+  facet_wrap(~Extraction_kit) +
+  labs(title = target)
+
+target <- "CrA"
+amp_data |>
+  filter(Target == target, is.element(Extraction_kit, dilution_kits)) |>
+  plot_amp(dilution) +
+  ruler(-7, 3) +
+  facet_wrap(~Extraction_kit) +
+  labs(title = target)
 ```
