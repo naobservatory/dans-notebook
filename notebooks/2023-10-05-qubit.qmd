@@ -1,0 +1,53 @@
+---
+title: "2023-10-05 Qubit data exploration"
+author: "Dan Rice"
+date: 2023-10-05
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+Trying to understand the Qubit output.
+
+## Preliminary work
+
+Ari exported the data from a recent (somewhat arbitrarily selected) run to a flash drive and put it [here](https://drive.google.com/drive/folders/1Qr_XHXNTNR1z33_XhSoinrYK7o-wdVdT?usp=drive_link).
+
+Olivia looked up the concentration of the standards and [said](https://twist.com/a/197793/ch/591292/t/5608437/c/86173146):
+
+> The concentration of Std 1 is 0 ng/uL (TE buffer). Std 2 is 10ng/uL of rRNA (also in TE buffer).
+
+The Assay Kit User guide is [here](https://assets.fishersci.com/TFS-Assets/LSG/manuals/Qubit_RNA_HS_Assay_UG.pdf)
+
+## Data import
+
+```{r}
+library(here)
+library(tidyverse)
+data_dir <- here("_data", "qubit")
+data <- read_csv(here(data_dir, "QubitData_10-05-2023_08-32-08.csv"))
+glimpse(data)
+```
+
+## Concentration curves
+
+My first guess is that the relationship between concentration and RFU should be linear.
+
+```{r}
+data |>
+  ggplot(mapping = aes(x = `Far Red RFU`, y = `Qubit tube conc.`)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+It is not.
+
+```{r}
+fit <- lm(`Qubit tube conc.` ~ `Far Red RFU`, data)
+print(fit)
+print(fit$residuals)
+```
+
+To be continued...
