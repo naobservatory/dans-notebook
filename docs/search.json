@@ -397,5 +397,12 @@
     "title": "2023-10-10 Analyze prefilter experiment qPCR",
     "section": "Standard curves",
     "text": "Standard curves\n\ntidy_data |&gt;\n  filter(Task == \"STANDARD\") |&gt;\n  ggplot(mapping = aes(\n    x = as.double(Sample),\n    y = Cq,\n  )) +\n  stat_summary(\n    fun.min = min,\n    fun.max = max,\n    fun = median,\n    position = position_dodge(width = 0.2),\n    size = 0.2\n  ) +\n  scale_x_log10() +\n  facet_wrap(facets = ~Target, scales = \"free\")"
+  },
+  {
+    "objectID": "notebooks/2023-10-10-qpcr_analysis.html#todo",
+    "href": "notebooks/2023-10-10-qpcr_analysis.html#todo",
+    "title": "2023-10-10 Analyze prefilter experiment qPCR",
+    "section": "TODO",
+    "text": "TODO\n\nAmplification curves\nCheck efficiency\nApply standard curves"
   }
 ]

@@ -117,3 +117,9 @@ tidy_data |>
   scale_x_log10() +
   facet_wrap(facets = ~Target, scales = "free")
 ```
+
+## TODO
+
+* Amplification curves
+* Check efficiency
+* Apply standard curves
