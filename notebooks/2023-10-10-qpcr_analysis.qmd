@@ -1,0 +1,119 @@
+---
+title: "2023-10-10 Analyze prefilter experiment qPCR"
+author: "Dan Rice"
+date: 2023-10-10
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+Determine which prefiltration method produces better nucleic acid results.
+
+## Preliminary work
+
+Exported csv files from Olivia's eds file uploads.
+
+## Data import
+
+```{r}
+library(here)
+library(readr)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+```
+
+```{r}
+data_dir <-
+  here("~", "airport", "[2023-09-22] New Processing Tests")
+filename_pattern <- "_Results_"
+```
+
+
+```{r}
+col_types <- list(
+  Target = col_character(),
+  Cq = col_double()
+)
+raw_data <- list.files(
+  here(data_dir, "qpcr"),
+  pattern = filename_pattern,
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind()
+print(raw_data)
+```
+
+```{r}
+raw_data |> count(Target)
+```
+
+```{r}
+tidy_data <- raw_data |>
+  mutate(
+    group = str_extract(Sample, "^[0-9]"),
+    replicate = str_extract(Sample, "[A-Z]$"),
+  ) |>
+  glimpse()
+```
+
+Groups 1 and 2 are two different prefiltration protocols.
+
+```{r}
+tidy_data |>
+  count(group, Target, replicate) |>
+  print(n = Inf)
+```
+
+## Kit comparison
+
+```{r}
+tidy_data |>
+  filter(Task == "UNKNOWN") |>
+  ggplot(mapping = aes(
+    x = Cq,
+    y = group,
+    color = replicate,
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x")
+```
+
+## Standard curves
+
+```{r}
+tidy_data |>
+  filter(Task == "STANDARD") |>
+  ggplot(mapping = aes(
+    x = as.double(Sample),
+    y = Cq,
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  scale_x_log10() +
+  facet_wrap(facets = ~Target, scales = "free")
+```

@@ -10,3 +10,4 @@ venv/
 
 /.quarto/
 _data/
+.DS_Store
