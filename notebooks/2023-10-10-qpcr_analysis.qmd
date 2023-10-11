@@ -66,7 +66,27 @@ tidy_data <- raw_data |>
   mutate(
     group = str_extract(Sample, "^[0-9]"),
     replicate = str_extract(Sample, "[A-Z]$"),
+    quantity = as.double(Sample),
   ) |>
+  glimpse()
+```
+
+```{r}
+amp_data <- list.files(
+  here(data_dir, "qpcr"),
+  pattern = "Amplification Data",
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind() |>
+  left_join(tidy_data, by = join_by(Well, `Well Position`, Sample, Omit, Target)) |>
   glimpse()
 ```
 
@@ -104,7 +124,7 @@ tidy_data |>
 tidy_data |>
   filter(Task == "STANDARD") |>
   ggplot(mapping = aes(
-    x = as.double(Sample),
+    x = quantity,
     y = Cq,
   )) +
   stat_summary(
@@ -115,11 +135,98 @@ tidy_data |>
     size = 0.2
   ) +
   scale_x_log10() +
+  geom_smooth(method = "lm") +
   facet_wrap(facets = ~Target, scales = "free")
 ```
 
-## TODO
+```{r}
+fits <- tibble()
+# Note: no standard for norovirus
+for (target in c("16S", "Cov2", "CrA", "PMMV")) {
+  fit <- lm(Cq ~ log10(quantity),
+    data = filter(tidy_data, Task == "STANDARD", Target == target)
+  ) |>
+    tidy() |>
+    mutate(Target = target, efficiency = 10^-(1 / estimate) - 1)
+  fits <- bind_rows(fits, fit)
+}
+print(fits |> filter(term == "log10(quantity)"))
+```
 
-* Amplification curves
-* Check efficiency
-* Apply standard curves
+## Amplification curves
+
+```{r}
+amp_data |>
+  filter(Task == "UNKNOWN") |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    color = as.factor(group),
+    group = Well
+  )) +
+  geom_line() +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  ), color = "Grey") +
+  scale_y_log10() +
+  facet_wrap(~Target, scales = "free")
+```
+
+```{r}
+amp_data |>
+  filter(Task == "NTC") |>
+  ggplot(mapping = aes(
+    x = `Cycle Number`,
+    y = dRn,
+    group = Well
+  )) +
+  geom_line() +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  ), color = "Grey") +
+  scale_y_log10() +
+  facet_wrap(~Target, scales = "free")
+```
+
+```{r}
+plot_amp <- function(data, color) {
+  ggplot(data, aes(x = `Cycle Number`, y = dRn)) +
+    geom_line(mapping = aes(
+      color = as.factor({{ color }}),
+      group = Well,
+    )) +
+    scale_y_log10(limits = c(1e-3, 1e1))
+}
+
+ruler <- function(y0_from, num_rules) {
+  y0 <- 10^seq(from = y0_from, by = -1, length.out = num_rules)
+  rules <- crossing(`Cycle Number` = amp_data$`Cycle Number`, y0 = y0) |>
+    mutate(dRn = y0 * 2^`Cycle Number`)
+  geom_line(
+    data = rules,
+    mapping = aes(group = y0),
+    color = "black"
+  )
+}
+
+plot_amp_with_ruler <- function(target, y0_from, num_rules) {
+  amp_data |>
+    filter(!is.na(quantity), Target == target) |>
+    plot_amp(quantity) +
+    ruler(y0_from, num_rules) +
+    geom_line(mapping = aes(
+      x = `Cycle Number`,
+      y = Threshold
+    ), color = "Grey") +
+    labs(title = target)
+}
+```
+
+```{r}
+plot_amp_with_ruler("16S", -5.5, 5)
+plot_amp_with_ruler("Cov2", -6.5, 5)
+plot_amp_with_ruler("CrA", -4.5, 5)
+plot_amp_with_ruler("PMMV", -8, 5)
+```
