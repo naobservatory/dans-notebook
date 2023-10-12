@@ -1,0 +1,227 @@
+---
+title: "2023-10-11 Analyze qPCR standard curves"
+author: "Dan Rice"
+date: 2023-10-11
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+Test out the standard curves from [qPCR standard curve troubleshooting](https://docs.google.com/document/d/1QgVDCbxCimTYreh9c-vcOzAPWFt76mInmhXw5uPrevc/edit?usp=sharing).
+
+## Preliminary work
+
+Exported csv files from Olivia's eds file uploads.
+
+## Data import
+
+```{r}
+library(here)
+library(readr)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+```
+
+```{r}
+data_dir <-
+  here("~", "airport", "[2023-10-05] qPCR standard curve troubleshooting")
+filename_pattern <- "_Results_"
+```
+
+
+```{r}
+col_types <- list(
+  Target = col_character(),
+  Cq = col_double()
+)
+raw_data <- list.files(
+  here(data_dir, "qpcr"),
+  pattern = filename_pattern,
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind()
+print(raw_data)
+```
+
+```{r}
+raw_data |> count(Target)
+```
+
+```{r}
+tidy_data <- raw_data |>
+  mutate(
+    # group = str_extract(Sample, "^[0-9]"),
+    # replicate = str_extract(Sample, "[A-Z]$"),
+    quantity = as.double(Sample),
+  ) |>
+  glimpse()
+```
+
+```{r}
+amp_data <- list.files(
+  here(data_dir, "qpcr"),
+  pattern = "Amplification Data",
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    )
+  }) |>
+  list_rbind() |>
+  left_join(tidy_data, by = join_by(Well, `Well Position`, Sample, Omit, Target)) |>
+  glimpse()
+```
+
+## Standard curves
+
+```{r}
+tidy_data |>
+  filter(Task == "STANDARD") |>
+  ggplot(mapping = aes(
+    x = quantity,
+    y = Cq,
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  scale_x_log10() +
+  geom_smooth(method = "lm") +
+  facet_wrap(facets = ~Target, scales = "free")
+```
+
+```{r}
+fits <- tibble()
+# Note: no standard for norovirus
+for (target in unique(tidy_data$Target)) {
+  fit <- lm(Cq ~ log10(quantity),
+    data = filter(tidy_data, Task == "STANDARD", Target == target)
+  ) |>
+    tidy() |>
+    mutate(Target = target, efficiency = 10^-(1 / estimate) - 1)
+  fits <- bind_rows(fits, fit)
+}
+print(fits |> filter(term == "log10(quantity)"))
+```
+
+Notes:
+
+* PMMoV looks fine. Efficiency is a bit high and lowest concentration point is a bit noisy, but basically good.
+* Norovirus looks messy and efficiency is way too high.
+* Cov2 is intermediate
+
+## Amplification curves
+
+```{r}
+plot_amp <- function(data, color) {
+  ggplot(data, aes(x = `Cycle Number`, y = dRn)) +
+    geom_line(mapping = aes(
+      color = as.factor({{ color }}),
+      group = Well,
+    )) +
+    scale_y_log10(limits = c(1e-3, 1e1))
+}
+
+ruler <- function(y0_from, num_rules) {
+  y0 <- 10^seq(from = y0_from, by = -1, length.out = num_rules)
+  rules <- crossing(`Cycle Number` = amp_data$`Cycle Number`, y0 = y0) |>
+    mutate(y = y0 * 2^`Cycle Number`)
+  geom_line(
+    data = rules,
+    mapping = aes(y = y, group = y0),
+    color = "black"
+  )
+}
+
+plot_amp_with_ruler <- function(target, y0_from, num_rules) {
+  amp_data |>
+    filter(!is.na(quantity), Target == target) |>
+    plot_amp(quantity) +
+    ruler(y0_from, num_rules) +
+    geom_line(mapping = aes(
+      x = `Cycle Number`,
+      y = Threshold
+    ), color = "Grey") +
+    labs(title = target)
+}
+```
+
+### PMMoV
+
+```{r}
+plot_amp_with_ruler("PMMoV", -7, 7)
+```
+
+Curves look pretty clean (maybe a little steep) but the spacing is off on the dilutions.
+They look a bit under-diluted, which would explain the slightly too large efficiency.
+
+### SARS-CoV-2
+
+```{r}
+plot_amp_with_ruler("Cov2", -7, 7)
+```
+
+Curves are not as consistent as PMMoV and spacing is still too narrow. Slopes look ok.
+
+### Norovirus
+```{r}
+plot_amp_with_ruler("Noro", -8.5, 6)
+```
+
+Look really messy. Not spaced properly.
+Possibly have a slow phase and then a faster phase.
+Could this be because the PCR template doesn't match the standard?
+
+## Raw Rn
+
+```{r}
+plot_rn <- function(data, target) {
+  data |>
+    filter(Task == "STANDARD", Target == target) |>
+    ggplot(aes(x = `Cycle Number`, y = Rn)) +
+    geom_line(mapping = aes(
+      color = as.factor(quantity),
+      group = Well,
+    )) +
+    scale_y_log10() +
+    labs(title = target)
+}
+```
+
+Don't really know what to make of these:
+
+```{r}
+amp_data |> plot_rn("PMMoV")
+amp_data |> plot_rn("Cov2")
+amp_data |> plot_rn("Noro")
+```
+
+### NTC
+
+```{r}
+amp_data |>
+  filter(Task == "NTC") |>
+  ggplot(aes(x = `Cycle Number`, y = Rn)) +
+  geom_line(mapping = aes(color = Target, group = Well))
+```
