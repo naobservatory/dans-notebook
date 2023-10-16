@@ -1,7 +1,7 @@
 ---
-title: "TK"
+title: "2023-10-16 Analysis of recent protocol-comparison experiments"
 author: "Dan Rice"
-date: 2023-16-11
+date: 2023-10-16
 toc: true
 format:
   html:
@@ -9,7 +9,7 @@ format:
 ---
 ## Objectives
 
-TK
+See [Twist](https://twist.com/a/197793/ch/591292/t/5631080/)
 
 ## Preliminary work
 
@@ -41,7 +41,10 @@ get_plate <- function(f) {
 ```{r}
 data_dir <- here("~", "airport")
 experiments <- c(
-  "[2023-10-12] Settled Solids Protocol Development, Vortex Time and Centrifuge Settings",
+  paste(
+    "[2023-10-12] Settled Solids Protocol Development,",
+    "Vortex Time and Centrifuge Settings"
+  ),
   "[2023-10-10] Daily Processing Protocol Testing",
   "[2023-09-22] New Processing Tests"
 )
@@ -118,7 +121,9 @@ amp_data <- list.files(
   }) |>
   list_rbind() |>
   mutate(Target = if_else(Target == "PMMV", "PMMoV", Target)) |>
-  left_join(tidy_data, by = join_by(plate, Well, `Well Position`, Sample, Omit, Target)) |>
+  left_join(tidy_data,
+    by = join_by(plate, Well, `Well Position`, Sample, Omit, Target)
+  ) |>
   glimpse()
 ```
 
@@ -255,6 +260,7 @@ tidy_data |>
     x = Cq,
     y = as.factor(CFSpeed),
     color = as.factor(VortexMin),
+    group = Sample
   )) +
   stat_summary(
     fun.min = min,
@@ -275,6 +281,7 @@ tidy_data |>
     x = Cq,
     y = as.factor(VortexMin),
     color = as.factor(CFSpeed),
+    group = Sample
   )) +
   stat_summary(
     fun.min = min,
