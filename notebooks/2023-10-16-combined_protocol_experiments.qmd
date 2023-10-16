@@ -96,7 +96,6 @@ tidy_data <- raw_data |>
     c(well_row = "[A-Z]+", well_col = "[0-9]+"),
     cols_remove = FALSE,
   ) |>
-  # filter(!(plate == "2023-10-14_Cov2" & well_col == 1)) |>
   left_join(metadata, by = join_by(Sample == Sample_ID)) |>
   mutate(Target = if_else(Target == "PMMV", "PMMoV", Target)) |>
   glimpse()

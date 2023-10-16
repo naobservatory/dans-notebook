@@ -396,10 +396,9 @@ $ qPCR_dilution     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">well_row =</span> <span class="st">"[A-Z]+"</span>, <span class="at">well_col =</span> <span class="st">"[0-9]+"</span>),</span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols_remove =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter(!(plate == "2023-10-14_Cov2" &amp; well_col == 1)) |&gt;</span></span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(metadata, <span class="at">by =</span> <span class="fu">join_by</span>(Sample <span class="sc">==</span> Sample_ID)) <span class="sc">|&gt;</span></span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Target =</span> <span class="fu">if_else</span>(Target <span class="sc">==</span> <span class="st">"PMMV"</span>, <span class="st">"PMMoV"</span>, Target)) <span class="sc">|&gt;</span></span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(metadata, <span class="at">by =</span> <span class="fu">join_by</span>(Sample <span class="sc">==</span> Sample_ID)) <span class="sc">|&gt;</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Target =</span> <span class="fu">if_else</span>(Target <span class="sc">==</span> <span class="st">"PMMV"</span>, <span class="st">"PMMoV"</span>, Target)) <span class="sc">|&gt;</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 481
 Columns: 36
