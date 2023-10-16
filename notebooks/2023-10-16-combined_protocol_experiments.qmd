@@ -1,0 +1,289 @@
+---
+title: "TK"
+author: "Dan Rice"
+date: 2023-16-11
+toc: true
+format:
+  html:
+    code-fold: false
+---
+## Objectives
+
+TK
+
+## Preliminary work
+
+Exported csv files from Olivia's eds file uploads.
+Also exported metadata google sheets as CSV
+
+## Data import
+
+```{r}
+library(here)
+library(readr)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+```
+
+```{r}
+get_plate <- function(f) {
+  str_extract(basename(f),
+    "(.*)_(.*)_[0-9]{8}_[0-9]{6}\\.csv",
+    group = 1
+  )
+}
+```
+
+```{r}
+data_dir <- here("~", "airport")
+experiments <- c(
+  "[2023-10-12] Settled Solids Protocol Development, Vortex Time and Centrifuge Settings",
+  "[2023-10-10] Daily Processing Protocol Testing",
+  "[2023-09-22] New Processing Tests"
+)
+```
+
+```{r}
+filename_pattern <- "_Results_"
+col_types <- list(
+  Target = col_character(),
+  Cq = col_double(),
+  TreatmentGroup = col_character()
+)
+raw_data <- list.files(
+  map_chr(experiments, function(exp) {
+    here(data_dir, exp, "qpcr")
+  }),
+  pattern = filename_pattern,
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f, skip = 23, col_types = col_types) |>
+      mutate(plate = get_plate(f))
+  }) |>
+  list_rbind() |>
+  glimpse()
+```
+
+
+```{r}
+metadata_file <- here(
+  data_dir,
+  experiments[1],
+  "metadata.csv"
+)
+metadata <- experiments |>
+  map(function(exp) {
+    read_csv(here(data_dir, exp, "metadata.csv"), col_types = col_types)
+  }) |>
+  list_rbind() |>
+  glimpse()
+```
+
+```{r}
+tidy_data <- raw_data |>
+  separate_wider_regex(
+    `Well Position`,
+    c(well_row = "[A-Z]+", well_col = "[0-9]+"),
+    cols_remove = FALSE,
+  ) |>
+  # filter(!(plate == "2023-10-14_Cov2" & well_col == 1)) |>
+  left_join(metadata, by = join_by(Sample == Sample_ID)) |>
+  mutate(Target = if_else(Target == "PMMV", "PMMoV", Target)) |>
+  glimpse()
+```
+
+```{r}
+amp_data <- list.files(
+  map_chr(experiments, function(exp) {
+    here(data_dir, exp, "qpcr")
+  }),
+  pattern = "Amplification Data",
+  recursive = TRUE,
+  full.names = TRUE,
+) |>
+  print() |>
+  map(function(f) {
+    read_csv(f,
+      skip = 23,
+      col_types = col_types,
+    ) |>
+      mutate(plate = get_plate(f))
+  }) |>
+  list_rbind() |>
+  mutate(Target = if_else(Target == "PMMV", "PMMoV", Target)) |>
+  left_join(tidy_data, by = join_by(plate, Well, `Well Position`, Sample, Omit, Target)) |>
+  glimpse()
+```
+
+## Quality control
+
+```{r}
+tidy_data |> count(Task, is.na(Cq))
+
+tidy_data |>
+  filter(Task == "NTC", !is.na(Cq)) |>
+  glimpse()
+```
+
+```{r}
+amp_data |>
+  filter(Task == "NTC") |>
+  ggplot(aes(x = `Cycle Number`, y = dRn)) +
+  geom_line(mapping = aes(
+    group = Well,
+  )) +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  ), color = "Grey") +
+  scale_y_log10(limits = c(1e-3, 1e1)) +
+  facet_wrap(~ interaction(plate, Target))
+```
+
+There is amplification of the NTC for the 2023-10-14_16S plate. Olivia says:
+
+> Those are not an error. We should discuss this- the plates we are using for qPCR are not sterile. That’s not a problem for most assays, but so far we’ve almost always had amplification in the 16S negative controls. It’s usually much lower than the samples and lowest standards, though.
+
+Verify:
+
+```{r}
+amp_data |>
+  filter(plate == "2023-10-14_16S" & (Task == "NTC" | Task == "STANDARD")) |>
+  ggplot(aes(x = `Cycle Number`, y = dRn)) +
+  geom_line(mapping = aes(
+    color = Task,
+    group = Well,
+  )) +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  ), color = "Grey") +
+  scale_y_log10(limits = c(1e-3, 1e1))
+```
+
+```{r}
+amp_data |>
+  filter(Task == "UNKNOWN" & is.na(Cq)) |>
+  print() |>
+  ggplot(aes(x = `Cycle Number`, y = dRn)) +
+  geom_line(mapping = aes(
+    color = Task,
+    group = Well,
+  )) +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  ), color = "Grey") +
+  scale_y_log10(limits = c(1e-3, 1e1))
+```
+
+### All the amplification curves
+
+```{r fig.height=10}
+amp_data |>
+  ggplot(aes(x = `Cycle Number`, y = dRn)) +
+  geom_line(mapping = aes(
+    color = Task,
+    group = Well,
+  )) +
+  geom_line(mapping = aes(
+    x = `Cycle Number`,
+    y = Threshold
+  ), color = "Grey") +
+  scale_y_log10(limits = c(1e-3, 1e1)) +
+  facet_grid(rows = vars(plate), cols = vars(Target))
+```
+
+## Compare methods
+
+```{r fig.width=8}
+tidy_data |>
+  filter(Task == "UNKNOWN") |>
+  ggplot(mapping = aes(
+    x = Cq,
+    y = TreatmentGroup,
+    color = Source,
+    shape = as.factor(CollectionDate),
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x")
+```
+
+Mike:
+> @Dan R for the second experiment ([2023-10-10] Daily Processing Protocol Testing) can you create a figure where they y-axis is the wastewater sample (N Inf, S Inf, or SS), and the color is the treatment?
+
+
+```{r}
+tidy_data |>
+  filter(Task == "UNKNOWN", CollectionDate == "2023-10-11") |>
+  ggplot(mapping = aes(
+    x = Cq,
+    y = Source,
+    color = TreatmentGroup,
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x") +
+  theme(legend.position = "bottom") +
+  theme(panel.spacing.x = unit(6, "mm"))
+```
+
+> Then for the 3rd experiment (2×2 design), maybe set color to centrifuge and shape to vortex treatment, and make one plot where y = centrifuge and a second plot where y = vortex
+
+```{r}
+tidy_data |>
+  filter(Task == "UNKNOWN", CollectionDate == "2023-10-12") |>
+  ggplot(mapping = aes(
+    x = Cq,
+    y = as.factor(CFSpeed),
+    color = as.factor(VortexMin),
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x") +
+  theme(legend.position = "bottom") +
+  theme(panel.spacing.x = unit(6, "mm"))
+```
+
+```{r}
+tidy_data |>
+  filter(Task == "UNKNOWN", CollectionDate == "2023-10-12") |>
+  ggplot(mapping = aes(
+    x = Cq,
+    y = as.factor(VortexMin),
+    color = as.factor(CFSpeed),
+  )) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median,
+    position = position_dodge(width = 0.2),
+    size = 0.2
+  ) +
+  facet_wrap(facets = ~Target, scales = "free_x") +
+  theme(legend.position = "bottom") +
+  theme(panel.spacing.x = unit(6, "mm"))
+```

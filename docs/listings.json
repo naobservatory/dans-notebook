@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/notebooks/2023-10-16-combined_protocol_experiments.html",
       "/notebooks/2023-10-11-qpcr_standard_curvs.html",
       "/notebooks/2023-10-10-qpcr_analysis.html",
       "/notebooks/2023-10-05-qubit.html",
