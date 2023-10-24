@@ -242,7 +242,7 @@ tidy_data |>
   ggplot(mapping = aes(
     x = Cq,
     y = Dissocation,
-    group = Sample,
+    color = Sample,
   )) +
   stat_summary(
     fun.min = min,

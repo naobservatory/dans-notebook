@@ -632,7 +632,7 @@ $ `Qubit DNA`             &lt;chr&gt; NA, NA</code></pre>
 <span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> Well <span class="sc">==</span> <span class="dv">7</span>,</span>
 <span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> Well,</span>
 <span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>()<span class="co">#limits = c(1e-3, 1e1))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="co"># limits = c(1e-3, 1e1))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="2023-10-24-setled-solids-dissociation-test_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
@@ -675,18 +675,18 @@ $ `Qubit DNA`             &lt;chr&gt; NA, NA</code></pre>
 <p>Using <code>ggh4x</code> to fix the scales to have the same spacing. Currently doing manually, but should automate.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>scales <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>               <span class="fu">scale_x_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">21</span>,<span class="dv">24</span>)),</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>               <span class="fu">scale_x_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">32</span>,<span class="dv">35</span>)),</span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>               <span class="fu">scale_x_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">21</span>,<span class="dv">24</span>)),</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>               <span class="fu">scale_x_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">27</span>,<span class="dv">30</span>)),</span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>               <span class="fu">scale_x_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">22</span>,<span class="dv">25</span>))</span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>               )</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">21</span>, <span class="dv">24</span>)),</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">32</span>, <span class="dv">35</span>)),</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">21</span>, <span class="dv">24</span>)),</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">27</span>, <span class="dv">30</span>)),</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">22</span>, <span class="dv">25</span>))</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>tidy_data <span class="sc">|&gt;</span></span>
 <span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Task <span class="sc">==</span> <span class="st">"UNKNOWN"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
 <span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> Cq,</span>
 <span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> Dissocation,</span>
-<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> Sample,</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> Sample,</span>
 <span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
 <span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(</span>
 <span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">fun.min =</span> min,</span>
