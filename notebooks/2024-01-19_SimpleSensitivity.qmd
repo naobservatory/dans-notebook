@@ -1,0 +1,389 @@
+---
+title: "Detection sensitivity to read count noise"
+author: "Dan Rice"
+date: 2024-01-19
+format:
+  html:
+    code-fold: false
+    toc: true
+jupyter: python3
+filters:
+    - black-formatter
+---
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+from scipy.special import digamma
+```
+
+## Background
+
+See [all-hands memo](https://docs.google.com/document/d/106n3cdhe6rYnIVl3hWHaWcy2Kh2W2i-AOSvr1btBupg/edit#heading=h.31ehajnqsoh5).
+
+## Theory
+
+### Read count model
+
+Poisson counting noise mixed with a latent distribution.
+For viral read counts $C$ and total per-sample read count $n$:
+
+$C \sim Poisson(n X)$,
+
+where $X$ follows a latent distribution (specified below).
+This latent distribution should increase in expectation with the prevalence and also capture non-Poisson noise.
+
+We can show that the coefficient of variation obeys:
+
+$CV[C]^2 = \frac{1}{n E[X]} + CV[X]$.
+
+That is, once we expect to see more than one read, the CV of the latent distribution will start to dominate the variation in counts.
+
+### Properties of latent distributions
+
+We need to specify and parameterize the latent distribution.
+Each distribution will have its own usual parameters, but we want to put them on common footing.
+This means specifying:
+
+1. A central value (mean, median, etc)
+2. A measure of spread (stdev, etc).
+
+For spread, we will use the coefficient of variation.
+Caveat: it's not clear that this should be constant as the the mean grows.
+Need to think about this mechanistically.
+
+For central value, we'll try specifying two different ways:
+
+1. Arithmetic mean = prevalence X P2RA factor
+1. Geometric mean = prevalence X P2RA factor
+
+The former is more natural for the gamma distribution, the latter for the lognormal, but we'll try each both ways for comparison.
+
+#### Gamma distribution
+
+- MaxEnt distribution fixing $E[X]$ and $E[\log X]$
+- Usually specified by shape parameter $k$ and scale parameter $\theta$
+- $AM = E[X] = k\theta$
+- $GM = \exp E[\log X] = e^{\psi(k)} \theta$, where $\psi$ is the digamma function.
+- $Var[X] = k \theta^2$
+- $CV[X]^2 = 1/k$
+- $AM / GM = k e^{-\psi(k)} \sim k e^{1/k}, k \to 0$. This is exponentially big in $CV^2$.
+- On linear scale, density has an interior mode when $k > 1$, a mode at zero when $k = 1$ and a power-law sigularity at zero when $k < 1$.
+- On a log scale, the density of $Y = \log X$ is: $f(y) \propto \exp[ky - e^y / \theta]$. Has a peak at $\hat{y} = \log \theta k$, slow decay to the left, fast decay to the right.
+
+#### Log-normal distribution
+
+- MaxEnt distrib fixing geometric mean and variance
+- Specified by mean and variance of $\log X$
+- $AM = e^{\mu + \sigma^2 / 2}$
+- $GM = e^{\mu}$
+- $Var[X] = [\exp(\sigma^2) - 1] \exp(2 \mu + \sigma^2)$
+- $CV[X]^2 = e^{\sigma^2} - 1$
+- $AM / GM = e^{\sigma^2 / 2}$, linear in CV for large CV.
+
+
+Both distributions have $AM > GM$. But it grows much faster with CV for Gamma.
+
+## Parameters
+
+```{python}
+sampling_period = 7
+daily_depth = 1e8
+sampling_depth = sampling_period * daily_depth
+
+doubling_time = 7
+growth_rate = np.log(2) / doubling_time
+
+# Boston metro area
+population_size = 5e6
+
+# P2RA factor (roughly covid in Rothman)
+# normalize by the fact that we estimate per 1% incidence/prevalence there
+p2ra = 1e-7 / 1e-2
+```
+
+```{python}
+max_prevalence = 0.2
+max_time = np.ceil(np.log(population_size * max_prevalence) / growth_rate)
+
+time = np.arange(0, int(max_time) + sampling_period, sampling_period)
+prevalence = np.exp(growth_rate * time) / population_size
+
+rng = np.random.default_rng(seed=10343)
+```
+
+## Simulation
+
+### Threshold detection
+
+```{python}
+def get_detection_times(time, counts, threshold: float):
+    indices = np.argmax(np.cumsum(counts, axis=1) >= threshold, axis=1)
+    # FIXME: if never detected, indices will be 0, replace with -1 so that we get the largest time
+    # indices[indices == 0] = -1
+    return time[indices]
+```
+
+### Parameterization
+
+```{python}
+def params_lognormal(mean, cv, mean_type):
+    sigma_2 = np.log(1 + cv**2)
+    if mean_type == "geom":
+        mu = np.log(mean)
+    elif mean_type == "arith":
+        mu = np.log(mean) - sigma_2 / 2
+    else:
+        raise ValueError("mean_type must be geom|arith")
+    return mu, np.sqrt(sigma_2)
+
+
+def params_gamma(mean, cv, mean_type):
+    shape = cv ** (-2)
+    if mean_type == "geom":
+        scale = mean * np.exp(-digamma(shape))
+    elif mean_type == "arith":
+        scale = mean / shape
+    else:
+        raise ValueError("mean_type must be geom|arith")
+    return shape, scale
+```
+
+### Count simulation
+
+```{python}
+def simulate_latent(
+    mean,
+    cv: float, # coefficient of variation
+    mean_type: str, # geom | arith
+    distribution: str, # gamma | lognormal
+    num_reps: int = 1,
+    rng: np.random.Generator = np.random.default_rng(), # CHECK
+):
+    size = (num_reps, len(mean))
+    if distribution == "gamma":
+        shape, scale = params_gamma(mean, cv, mean_type)
+        return rng.gamma(shape, scale, size)
+    elif distribution == "lognormal":
+        mu, sigma = params_lognormal(mean, cv, mean_type)
+        return rng.lognormal(mu, sigma, size)
+    else:
+        raise ValueError("distribution must be gamma|lognormal")
+
+
+def simulate_counts(
+    prevalence,
+    p2ra: float,
+    sampling_depth: float,
+    cv: float, # coefficient of variation
+    mean_type: str, # geom | arith
+    latent_dist: str, # gamma | lognormal
+    num_reps: int = 1,
+    rng: np.random.Generator = np.random.default_rng(), # CHECK
+):
+    relative_abundance = p2ra * prevalence
+    lamb = simulate_latent(relative_abundance, cv, mean_type, latent_dist, num_reps, rng)
+    counts = rng.poisson(sampling_depth * lamb)
+    return counts
+```
+
+### Test latent params
+
+```{python}
+t = np.arange(100)
+mean = 0.01 * np.exp(t / 7)
+cvs = [0.5, 1.0, 2, 4]
+num_reps = 1000
+
+for cv in cvs:
+    latent = simulate_latent(mean, cv, "arith", "gamma", num_reps, rng)
+    plt.semilogy(t, np.mean(latent, axis=0))
+    plt.semilogy(t, np.std(latent, axis=0))
+    plt.semilogy(t, mean, "--k")
+    plt.semilogy(t, mean * cv, ":k")
+    plt.title(f"CV = {cv}")
+    plt.show()
+
+for cv in cvs:
+    latent = simulate_latent(mean, cv, "arith", "lognormal", num_reps, rng)
+    plt.semilogy(t, np.mean(latent, axis=0))
+    plt.semilogy(t, np.std(latent, axis=0))
+    plt.semilogy(t, mean, "--k")
+    plt.semilogy(t, mean * cv, ":k")
+    plt.title(f"CV = {cv}")
+    plt.show()
+
+for cv in cvs:
+    latent = simulate_latent(mean, cv, "geom", "gamma", num_reps, rng)
+    plt.semilogy(t, np.exp(np.mean(np.log(latent), axis=0)))
+    plt.semilogy(t, np.std(latent, axis=0))
+    plt.semilogy(t, np.mean(latent, axis=0))
+    print(np.std(latent, axis=0) / np.mean(latent, axis=0))
+    plt.semilogy(t, mean, "--k")
+    plt.title(f"CV = {cv}")
+    plt.show()
+
+for cv in cvs:
+    latent = simulate_latent(mean, cv, "geom", "lognormal", num_reps, rng)
+    plt.semilogy(t, np.exp(np.mean(np.log(latent), axis=0)))
+    plt.semilogy(t, np.std(latent, axis=0))
+    plt.semilogy(t, np.mean(latent, axis=0))
+    plt.semilogy(t, mean, "--k")
+    plt.title(f"CV = {cv}")
+    plt.show()
+```
+
+## Results
+
+### Counts
+
+```{python}
+num_reps = 1000
+cvs = [0.25, 0.5, 1.0, 2, 4]
+
+counts_ga = [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type="arith", latent_dist="gamma", num_reps=num_reps, rng=rng) for cv in cvs]
+counts_la = [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type="arith", latent_dist="lognormal", num_reps=num_reps, rng=rng) for cv in cvs]
+counts_gg = [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type="geom", latent_dist="gamma", num_reps=num_reps, rng=rng) for cv in cvs]
+counts_lg = [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type="geom", latent_dist="lognormal", num_reps=num_reps, rng=rng) for cv in cvs]
+```
+
+#### Arithmetic mean
+
+```{python}
+to_plot = 100
+plt.figure(figsize=(8,4))
+for i, cv in enumerate(cvs):
+    ax = plt.subplot(2, len(cvs), i + 1)
+    ax.semilogy(time, counts_ga[i][:to_plot].T, '.', color = "C0", alpha = 0.1)
+    ax.semilogy(time, sampling_depth * p2ra * prevalence, "k--")
+    ax.set_title(r"$CV = $" + f"{cv}")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Count")
+    else:
+        ax.set_yticklabels([])
+    ax = plt.subplot(2, len(cvs), len(cvs) + i + 1)
+    ax.semilogy(time, counts_la[i][:to_plot].T, '.', color = "C0", alpha = 0.1)
+    ax.semilogy(time, sampling_depth * p2ra * prevalence, "k--")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Count")
+    else:
+        ax.set_yticklabels([])
+    ax.set_xlabel("Day")
+plt.show()
+```
+
+#### Geometric mean
+
+```{python}
+plt.figure(figsize=(8,4))
+for i, cv in enumerate(cvs):
+    ax = plt.subplot(2, len(cvs), i + 1)
+    ax.semilogy(time, counts_gg[i][:to_plot].T, '.', color = "C0", alpha = 0.1)
+    ax.semilogy(time, sampling_depth * p2ra * prevalence, "k--")
+    ax.set_title(r"$CV = $" + f"{cv}")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Count")
+    else:
+        ax.set_yticklabels([])
+    ax = plt.subplot(2, len(cvs), len(cvs) + i + 1)
+    ax.semilogy(time, counts_lg[i][:to_plot].T, '.', color = "C0", alpha = 0.1)
+    ax.semilogy(time, sampling_depth * p2ra * prevalence, "k--")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Count")
+    else:
+        ax.set_yticklabels([])
+    ax.set_xlabel("Day")
+plt.show()
+```
+
+### Cumulative counts
+
+```{python}
+plt.figure(figsize=(8,8))
+for i, cv in enumerate(cvs):
+    ax = plt.subplot(4, len(cvs), i + 1)
+    ax.semilogy(time, np.cumsum(counts_ga[i][:to_plot], axis=1).T, '-', color = "C0", alpha = 0.1)
+    ax.semilogy(time, np.cumsum(sampling_depth * p2ra * prevalence), "k--")
+    ax.set_title(r"$CV = $" + f"{cv}")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Cumulative count")
+        ax.text(0, 1e4, "Arithmetic\nGamma")
+    else:
+        ax.set_yticklabels([])
+    ax = plt.subplot(4, len(cvs), len(cvs) + i + 1)
+    ax.semilogy(time, np.cumsum(counts_la[i][:to_plot], axis=1).T, '-', color = "C1", alpha = 0.1)
+    ax.semilogy(time, np.cumsum(sampling_depth * p2ra * prevalence), "k--")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Cumulative count")
+        ax.text(0, 1e4, "Arithmetic\nLognormal")
+    else:
+        ax.set_yticklabels([])
+
+    ax = plt.subplot(4, len(cvs), 2 * len(cvs) + i + 1)
+    ax.semilogy(time, np.cumsum(counts_gg[i][:to_plot], axis=1).T, '-', color = "C0", alpha = 0.1)
+    ax.semilogy(time, np.cumsum(sampling_depth * p2ra * prevalence), "k--")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Cumulative count")
+        ax.text(0, 1e4, "Geometric\nGamma")
+    else:
+        ax.set_yticklabels([])
+    ax = plt.subplot(4, len(cvs), 3 * len(cvs) + i + 1)
+    ax.semilogy(time, np.cumsum(counts_lg[i][:to_plot], axis=1).T, '-', color = "C1", alpha = 0.1)
+    ax.semilogy(time, np.cumsum(sampling_depth * p2ra * prevalence), "k--")
+    ax.set_ylim([1, 1e5])
+    if i == 0:
+        ax.set_ylabel("Cumulative count")
+        ax.text(0, 1e4, "Geometric\nLognormal")
+    else:
+        ax.set_yticklabels([])
+    ax.set_xlabel("Day")
+plt.show()
+```
+
+### Detection times
+
+```{python}
+thresholds = [2, 100]
+detection_times_ga = [[get_detection_times(time, counts, threshold) for counts in counts_ga] for threshold in thresholds]
+detection_times_la = [[get_detection_times(time, counts, threshold) for counts in counts_la] for threshold in thresholds]
+detection_times_gg = [[get_detection_times(time, counts, threshold) for counts in counts_gg] for threshold in thresholds]
+detection_times_lg = [[get_detection_times(time, counts, threshold) for counts in counts_lg] for threshold in thresholds]
+```
+
+```{python}
+q = 0.9
+
+ax = plt.subplot(111)
+
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_ga[0]], 'o-', color="C0")
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_la[0]], 'o-', color="C1")
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_gg[0]], 'o:', color="C0")
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_lg[0]], 'o:', color="C1")
+
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_ga[1]], 's-', color="C0", label="Gamma-Arith")
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_la[1]], 's-', color="C1", label="LN-Arith")
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_gg[1]], 's:', color="C0", label="Gamma-Geom")
+plt.semilogx(cvs, [np.quantile(dt, q) for dt in detection_times_lg[1]], 's:', color="C1", label="LN-Geom")
+
+ax.set_ylabel("Detection day (90th percentile)")
+ax.set_xscale('log', base=2)
+ax.set_xlabel("Coefficient of variation")
+plt.legend(
+    handles = [
+        mlines.Line2D([], [], color="C0", marker="o", label="Gamma"),
+        mlines.Line2D([], [], color="C1", marker="o", label="Lognormal"),
+        mlines.Line2D([], [], color="0.5", linestyle="-", label="Arithmetic mean"),
+        mlines.Line2D([], [], color="0.5", linestyle=":", label="Geometric mean"),
+        mlines.Line2D([], [], color="0.5", marker="s", label="Threshold = 100"),
+        mlines.Line2D([], [], color="0.5", marker="o", label="Threshold = 2"),
+    ]
+)
+```
