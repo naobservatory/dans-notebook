@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dan Rice">
+<meta name="dcterms.date" content="2024-02-02">
+
+<title>NAO Cost Estimate MVP</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand navbar-dark ">
+      <div class="navbar-container container-fluid">
+          <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+</ul>
+          <div class="quarto-navbar-tools ms-auto">
+</div>
+            <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
+  <li><a href="#epidemic-model" id="toc-epidemic-model" class="nav-link" data-scroll-target="#epidemic-model">Epidemic model</a>
+  <ul class="collapse">
+  <li><a href="#prevalence-and-incidence" id="toc-prevalence-and-incidence" class="nav-link" data-scroll-target="#prevalence-and-incidence">Prevalence and incidence</a></li>
+  <li><a href="#cumulative-incidence" id="toc-cumulative-incidence" class="nav-link" data-scroll-target="#cumulative-incidence">Cumulative incidence</a></li>
+  <li><a href="#domain-of-validity" id="toc-domain-of-validity" class="nav-link" data-scroll-target="#domain-of-validity">Domain of validity</a></li>
+  </ul></li>
+  <li><a href="#counts-and-detection" id="toc-counts-and-detection" class="nav-link" data-scroll-target="#counts-and-detection">Counts and detection</a>
+  <ul class="collapse">
+  <li><a href="#continuous-sampling" id="toc-continuous-sampling" class="nav-link" data-scroll-target="#continuous-sampling">Continuous sampling</a></li>
+  <li><a href="#grab-sampling" id="toc-grab-sampling" class="nav-link" data-scroll-target="#grab-sampling">Grab sampling</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">NAO Cost Estimate MVP</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dan Rice </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 2, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>See <a href="https://docs.google.com/document/d/1YAy4Dnvk7H5J7jOt7iCeBYqE6z3TdgHSr3jetimlJHo/edit">Google Doc</a> for background. See also <a href="https://docs.google.com/document/d/1aHboNUDrXWAmTmZGg9Ne8dyTUdEpsluafB48DJp1UN4/edit#heading=h.vijzo0j6vjkg">Simple detection cost model</a> for P2RA version.</p>
+</section>
+<section id="epidemic-model" class="level2">
+<h2 class="anchored" data-anchor-id="epidemic-model">Epidemic model</h2>
+<section id="prevalence-and-incidence" class="level3">
+<h3 class="anchored" data-anchor-id="prevalence-and-incidence">Prevalence and incidence</h3>
+<p>Consider a population of <span class="math inline">\(N\)</span> individuals. We focus on the phase of the epidemic when it is growing exponentially. This will be approximately true at an intermediate time when the virus is common enough that we can neglect noise in reproduction, but rare enough that it is not running out of susceptible people to infect. Let the rate of new infections per interaction per unit time to be <span class="math inline">\(\alpha\)</span> and the rate of recovery of an infected person to be <span class="math inline">\(\beta\)</span>. Then, we have the following ODE for the prevalence <span class="math inline">\(P(t)\)</span>:</p>
+<p><span class="math display">\[
+\frac{dP}{dt} \approx \alpha N P - \beta P.
+\]</span></p>
+<p>The first term on the right-hand side is the incidence per unit time: <span class="math inline">\(I \approx \alpha N P\)</span>. (Note that we are assuming that the number of susceptible people is approximately <span class="math inline">\(N\)</span>, which will cease to be true as the virus becomes common.)</p>
+<p>Solving this equation and choosing <span class="math inline">\(t = 0\)</span> to be the time when one person is infected gives: <span class="math display">\[
+\begin{align}
+P(t) &amp; = e^{(\alpha N - \beta) t} \\
+     &amp; = e^{rt} \\
+I(t) &amp; = \alpha N e^{rt} \\
+     &amp; = (r + \beta) e^{rt},
+\end{align}
+\]</span> where we have defined the exponential growth rate <span class="math inline">\(r \equiv \alpha N - \beta\)</span>.</p>
+</section>
+<section id="cumulative-incidence" class="level3">
+<h3 class="anchored" data-anchor-id="cumulative-incidence">Cumulative incidence</h3>
+<p>As a yardstick for measuring the progress of the epidemic, we are interested in the <em>cumulative</em> incidence, <span class="math inline">\(C(t)\)</span>, the number of people who have ever been infected. Integrating <span class="math inline">\(I(t)\)</span> with the initial condition <span class="math inline">\(C(0) = 1\)</span> to account for the single individual infected at <span class="math inline">\(t = 0\)</span>, we have: <span class="math display">\[
+\begin{align}
+C(t) &amp; = 1 + \int_0^t I(t') dt' \\
+     &amp; = 1 + \frac{r + \beta}{r} (e^{rt} - 1).
+\end{align}
+\]</span> Note that when sick individuals never recover (<span class="math inline">\(\beta = 0\)</span>), <span class="math inline">\(C(t) = P(t)\)</span>, as expected.</p>
+<p>A useful feature of the exponential growth regime is that all of our quantities of interest grow exponentially at the same rate and are thus in proportion to one another: <span class="math display">\[
+\begin{align}
+I(t) &amp; = (r + \beta) P(t) \\
+C(t) &amp; \sim \frac{r + \beta}{r} P(t), \text{as } t \to \infty.
+\end{align}
+\]</span></p>
+<p>Rearranging, we see that the fraction of cumulative incidence that are currently infected is controled by the ratio of growth rate to recovery rate: <span class="math display">\[
+\frac{P(t)}{C(t)} \sim \frac{r}{r + \beta}.
+\]</span> This ranges from zero when the epidemic grows slowly and individuals recover quickly, to one wher the epidemic grows much faster than recovery. For a virus like SARS-CoV-2, where both doubling and recovery times were on the order of a week, we expect on the order of half of the cumulative infections to be currently sick during the exponetial phase.</p>
+</section>
+<section id="domain-of-validity" class="level3">
+<h3 class="anchored" data-anchor-id="domain-of-validity">Domain of validity</h3>
+<p>As described above, the approximation of deterministic exponential growth is valid when the number of infected individuals is large enough that the growth is roughly deteriminstic but small enough that most of the population is still susceptible. Here we’ll approximate those bounds.</p>
+<section id="deterministic-growth" class="level4">
+<h4 class="anchored" data-anchor-id="deterministic-growth">Deterministic growth</h4>
+<p>A simple stochastic model of the start of an epidemic is that infections and recoveries in a small increment of time <span class="math inline">\(dt\)</span> are independent of one another, that is: <span class="math display">\[
+\begin{align}
+\text{\# Births} &amp; \sim \text{Poisson}(\alpha N P dt) \\
+\text{\# Deaths} &amp; \sim \text{Poisson}(\beta P dt).
+\end{align}
+\]</span> This implies that the change in prevalence, <span class="math inline">\(dP = (\text{\# Births}) - (\text{\# Deaths})\)</span>, during <span class="math inline">\([t, t+dt)\)</span> has mean and variance: <span class="math display">\[
+\begin{align}
+\mathbb{E}(dP) &amp; = (\alpha N - \beta) P dt \\
+               &amp; = r P dt \\
+\mathbb{V}(dP) &amp; = (\alpha N + \beta) P dt \\
+               &amp; = (r + 2 \beta) P dt.
+\end{align}
+\]</span></p>
+<p>A deterministic approximation is good when the coefficient of variation of <span class="math inline">\(dP\)</span> is much smaller than one, that is: <span class="math display">\[
+\begin{align}
+\frac{\sqrt{\mathbb{V}(dP)}}{\mathbb{E}(dP)} &amp; \ll 1 \\
+\frac{\sqrt{(r + 2 \beta) P dt}}{r P dt} &amp; \ll 1 \\.
+\end{align}
+\]</span> Some algebra gives the condition that the prevalence is larger than a critical value: <span class="math display">\[
+P \gg \frac{r + 2 \beta}{r^2 dt}.
+\]</span> It remains to choose a suitable increment of time. We expect the prevalence to change significantly (<span class="math inline">\(\mathbb{E}(\frac{dP}{P}) = 1\)</span>) on the timescale <span class="math inline">\(r^{-1}\)</span> so <span class="math inline">\(dt = r^{-1}\)</span> is a reasonable choice as long as <span class="math inline">\(r \gtrsim \beta\)</span>. This gives the condition <span class="math display">\[
+P \gg \frac{r + 2 \beta}{r} = 1 + 2 \beta / r.
+\]</span> When this condition is met, we expect the epidemic to grow approximately deterministically at rate <span class="math inline">\(r\)</span>.</p>
+<p>Note that this condition is violated at <span class="math inline">\(t = 0\)</span>. We must thus reinterpret <span class="math inline">\(t = 0\)</span> as the <em>effective</em> time that the epidemic would have infected a single person if our derterministic approximation for <span class="math inline">\(P \gg 1 + 2\beta/r\)</span> were extended backwards in time. [TODO: estimate the error in cumulative infections introduced by making this approximation.]</p>
+</section>
+<section id="exponential-growth" class="level4">
+<h4 class="anchored" data-anchor-id="exponential-growth">Exponential growth</h4>
+<p>As the virus spreads, the number of susceptible people declines, reducing the rate of spread and resulting in sub-exponential growth. Let the number of susceptible people be <span class="math inline">\(S(t)\)</span>, then the incidence per time is: <span class="math display">\[
+I(t) = \alpha S(t) P(t).
+\]</span> Above, we assumed that <span class="math inline">\(S(t) = N\)</span>. <span class="math inline">\(I(t)\)</span> will thus be reduced by half by the time <span class="math inline">\(S(t) = N / 2\)</span>. This is a convenient upper bound on the domain of validity.</p>
+<p>Assuming that anyone previously infected is no longer susceptible, we have: <span class="math display">\[
+\begin{align}
+S(t) &amp; \gg N / 2 \\
+N - C(t) &amp; \gg N / 2 \\
+C(t) &amp; \ll N / 2.
+\end{align}
+\]</span></p>
+<p>Using <span class="math inline">\(C = \frac{r + \beta}{r} P\)</span> in the exponential regime, we can put this together with our lower bound of the deterministic approximation to get the region of validity: <span class="math display">\[
+1 + 2\beta / r \ll P \ll \frac{N}{2 (1 + \beta / r)}.
+\]</span> This shows that as long as the population is large (<span class="math inline">\(N \gg 1\)</span>), and the growth rate is not too slow compared to the recovery rate (<span class="math inline">\(r \gtrsim \beta\)</span>), there will be a wide regime of approximately deterministic exponential growth.</p>
+</section>
+</section>
+</section>
+<section id="counts-and-detection" class="level2">
+<h2 class="anchored" data-anchor-id="counts-and-detection">Counts and detection</h2>
+<ul>
+<li>Sample at times <span class="math inline">\(\{t_0, t_1, \ldots\}\)</span>.</li>
+<li>Sequence <span class="math inline">\(n_i\)</span> reads in sample taken at <span class="math inline">\(t_i\)</span>.</li>
+<li>Deterministic relative abundance: <span class="math inline">\(a_i = b p(t_i)\)</span>, where <span class="math inline">\(b\)</span> is a fixed conversion factor between prevalence and relative abundance.</li>
+<li>Deterministic viral read counts: <span class="math inline">\(k_i = n_i a_i\)</span></li>
+<li>Cumulative count: <span class="math inline">\(K_i = \sum_{j=0}^i k_j\)</span></li>
+<li>Detection when cumulative counts exceed a threshold <span class="math inline">\(K_i &gt; \hat{K}\)</span></li>
+</ul>
+<section id="continuous-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="continuous-sampling">Continuous sampling</h3>
+<ul>
+<li>Connection to P2RA report calculation.</li>
+<li>What to do about <span class="math inline">\(t_0\)</span></li>
+</ul>
+</section>
+<section id="grab-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="grab-sampling">Grab sampling</h3>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -344,7 +344,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    rng: np.random.Generator <span class="op">=</span> np.random.default_rng(), <span class="co"># CHECK</span></span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>):</span>
 <span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    relative_abundance <span class="op">=</span> p2ra <span class="op">*</span> prevalence</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    lamb <span class="op">=</span> simulate_latent(relative_abundance, cv, mean_type, latent_dist, num_reps, rng)    </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    lamb <span class="op">=</span> simulate_latent(relative_abundance, cv, mean_type, latent_dist, num_reps, rng)</span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    counts <span class="op">=</span> rng.poisson(sampling_depth <span class="op">*</span> lamb)</span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -674,8 +674,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Threshold = 2"</span>),</span>
 <span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    ]</span>
 <span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="26">
-<pre><code>&lt;matplotlib.legend.Legend at 0x13cd2c310&gt;</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>&lt;matplotlib.legend.Legend at 0x12fc79950&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-14-output-2.png" width="593" height="431"></p>

@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/notebooks/2024-02-02_CostEstimateMVP.html",
       "/notebooks/2024-01-19_SimpleSensitivity.html",
       "/notebooks/2023-10-24-setled-solids-dissociation-test.html",
       "/notebooks/2023-10-16-combined_protocol_experiments.html",

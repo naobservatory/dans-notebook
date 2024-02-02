@@ -1,0 +1,163 @@
+---
+title: "NAO Cost Estimate MVP"
+author: "Dan Rice"
+date: 2024-02-02
+format:
+  html:
+    code-fold: false
+    toc: true
+jupyter: python3
+---
+
+## Background
+
+See [Google Doc](https://docs.google.com/document/d/1YAy4Dnvk7H5J7jOt7iCeBYqE6z3TdgHSr3jetimlJHo/edit)
+for background.
+See also [Simple detection cost model](https://docs.google.com/document/d/1aHboNUDrXWAmTmZGg9Ne8dyTUdEpsluafB48DJp1UN4/edit#heading=h.vijzo0j6vjkg) for P2RA version.
+
+## Epidemic model
+
+### Prevalence and incidence
+
+Consider a population of $N$ individuals.
+We focus on the phase of the epidemic when it is growing exponentially.
+This will be approximately true at an intermediate time when the virus is common enough
+that we can neglect noise in reproduction, but rare enough that it is not running out of
+susceptible people to infect.
+Let the rate of new infections per interaction per unit time to be $\alpha$ and the rate of recovery of an infected person to be $\beta$.
+Then, we have the following ODE for the prevalence $P(t)$:
+
+$$
+\frac{dP}{dt} \approx \alpha N P - \beta P.
+$$
+
+The first term on the right-hand side is the incidence per unit time: $I \approx \alpha N P$.
+(Note that we are assuming that the number of susceptible people is approximately $N$, which will
+cease to be true as the virus becomes common.)
+
+Solving this equation and choosing $t = 0$ to be the time when one person is infected gives:
+$$
+\begin{align}
+P(t) & = e^{(\alpha N - \beta) t} \\
+     & = e^{rt} \\
+I(t) & = \alpha N e^{rt} \\
+     & = (r + \beta) e^{rt},
+\end{align}
+$$
+where we have defined the exponential growth rate $r \equiv \alpha N - \beta$.
+
+### Cumulative incidence
+
+As a yardstick for measuring the progress of the epidemic, we are interested in the *cumulative* incidence, $C(t)$, the number of people who have ever been infected.
+Integrating $I(t)$ with the initial condition $C(0) = 1$ to account for the single individual infected at $t = 0$, we have:
+$$
+\begin{align}
+C(t) & = 1 + \int_0^t I(t') dt' \\
+     & = 1 + \frac{r + \beta}{r} (e^{rt} - 1).
+\end{align}
+$$
+Note that when sick individuals never recover ($\beta = 0$), $C(t) = P(t)$, as expected.
+
+A useful feature of the exponential growth regime is that all of our quantities of interest grow exponentially at the same rate and are thus in proportion to one another:
+$$
+\begin{align}
+I(t) & = (r + \beta) P(t) \\
+C(t) & \sim \frac{r + \beta}{r} P(t), \text{as } t \to \infty.
+\end{align}
+$$
+
+Rearranging, we see that the fraction of cumulative incidence that are currently infected is controled by the ratio of growth rate to recovery rate:
+$$
+\frac{P(t)}{C(t)} \sim \frac{r}{r + \beta}.
+$$
+This ranges from zero when the epidemic grows slowly and individuals recover quickly, to one wher the epidemic grows much faster than recovery.
+For a virus like SARS-CoV-2, where both doubling and recovery times were on the order of a week, we expect on the order of half of the cumulative infections to be currently sick during the exponetial phase.
+
+### Domain of validity
+
+As described above, the approximation of deterministic exponential growth is valid when the number of infected individuals is large enough that the growth is roughly deteriminstic but small enough that most of the population is still susceptible.
+Here we'll approximate those bounds.
+
+#### Deterministic growth
+
+A simple stochastic model of the start of an epidemic is that infections and recoveries in a small increment of time $dt$ are independent of one another, that is:
+$$
+\begin{align}
+\text{\# Births} & \sim \text{Poisson}(\alpha N P dt) \\
+\text{\# Deaths} & \sim \text{Poisson}(\beta P dt).
+\end{align}
+$$
+This implies that the change in prevalence, $dP = (\text{\# Births}) - (\text{\# Deaths})$, during $[t, t+dt)$ has mean and variance:
+$$
+\begin{align}
+\mathbb{E}(dP) & = (\alpha N - \beta) P dt \\
+               & = r P dt \\
+\mathbb{V}(dP) & = (\alpha N + \beta) P dt \\
+               & = (r + 2 \beta) P dt.
+\end{align}
+$$
+
+A deterministic approximation is good when the coefficient of variation of $dP$ is much smaller than one, that is:
+$$
+\begin{align}
+\frac{\sqrt{\mathbb{V}(dP)}}{\mathbb{E}(dP)} & \ll 1 \\
+\frac{\sqrt{(r + 2 \beta) P dt}}{r P dt} & \ll 1 \\.
+\end{align}
+$$
+Some algebra gives the condition that the prevalence is larger than a critical value:
+$$
+P \gg \frac{r + 2 \beta}{r^2 dt}.
+$$
+It remains to choose a suitable increment of time.
+We expect the prevalence to change significantly ($\mathbb{E}(\frac{dP}{P}) = 1$) on the timescale $r^{-1}$ so $dt = r^{-1}$ is a reasonable choice as long as $r \gtrsim \beta$.
+This gives the condition
+$$
+P \gg \frac{r + 2 \beta}{r} = 1 + 2 \beta / r.
+$$
+When this condition is met, we expect the epidemic to grow approximately deterministically at rate $r$.
+
+Note that this condition is violated at $t = 0$.
+We must thus reinterpret $t = 0$ as the *effective* time that the epidemic would have infected a single person if our derterministic approximation for $P \gg 1 + 2\beta/r$ were extended backwards in time.
+[TODO: estimate the error in cumulative infections introduced by making this approximation.]
+
+#### Exponential growth
+
+As the virus spreads, the number of susceptible people declines, reducing the rate of spread and resulting in sub-exponential growth.
+Let the number of susceptible people be $S(t)$, then the incidence per time is:
+$$
+I(t) = \alpha S(t) P(t).
+$$
+Above, we assumed that $S(t) = N$.
+$I(t)$ will thus be reduced by half by the time $S(t) = N / 2$.
+This is a convenient upper bound on the domain of validity.
+
+Assuming that anyone previously infected is no longer susceptible, we have:
+$$
+\begin{align}
+S(t) & \gg N / 2 \\
+N - C(t) & \gg N / 2 \\
+C(t) & \ll N / 2.
+\end{align}
+$$
+
+Using $C = \frac{r + \beta}{r} P$ in the exponential regime, we can put this together with our lower bound of the deterministic approximation to get the region of validity:
+$$
+1 + 2\beta / r \ll P \ll \frac{N}{2 (1 + \beta / r)}.
+$$
+This shows that as long as the population is large ($N \gg 1$), and the growth rate is not too slow compared to the recovery rate ($r \gtrsim \beta$), there will be a wide regime of approximately deterministic exponential growth.
+
+## Counts and detection
+
+- Sample at times $\{t_0, t_1, \ldots\}$.
+- Sequence $n_i$ reads in sample taken at $t_i$.
+- Deterministic relative abundance: $a_i = b p(t_i)$, where $b$ is a fixed conversion factor between prevalence and relative abundance.
+- Deterministic viral read counts: $k_i = n_i a_i$
+- Cumulative count: $K_i = \sum_{j=0}^i k_j$
+- Detection when cumulative counts exceed a threshold $K_i > \hat{K}$
+
+### Continuous sampling
+
+- Connection to P2RA report calculation.
+- What to do about $t_0$
+
+### Grab sampling
