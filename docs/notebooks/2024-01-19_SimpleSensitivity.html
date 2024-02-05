@@ -244,178 +244,184 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><span class="math inline">\(AM / GM = e^{\sigma^2 / 2}\)</span>, linear in CV for large CV.</li>
 </ul>
 <p>Both distributions have <span class="math inline">\(AM &gt; GM\)</span>. But it grows much faster with CV for Gamma.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="dv">1</span> <span class="op">*</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 </section>
 </section>
 <section id="parameters" class="level2">
 <h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
-<div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sampling_period <span class="op">=</span> <span class="dv">7</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>daily_depth <span class="op">=</span> <span class="fl">1e8</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>sampling_depth <span class="op">=</span> sampling_period <span class="op">*</span> daily_depth</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>doubling_time <span class="op">=</span> <span class="dv">7</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>growth_rate <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> doubling_time</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Boston metro area</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>population_size <span class="op">=</span> <span class="fl">5e6</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># P2RA factor (roughly covid in Rothman)</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># normalize by the fact that we estimate per 1% incidence/prevalence there</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>p2ra <span class="op">=</span> <span class="fl">1e-7</span> <span class="op">/</span> <span class="fl">1e-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>max_prevalence <span class="op">=</span> <span class="fl">0.2</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>max_time <span class="op">=</span> np.ceil(np.log(population_size <span class="op">*</span> max_prevalence) <span class="op">/</span> growth_rate)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>time <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="bu">int</span>(max_time) <span class="op">+</span> sampling_period, sampling_period)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>prevalence <span class="op">=</span> np.exp(growth_rate <span class="op">*</span> time) <span class="op">/</span> population_size</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(seed<span class="op">=</span><span class="dv">10343</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>sampling_period <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>daily_depth <span class="op">=</span> <span class="fl">1e8</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sampling_depth <span class="op">=</span> sampling_period <span class="op">*</span> daily_depth</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>doubling_time <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>growth_rate <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> doubling_time</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Boston metro area</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>population_size <span class="op">=</span> <span class="fl">5e6</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># P2RA factor (roughly covid in Rothman)</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># normalize by the fact that we estimate per 1% incidence/prevalence there</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>p2ra <span class="op">=</span> <span class="fl">1e-7</span> <span class="op">/</span> <span class="fl">1e-2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>max_prevalence <span class="op">=</span> <span class="fl">0.2</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>max_time <span class="op">=</span> np.ceil(np.log(population_size <span class="op">*</span> max_prevalence) <span class="op">/</span> growth_rate)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>time <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="bu">int</span>(max_time) <span class="op">+</span> sampling_period, sampling_period)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>prevalence <span class="op">=</span> np.exp(growth_rate <span class="op">*</span> time) <span class="op">/</span> population_size</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(seed<span class="op">=</span><span class="dv">10343</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="simulation" class="level2">
 <h2 class="anchored" data-anchor-id="simulation">Simulation</h2>
 <section id="threshold-detection" class="level3">
 <h3 class="anchored" data-anchor-id="threshold-detection">Threshold detection</h3>
-<div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_detection_times(time, counts, threshold: <span class="bu">float</span>):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> np.argmax(np.cumsum(counts, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">&gt;=</span> threshold, axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">FIXME</span><span class="co">: if never detected, indices will be 0, replace with -1 so that we get the largest time</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># indices[indices == 0] = -1</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> time[indices]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_detection_times(time, counts, threshold: <span class="bu">float</span>):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> np.argmax(np.cumsum(counts, axis<span class="op">=</span><span class="dv">1</span>) <span class="op">&gt;=</span> threshold, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># </span><span class="al">FIXME</span><span class="co">: if never detected, indices will be 0, replace with -1 so that we get the largest time</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># indices[indices == 0] = -1</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> time[indices]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="parameterization" class="level3">
 <h3 class="anchored" data-anchor-id="parameterization">Parameterization</h3>
-<div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> params_lognormal(mean, cv, mean_type):</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    sigma_2 <span class="op">=</span> np.log(<span class="dv">1</span> <span class="op">+</span> cv<span class="op">**</span><span class="dv">2</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> mean_type <span class="op">==</span> <span class="st">"geom"</span>:</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        mu <span class="op">=</span> np.log(mean)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> mean_type <span class="op">==</span> <span class="st">"arith"</span>:</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        mu <span class="op">=</span> np.log(mean) <span class="op">-</span> sigma_2 <span class="op">/</span> <span class="dv">2</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"mean_type must be geom|arith"</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> mu, np.sqrt(sigma_2)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> params_gamma(mean, cv, mean_type):</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    shape <span class="op">=</span> cv <span class="op">**</span> (<span class="op">-</span><span class="dv">2</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> mean_type <span class="op">==</span> <span class="st">"geom"</span>:</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        scale <span class="op">=</span> mean <span class="op">*</span> np.exp(<span class="op">-</span>digamma(shape))</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> mean_type <span class="op">==</span> <span class="st">"arith"</span>:</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        scale <span class="op">=</span> mean <span class="op">/</span> shape</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"mean_type must be geom|arith"</span>)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> shape, scale</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> params_lognormal(mean, cv, mean_type):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    sigma_2 <span class="op">=</span> np.log(<span class="dv">1</span> <span class="op">+</span> cv<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> mean_type <span class="op">==</span> <span class="st">"geom"</span>:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        mu <span class="op">=</span> np.log(mean)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> mean_type <span class="op">==</span> <span class="st">"arith"</span>:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        mu <span class="op">=</span> np.log(mean) <span class="op">-</span> sigma_2 <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"mean_type must be geom|arith"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> mu, np.sqrt(sigma_2)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> params_gamma(mean, cv, mean_type):</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    shape <span class="op">=</span> cv <span class="op">**</span> (<span class="op">-</span><span class="dv">2</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> mean_type <span class="op">==</span> <span class="st">"geom"</span>:</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        scale <span class="op">=</span> mean <span class="op">*</span> np.exp(<span class="op">-</span>digamma(shape))</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> mean_type <span class="op">==</span> <span class="st">"arith"</span>:</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        scale <span class="op">=</span> mean <span class="op">/</span> shape</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"mean_type must be geom|arith"</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> shape, scale</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="count-simulation" class="level3">
 <h3 class="anchored" data-anchor-id="count-simulation">Count simulation</h3>
-<div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate_latent(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    mean,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    cv: <span class="bu">float</span>, <span class="co"># coefficient of variation</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    mean_type: <span class="bu">str</span>, <span class="co"># geom | arith</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    distribution: <span class="bu">str</span>, <span class="co"># gamma | lognormal</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    num_reps: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    rng: np.random.Generator <span class="op">=</span> np.random.default_rng(), <span class="co"># CHECK</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>):</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    size <span class="op">=</span> (num_reps, <span class="bu">len</span>(mean))</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> distribution <span class="op">==</span> <span class="st">"gamma"</span>:</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        shape, scale <span class="op">=</span> params_gamma(mean, cv, mean_type)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> rng.gamma(shape, scale, size)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> distribution <span class="op">==</span> <span class="st">"lognormal"</span>:</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        mu, sigma <span class="op">=</span> params_lognormal(mean, cv, mean_type)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> rng.lognormal(mu, sigma, size)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"distribution must be gamma|lognormal"</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate_counts(</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    prevalence,</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    p2ra: <span class="bu">float</span>,</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    sampling_depth: <span class="bu">float</span>,</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    cv: <span class="bu">float</span>, <span class="co"># coefficient of variation</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    mean_type: <span class="bu">str</span>, <span class="co"># geom | arith</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    latent_dist: <span class="bu">str</span>, <span class="co"># gamma | lognormal</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    num_reps: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    rng: np.random.Generator <span class="op">=</span> np.random.default_rng(), <span class="co"># CHECK</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>):</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    relative_abundance <span class="op">=</span> p2ra <span class="op">*</span> prevalence</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    lamb <span class="op">=</span> simulate_latent(relative_abundance, cv, mean_type, latent_dist, num_reps, rng)</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    counts <span class="op">=</span> rng.poisson(sampling_depth <span class="op">*</span> lamb)</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate_latent(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    mean,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    cv: <span class="bu">float</span>,  <span class="co"># coefficient of variation</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    mean_type: <span class="bu">str</span>,  <span class="co"># geom | arith</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    distribution: <span class="bu">str</span>,  <span class="co"># gamma | lognormal</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    num_reps: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    rng: np.random.Generator <span class="op">=</span> np.random.default_rng(),  <span class="co"># CHECK</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    size <span class="op">=</span> (num_reps, <span class="bu">len</span>(mean))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> distribution <span class="op">==</span> <span class="st">"gamma"</span>:</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        shape, scale <span class="op">=</span> params_gamma(mean, cv, mean_type)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> rng.gamma(shape, scale, size)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> distribution <span class="op">==</span> <span class="st">"lognormal"</span>:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        mu, sigma <span class="op">=</span> params_lognormal(mean, cv, mean_type)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> rng.lognormal(mu, sigma, size)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"distribution must be gamma|lognormal"</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simulate_counts(</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    prevalence,</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    p2ra: <span class="bu">float</span>,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    sampling_depth: <span class="bu">float</span>,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    cv: <span class="bu">float</span>,  <span class="co"># coefficient of variation</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    mean_type: <span class="bu">str</span>,  <span class="co"># geom | arith</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    latent_dist: <span class="bu">str</span>,  <span class="co"># gamma | lognormal</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    num_reps: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span>,</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    rng: np.random.Generator <span class="op">=</span> np.random.default_rng(),  <span class="co"># CHECK</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    relative_abundance <span class="op">=</span> p2ra <span class="op">*</span> prevalence</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    lamb <span class="op">=</span> simulate_latent(</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        relative_abundance, cv, mean_type, latent_dist, num_reps, rng</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    counts <span class="op">=</span> rng.poisson(sampling_depth <span class="op">*</span> lamb)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="test-latent-params" class="level3">
 <h3 class="anchored" data-anchor-id="test-latent-params">Test latent params</h3>
-<div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.arange(<span class="dv">100</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>mean <span class="op">=</span> <span class="fl">0.01</span> <span class="op">*</span> np.exp(t <span class="op">/</span> <span class="dv">7</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>cvs <span class="op">=</span> [<span class="fl">0.5</span>, <span class="fl">1.0</span>, <span class="dv">2</span>, <span class="dv">4</span>]</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>num_reps <span class="op">=</span> <span class="dv">1000</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"arith"</span>, <span class="st">"gamma"</span>, num_reps, rng)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean <span class="op">*</span> cv, <span class="st">":k"</span>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"arith"</span>, <span class="st">"lognormal"</span>, num_reps, rng)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean <span class="op">*</span> cv, <span class="st">":k"</span>)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"geom"</span>, <span class="st">"gamma"</span>, num_reps, rng)</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.exp(np.mean(np.log(latent), axis<span class="op">=</span><span class="dv">0</span>)))</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(np.std(latent, axis<span class="op">=</span><span class="dv">0</span>) <span class="op">/</span> np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"geom"</span>, <span class="st">"lognormal"</span>, num_reps, rng)</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.exp(np.mean(np.log(latent), axis<span class="op">=</span><span class="dv">0</span>)))</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.arange(<span class="dv">100</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mean <span class="op">=</span> <span class="fl">0.01</span> <span class="op">*</span> np.exp(t <span class="op">/</span> <span class="dv">7</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>cvs <span class="op">=</span> [<span class="fl">0.5</span>, <span class="fl">1.0</span>, <span class="dv">2</span>, <span class="dv">4</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>num_reps <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"arith"</span>, <span class="st">"gamma"</span>, num_reps, rng)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean <span class="op">*</span> cv, <span class="st">":k"</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"arith"</span>, <span class="st">"lognormal"</span>, num_reps, rng)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean <span class="op">*</span> cv, <span class="st">":k"</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"geom"</span>, <span class="st">"gamma"</span>, num_reps, rng)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.exp(np.mean(np.log(latent), axis<span class="op">=</span><span class="dv">0</span>)))</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(np.std(latent, axis<span class="op">=</span><span class="dv">0</span>) <span class="op">/</span> np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cv <span class="kw">in</span> cvs:</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> simulate_latent(mean, cv, <span class="st">"geom"</span>, <span class="st">"lognormal"</span>, num_reps, rng)</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.exp(np.mean(np.log(latent), axis<span class="op">=</span><span class="dv">0</span>)))</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.std(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, np.mean(latent, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(t, mean, <span class="st">"--k"</span>)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"CV = </span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-1.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-1.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-2.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-2.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-3.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-3.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-4.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-4.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-5.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-5.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-6.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-6.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-7.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-7.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-8.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-8.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[0.50348026 0.49182015 0.50282823 0.50870395 0.49265948 0.50533411
@@ -488,28 +494,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  3.91741195 3.4060893  3.70814923 4.08789586]</code></pre>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-10.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-10.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-11.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-11.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-12.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-12.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-13.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-13.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-14.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-14.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-15.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-15.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-16.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-16.png" width="580" height="431"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-8-output-17.png" width="580" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-9-output-17.png" width="580" height="431"></p>
 </div>
 </div>
 </section>
@@ -518,167 +524,267 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="results">Results</h2>
 <section id="counts" class="level3">
 <h3 class="anchored" data-anchor-id="counts">Counts</h3>
-<div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>num_reps <span class="op">=</span> <span class="dv">1000</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>cvs <span class="op">=</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>, <span class="dv">2</span>, <span class="dv">4</span>]</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>counts_ga <span class="op">=</span> [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type<span class="op">=</span><span class="st">"arith"</span>, latent_dist<span class="op">=</span><span class="st">"gamma"</span>, num_reps<span class="op">=</span>num_reps, rng<span class="op">=</span>rng) <span class="cf">for</span> cv <span class="kw">in</span> cvs]</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>counts_la <span class="op">=</span> [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type<span class="op">=</span><span class="st">"arith"</span>, latent_dist<span class="op">=</span><span class="st">"lognormal"</span>, num_reps<span class="op">=</span>num_reps, rng<span class="op">=</span>rng) <span class="cf">for</span> cv <span class="kw">in</span> cvs]</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>counts_gg <span class="op">=</span> [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type<span class="op">=</span><span class="st">"geom"</span>, latent_dist<span class="op">=</span><span class="st">"gamma"</span>, num_reps<span class="op">=</span>num_reps, rng<span class="op">=</span>rng) <span class="cf">for</span> cv <span class="kw">in</span> cvs]</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>counts_lg <span class="op">=</span> [simulate_counts(prevalence, p2ra, sampling_depth, cv, mean_type<span class="op">=</span><span class="st">"geom"</span>, latent_dist<span class="op">=</span><span class="st">"lognormal"</span>, num_reps<span class="op">=</span>num_reps, rng<span class="op">=</span>rng) <span class="cf">for</span> cv <span class="kw">in</span> cvs]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>num_reps <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>cvs <span class="op">=</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>, <span class="dv">2</span>, <span class="dv">4</span>]</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>counts_ga <span class="op">=</span> [</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    simulate_counts(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        prevalence,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        p2ra,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        sampling_depth,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        cv,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        mean_type<span class="op">=</span><span class="st">"arith"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        latent_dist<span class="op">=</span><span class="st">"gamma"</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        num_reps<span class="op">=</span>num_reps,</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        rng<span class="op">=</span>rng,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> cv <span class="kw">in</span> cvs</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>counts_la <span class="op">=</span> [</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    simulate_counts(</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        prevalence,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        p2ra,</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        sampling_depth,</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        cv,</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        mean_type<span class="op">=</span><span class="st">"arith"</span>,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>        latent_dist<span class="op">=</span><span class="st">"lognormal"</span>,</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>        num_reps<span class="op">=</span>num_reps,</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        rng<span class="op">=</span>rng,</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> cv <span class="kw">in</span> cvs</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>counts_gg <span class="op">=</span> [</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    simulate_counts(</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>        prevalence,</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>        p2ra,</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>        sampling_depth,</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>        cv,</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>        mean_type<span class="op">=</span><span class="st">"geom"</span>,</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>        latent_dist<span class="op">=</span><span class="st">"gamma"</span>,</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>        num_reps<span class="op">=</span>num_reps,</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>        rng<span class="op">=</span>rng,</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> cv <span class="kw">in</span> cvs</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>counts_lg <span class="op">=</span> [</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>    simulate_counts(</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>        prevalence,</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>        p2ra,</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>        sampling_depth,</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>        cv,</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>        mean_type<span class="op">=</span><span class="st">"geom"</span>,</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>        latent_dist<span class="op">=</span><span class="st">"lognormal"</span>,</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>        num_reps<span class="op">=</span>num_reps,</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>        rng<span class="op">=</span>rng,</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> cv <span class="kw">in</span> cvs</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="arithmetic-mean" class="level4">
 <h4 class="anchored" data-anchor-id="arithmetic-mean">Arithmetic mean</h4>
-<div class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>to_plot <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>))</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, cv <span class="kw">in</span> <span class="bu">enumerate</span>(cvs):</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_ga[i][:to_plot].T, <span class="st">'.'</span>, color <span class="op">=</span> <span class="st">"C0"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="vs">r"$CV = $"</span> <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_la[i][:to_plot].T, <span class="st">'.'</span>, color <span class="op">=</span> <span class="st">"C0"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Day"</span>)</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>to_plot <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, cv <span class="kw">in</span> <span class="bu">enumerate</span>(cvs):</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_ga[i][:to_plot].T, <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, alpha<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="vs">r"$CV = $"</span> <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_la[i][:to_plot].T, <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, alpha<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Day"</span>)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-10-output-1.png" width="666" height="376"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-11-output-1.png" width="666" height="376"></p>
 </div>
 </div>
 </section>
 <section id="geometric-mean" class="level4">
 <h4 class="anchored" data-anchor-id="geometric-mean">Geometric mean</h4>
-<div class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>))</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, cv <span class="kw">in</span> <span class="bu">enumerate</span>(cvs):</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_gg[i][:to_plot].T, <span class="st">'.'</span>, color <span class="op">=</span> <span class="st">"C0"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="vs">r"$CV = $"</span> <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_lg[i][:to_plot].T, <span class="st">'.'</span>, color <span class="op">=</span> <span class="st">"C0"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Day"</span>)</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, cv <span class="kw">in</span> <span class="bu">enumerate</span>(cvs):</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_gg[i][:to_plot].T, <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, alpha<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="vs">r"$CV = $"</span> <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">2</span>, <span class="bu">len</span>(cvs), <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, counts_lg[i][:to_plot].T, <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, alpha<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence, <span class="st">"k--"</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Day"</span>)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-11-output-1.png" width="666" height="376"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-12-output-1.png" width="666" height="376"></p>
 </div>
 </div>
 </section>
 </section>
 <section id="cumulative-counts" class="level3">
 <h3 class="anchored" data-anchor-id="cumulative-counts">Cumulative counts</h3>
-<div class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, cv <span class="kw">in</span> <span class="bu">enumerate</span>(cvs):</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(counts_ga[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">'-'</span>, color <span class="op">=</span> <span class="st">"C0"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="vs">r"$CV = $"</span> <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Arithmetic</span><span class="ch">\n</span><span class="st">Gamma"</span>)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(counts_la[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">'-'</span>, color <span class="op">=</span> <span class="st">"C1"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Arithmetic</span><span class="ch">\n</span><span class="st">Lognormal"</span>)</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), <span class="dv">2</span> <span class="op">*</span> <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(counts_gg[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">'-'</span>, color <span class="op">=</span> <span class="st">"C0"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Geometric</span><span class="ch">\n</span><span class="st">Gamma"</span>)</span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), <span class="dv">3</span> <span class="op">*</span> <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(counts_lg[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">'-'</span>, color <span class="op">=</span> <span class="st">"C1"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Geometric</span><span class="ch">\n</span><span class="st">Lognormal"</span>)</span>
-<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
-<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Day"</span>)</span>
-<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, cv <span class="kw">in</span> <span class="bu">enumerate</span>(cvs):</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        time, np.cumsum(counts_ga[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">"-"</span>, color<span class="op">=</span><span class="st">"C0"</span>, alpha<span class="op">=</span><span class="fl">0.1</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="vs">r"$CV = $"</span> <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>cv<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Arithmetic</span><span class="ch">\n</span><span class="st">Gamma"</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        time, np.cumsum(counts_la[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">"-"</span>, color<span class="op">=</span><span class="st">"C1"</span>, alpha<span class="op">=</span><span class="fl">0.1</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Arithmetic</span><span class="ch">\n</span><span class="st">Lognormal"</span>)</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), <span class="dv">2</span> <span class="op">*</span> <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>        time, np.cumsum(counts_gg[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">"-"</span>, color<span class="op">=</span><span class="st">"C0"</span>, alpha<span class="op">=</span><span class="fl">0.1</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Geometric</span><span class="ch">\n</span><span class="st">Gamma"</span>)</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> plt.subplot(<span class="dv">4</span>, <span class="bu">len</span>(cvs), <span class="dv">3</span> <span class="op">*</span> <span class="bu">len</span>(cvs) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        time, np.cumsum(counts_lg[i][:to_plot], axis<span class="op">=</span><span class="dv">1</span>).T, <span class="st">"-"</span>, color<span class="op">=</span><span class="st">"C1"</span>, alpha<span class="op">=</span><span class="fl">0.1</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>    ax.semilogy(time, np.cumsum(sampling_depth <span class="op">*</span> p2ra <span class="op">*</span> prevalence), <span class="st">"k--"</span>)</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim([<span class="dv">1</span>, <span class="fl">1e5</span>])</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>        ax.set_ylabel(<span class="st">"Cumulative count"</span>)</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>        ax.text(<span class="dv">0</span>, <span class="fl">1e4</span>, <span class="st">"Geometric</span><span class="ch">\n</span><span class="st">Lognormal"</span>)</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>        ax.set_yticklabels([])</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Day"</span>)</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-12-output-1.png" width="666" height="671"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-13-output-1.png" width="666" height="671"></p>
 </div>
 </div>
 </section>
 <section id="detection-times" class="level3">
 <h3 class="anchored" data-anchor-id="detection-times">Detection times</h3>
-<div class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>thresholds <span class="op">=</span> [<span class="dv">2</span>, <span class="dv">100</span>]</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>detection_times_ga <span class="op">=</span> [[get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_ga] <span class="cf">for</span> threshold <span class="kw">in</span> thresholds]</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>detection_times_la <span class="op">=</span> [[get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_la] <span class="cf">for</span> threshold <span class="kw">in</span> thresholds]</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>detection_times_gg <span class="op">=</span> [[get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_gg] <span class="cf">for</span> threshold <span class="kw">in</span> thresholds]</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>detection_times_lg <span class="op">=</span> [[get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_lg] <span class="cf">for</span> threshold <span class="kw">in</span> thresholds]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <div class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> <span class="fl">0.9</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plt.subplot(<span class="dv">111</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_ga[<span class="dv">0</span>]], <span class="st">'o-'</span>, color<span class="op">=</span><span class="st">"C0"</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_la[<span class="dv">0</span>]], <span class="st">'o-'</span>, color<span class="op">=</span><span class="st">"C1"</span>)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_gg[<span class="dv">0</span>]], <span class="st">'o:'</span>, color<span class="op">=</span><span class="st">"C0"</span>)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_lg[<span class="dv">0</span>]], <span class="st">'o:'</span>, color<span class="op">=</span><span class="st">"C1"</span>)</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_ga[<span class="dv">1</span>]], <span class="st">'s-'</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Gamma-Arith"</span>)</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_la[<span class="dv">1</span>]], <span class="st">'s-'</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"LN-Arith"</span>)</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_gg[<span class="dv">1</span>]], <span class="st">'s:'</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Gamma-Geom"</span>)</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>plt.semilogx(cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_lg[<span class="dv">1</span>]], <span class="st">'s:'</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"LN-Geom"</span>)</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Detection day (90th percentile)"</span>)</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>ax.set_xscale(<span class="st">'log'</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Coefficient of variation"</span>)</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>plt.legend(</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    handles <span class="op">=</span> [</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"C0"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Gamma"</span>),</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"C1"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Lognormal"</span>),</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, linestyle<span class="op">=</span><span class="st">"-"</span>, label<span class="op">=</span><span class="st">"Arithmetic mean"</span>),</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, linestyle<span class="op">=</span><span class="st">":"</span>, label<span class="op">=</span><span class="st">"Geometric mean"</span>),</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, marker<span class="op">=</span><span class="st">"s"</span>, label<span class="op">=</span><span class="st">"Threshold = 100"</span>),</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Threshold = 2"</span>),</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
-<pre><code>&lt;matplotlib.legend.Legend at 0x12fc79950&gt;</code></pre>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>thresholds <span class="op">=</span> [<span class="dv">2</span>, <span class="dv">100</span>]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>detection_times_ga <span class="op">=</span> [</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    [get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_ga]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> threshold <span class="kw">in</span> thresholds</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>detection_times_la <span class="op">=</span> [</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    [get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_la]</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> threshold <span class="kw">in</span> thresholds</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>detection_times_gg <span class="op">=</span> [</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    [get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_gg]</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> threshold <span class="kw">in</span> thresholds</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>detection_times_lg <span class="op">=</span> [</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    [get_detection_times(time, counts, threshold) <span class="cf">for</span> counts <span class="kw">in</span> counts_lg]</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> threshold <span class="kw">in</span> thresholds</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> <span class="fl">0.9</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plt.subplot(<span class="dv">111</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_ga[<span class="dv">0</span>]], <span class="st">"o-"</span>, color<span class="op">=</span><span class="st">"C0"</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_la[<span class="dv">0</span>]], <span class="st">"o-"</span>, color<span class="op">=</span><span class="st">"C1"</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_gg[<span class="dv">0</span>]], <span class="st">"o:"</span>, color<span class="op">=</span><span class="st">"C0"</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    cvs, [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_lg[<span class="dv">0</span>]], <span class="st">"o:"</span>, color<span class="op">=</span><span class="st">"C1"</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    cvs,</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_ga[<span class="dv">1</span>]],</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"s-"</span>,</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"C0"</span>,</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    label<span class="op">=</span><span class="st">"Gamma-Arith"</span>,</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    cvs,</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_la[<span class="dv">1</span>]],</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"s-"</span>,</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"C1"</span>,</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    label<span class="op">=</span><span class="st">"LN-Arith"</span>,</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>    cvs,</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_gg[<span class="dv">1</span>]],</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"s:"</span>,</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"C0"</span>,</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    label<span class="op">=</span><span class="st">"Gamma-Geom"</span>,</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>plt.semilogx(</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    cvs,</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    [np.quantile(dt, q) <span class="cf">for</span> dt <span class="kw">in</span> detection_times_lg[<span class="dv">1</span>]],</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>    <span class="st">"s:"</span>,</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"C1"</span>,</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>    label<span class="op">=</span><span class="st">"LN-Geom"</span>,</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Detection day (90th percentile)"</span>)</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>ax.set_xscale(<span class="st">"log"</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Coefficient of variation"</span>)</span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>plt.legend(</span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>    handles<span class="op">=</span>[</span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"C0"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Gamma"</span>),</span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"C1"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Lognormal"</span>),</span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, linestyle<span class="op">=</span><span class="st">"-"</span>, label<span class="op">=</span><span class="st">"Arithmetic mean"</span>),</span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, linestyle<span class="op">=</span><span class="st">":"</span>, label<span class="op">=</span><span class="st">"Geometric mean"</span>),</span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, marker<span class="op">=</span><span class="st">"s"</span>, label<span class="op">=</span><span class="st">"Threshold = 100"</span>),</span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>        mlines.Line2D([], [], color<span class="op">=</span><span class="st">"0.5"</span>, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Threshold = 2"</span>),</span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<pre><code>&lt;matplotlib.legend.Legend at 0x16ccc1690&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-14-output-2.png" width="593" height="431"></p>
+<p><img src="2024-01-19_SimpleSensitivity_files/figure-html/cell-15-output-2.png" width="593" height="431"></p>
 </div>
 </div>
 

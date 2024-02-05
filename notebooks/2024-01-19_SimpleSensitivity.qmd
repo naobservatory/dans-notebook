@@ -85,6 +85,10 @@ The former is more natural for the gamma distribution, the latter for the lognor
 
 Both distributions have $AM > GM$. But it grows much faster with CV for Gamma.
 
+```{python}
+# Test
+x = 1*2
+```
 ## Parameters
 
 ```{python}
