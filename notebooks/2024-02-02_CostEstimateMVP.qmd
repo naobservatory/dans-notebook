@@ -7,6 +7,8 @@ format:
     code-fold: false
     toc: true
 jupyter: python3
+filters:
+    - black-formatter
 ---
 
 ## Background
@@ -146,18 +148,295 @@ $$
 $$
 This shows that as long as the population is large ($N \gg 1$), and the growth rate is not too slow compared to the recovery rate ($r \gtrsim \beta$), there will be a wide regime of approximately deterministic exponential growth.
 
-## Counts and detection
+## Sampling, sequencing, and detection
 
-- Sample at times $\{t_0, t_1, \ldots\}$.
-- Sequence $n_i$ reads in sample taken at $t_i$.
-- Deterministic relative abundance: $a_i = b p(t_i)$, where $b$ is a fixed conversion factor between prevalence and relative abundance.
-- Deterministic viral read counts: $k_i = n_i a_i$
-- Cumulative count: $K_i = \sum_{j=0}^i k_j$
-- Detection when cumulative counts exceed a threshold $K_i > \hat{K}$
+Consider a set of samples taken at times $\{t_0, t_1, \ldots\}$,
+where $t_0 \ge 0$ is the the first sampling time after the virus begins to spread.
+(Presumably sampling has been ongoing but we'll ignore the earlier samples.)
+We sequence sample $i$ to a total depth of $n_i$ reads
+and find that $k_i$ match the sequence of the pandemic virus.
+
+We consider the virus to be detected when the cumulative number of viral reads reaches a threshold $\hat{K}$.
+We'll define $\hat{t}$ to be the smallest sample time $t_i$ such that:
+$$
+K_i \equiv \sum_{j=0}^i k_j \geq \hat{K}.
+$$
+We also want to consider the effect of the delay, $t_d$, between when the critical sample is collected and when we have processed, sequenced, and analyzed the data.
+
+We will assess the success of a method by the (population-scaled) cumulative incidence at the time of detection, accounting for the delay:
+$$
+c(\hat{t} + t_d) \equiv C(\hat{t} + t_d) / N
+$$
+
+Because we're interested in population-scale quantities and because we've shown that our model is not accurate when there are only a few individuals, we will make two assumptions:
+
+- The prevalence at detection $P(t) = e^{rt} \sim N$, as $N \to \infty$.
+- We can neglect any smaller terms that do not scale with $N$.
+
+Using the equations above for cumulative incidence, we have the following simplification:
+$$
+\begin{align}
+c(t) & = \frac{1 + \frac{r + \beta}{r}\left(e^{rt} - 1\right)}{N} \\
+     & = \frac{r + \beta}{r} \frac{e^{rt}}{N} + \mathcal{O}(N^{-1}).
+\end{align}
+$$
+
+Note that we can immediately see the cost of delay:
+$$
+c(\hat{t} + t_d) = \frac{r + \beta}{r} \frac{e^{r\hat{t}}}{N} e^{r t_d}.
+$$
+With an exponentially growing pandemic, post-sampling delay multiplies our cumulative incidence at detection by $e^{rt_d}$.
+
+In the rest of this section, we answer the question:
+
+> If we want to detect the virus by the time it reaches a particular cumulative incidence, $\hat{c}$,
+how much sequencing do we need to do per unit time?
+
+### Sampling to relative abundance
+
+Here we make two more important deterministic assumptions:
+
+1. The viral read counts are deterministic, given the expected relative abundance, $a_i$, in each sample: $k_i = n_i a_i$.
+2. The expected relative abundance is itself a deterministic functional of the prevalence:
+$$
+a_i = b \int \frac{P(t)}{N} \rho_i(t) dt.
+$$
+Here, $\rho_i$ is a density that says how much of sample $i$ was collected at different times,
+and $b$ is a fixed conversion factor between prevalence and relative abundance.
+(Note $b = RA_p(1)$ in the P2RA manuscript.)
+
+From here on, it will simplify thing to specify two concrete sampling schemes.
+Both schemes collect evenly-spaced samples with the same depth:
+
+* $n_i = n$
+* $t_i - t_{i-1} = \delta t$
+* $0 \leq t_0 < \delta t$, since we don't know how long before the first sample the pandemic began.
+
+Our two schemes differ in when the material for the samples is collected.
+They are:
+
+1. Continuous sampling: $\rho_i(t) = \frac{1}{\delta t}$ for $t \in [t_{i-1}, t_i)$.
+2. Grab sampling: $\rho_i(t) = \delta(t - t_i)$, i.e., the whole sample is collected at $t_i$.
 
 ### Continuous sampling
 
-- Connection to P2RA report calculation.
-- What to do about $t_0$
+First, we use the assumptions in the previous section to calculate the cumulative reads by sample $i$:
+$$
+\begin{align}
+K_i & = \sum_{j=0}^{i} n a_i \\
+    & = n \sum_{j=0}^{i} b \int_{t_{j-1}}^{t_j} \frac{P(t)}{N} \frac{dt}{\delta t} \\
+    & = \frac{n b}{\delta t} \int_{0}^{t_i} \frac{P(t)}{N} dt.
+\end{align}
+$$
+
+At this point, we could make the substitution $I(t) = (r + \beta) P(t)$ from our exponential model.
+This would give us:
+$$
+\begin{align}
+K_i & = \frac{nb}{\delta t} (r + \beta) \int_{0}^{t_i} \frac{I(t)}{N} dt \\
+    & = \frac{n b (r + \beta)}{\delta t} c(t_i),
+\end{align}
+$$
+which is the result from the simple calculation in the P2RA manuscript,
+using the conversion factor $r + \beta$ to convert between $RA_p$ and $RA_i$,
+which is only valid in the exponential growth case.
+
+Instead, we'll proceed in a more general way, which will extend to the grab sampling model and account for the discrete nature of our sampling.
+
+Using our exponential growth model for $P$, we have:
+$$
+\begin{align}
+K_i & = \frac{nb}{\delta t}
+\end{align}
+$$
+
+One complication is that the sample $i$ that $K_i \geq \hat{K}$ depends on the precise timing of our samples.
+In the figure below, the three colored series show $K_i$ for three series of samples that differ only by the relative timing of their sample collection (e.g., all samples are collected weekly, but one series collects on Mondays, another on Tuesdays, etc.)
+Note that the red figure, whose first sample was taken latest relative to the start of the pandemic, crosses the threshold (solid black line) one sample earlier than the others.
+
+```{python}
+#| code-fold: true
+
+import numpy as np
+import matplotlib.pyplot as plt
+t_max = 8
+r = 1.0
+k_hat = 100
+dt = 1.0
+time = np.arange(0, t_max, 0.1)
+plt.plot(time, np.exp(r*time), 'k:')
+for t_0 in [0.25, 0.5, 0.75]:
+    t = np.arange(t_0, t_max, dt)
+    k = np.exp(r * t)
+    plt.plot(t, k, 'o', label=t_0)
+plt.hlines(k_hat, 0, t_max, 'k')
+plt.yscale("log")
+plt.ylabel("Cumulative reads $K$")
+plt.xlabel("Time")
+plt.title("Effect of sample timing")
+plt.legend(title = "$t_0$");
+```
+
+We account for this effect by splitting $\hat{t}$ into two components:
+
+1. The earliest time possible to detect, $t^{\star}$, found by allowing $K$ to vary continously in time (dotted line above)
+2. The residual time waiting for the next sample to be collected. Because we have no reason to expect this waiting time to take any particular value, we average it over a uniform distribution.
+
+First, we will find an implicit equation for $t^{\star}$:
+$$
+\begin{align}
+\hat{K} & = \frac{nb}{\delta t} \int_0^{t^{\star}} \frac{P(t)}{N} dt \\
+        & = \frac{nb}{\delta t} \left(\frac{e^{r t^{\star}}}{rN} + \mathcal{O}(N^{-1})\right)\\
+\end{align}
+$$
+
+Next we average our target cumulative incidence over the sample waiting time:
+$$
+\begin{align}
+\hat{c} & = \int_{t^{\star}}^{t^{\star} + \delta t} c(\hat{t} + t_d) \frac{d \hat{t}}{\delta t} \\
+        & = \int_{t^{\star}}^{t^{\star} + \delta t}
+                \frac{r + \beta}{r} \frac{e^{r(\hat{t} + t_d)}}{N} \frac{d \hat{t}}{\delta t}
+                + \mathcal{O}(N^{-1}) \\
+        & = (r + \beta)
+            \left(\frac{e^{r t^{\star}}}{r N} \right)
+            \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
+            e^{r t_d}
+            + \mathcal{O}(N^{-1}) \\
+\end{align}
+$$
+The the third term in parentheses is the cost incurred from having widely spaced samples.
+As $r \delta t \to 0$, this cost goes to zero.
+When $r \delta t$ is large, this cost grows exponentially.
+
+Finally, we notice that the second term in parentheses appears in our implicit equation for $t^{\star}$ above.
+Substituting and rearranging gives the sequencing effort required to detect by cumulative incidence $\hat{c}$:
+$$
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+    \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
+    e^{r t_d}
+    + \mathcal{O}(N^{-1})
+$$
+Some observations:
+
+1. Faster-growing and faster-recovering viruses require more sequencing because the current prevalence is a smaller fraction of the cumulative incidence.
+2. Higher detection thresholds, lower P2RA factors ($b$), and lower target cumulative incidence, require more sequencing.
+3. There is a cost associated with longer sampling intervals and delays between collection and analysis. The latter grows faster than the former.
 
 ### Grab sampling
+
+Now we turn to grab sampling at the collection times $\{t_0, t_1, \ldots\}$.
+The analysis is the same as for continuous sampling, except that we will have a different
+implicit equation for $t^{\star}$.
+
+With grab sampling, $\rho_i(t) = \delta(t - t_i)$, we have cumulative counts:
+$$
+\begin{align}
+K_i & = n \sum_{j=0}^{i} b \frac{P(t_i)}{N} \\
+    & = \frac{n b}{N} \sum_{j=0}^{i} e^{r (t_0 + j \delta t)} \\
+    & = \frac{n b}{N} e^{r t_0} \frac{e^{r(i+1)\delta t} - 1}{e^{r\delta t} - 1} \\
+    & = \frac{n b}{\delta t} \left(\frac{e^{r t_i}}{rN}\right)
+        \left(\frac{r \delta t \, e^{r \delta t}}{e^{r \delta t} - 1}\right)
+        + \mathcal{O}(N^{-1}). \\
+\end{align}
+$$
+Making the continuous time substitution as before, gives
+$$
+\hat{K} = \frac{n b}{\delta t} \left(\frac{e^{r t^{\star}}}{rN}\right)
+            \left(\frac{r \delta t \, e^{r \delta t}}{e^{r \delta t} - 1}\right)
+            + \mathcal{O}(N^{-1}).
+$$
+The first two terms are identical to the continuous sampling case.
+The third term is the effect of grab sampling: because the sample is collected entirely at the end of the interval, the prevalence is higher than the average over the interval and you get more reads.
+
+Using this equation for $t^{\star}$, we find that the required sequencing effort for grab sampling is:
+$$
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+    \left(\frac
+        {e^{-r\delta t} {\left(e^{r \delta t} - 1\right)}^2}
+        {{\left(r \delta t\right)}^2}
+        \right)
+    e^{r t_d}
+    + \mathcal{O}(N^{-1})
+$$
+This is similar to the continous sampling case but with weaker dependence on the sampling interval:
+
+```{python}
+#| code-fold: true
+
+t = np.arange(0.01, 2, 0.01)
+plt.plot(t, (np.exp(t) - 1) / t, label=r"Continuous sampling")
+plt.plot(t, np.exp(-t) * ((np.exp(t) - 1) / t)**2, label=r"Grab sampling")
+plt.legend()
+plt.title("Effect of wider sampling intervals")
+plt.xlabel("Sampling interval, $r \delta t$")
+plt.ylabel("Multiplicative effect on required sequencing depth");
+```
+
+## Numerical example
+
+A function that calculates the depth required per unit time to detect by a given cumulative incidence:
+
+```{python}
+def depth_required(
+    growth_rate: float,
+    recovery_rate: float,
+    read_threshold: int,
+    p2ra_factor: float,
+    cumulative_incidence_target: float,
+    sampling_interval: float,
+    sampling_scheme: str,
+    delay: float,
+) -> float:
+    leading_term = (growth_rate + recovery_rate) * read_threshold / (p2ra_factor * cumulative_incidence_target)
+    x = growth_rate * sampling_interval
+    if sampling_scheme == "continuous":
+        sampling_term = (np.exp(x) - 1) / x
+    elif sampling_scheme == "grab":
+        sampling_term = np.exp(-x) * ((np.exp(x) - 1) / x)**2
+    else:
+        raise ValueError("sampling_scheme must be continuous or grab")
+    delay_term = np.exp(growth_rate * delay)
+    return leading_term * sampling_term * delay_term
+```
+
+We'll measure time in days.
+Let's assume:
+
+* A virus with a doubling time of 1 week and recovery timescale of two weeks
+* A read threshold of 100 viral reads
+* An $RA_i(1%)$ of 1e-7 (approximate median SARS-CoV2 in Rothman)
+* A cumulative incidence target of 1%
+* A delay of one week for sample processing and sequencing
+* Vary the sampling scheme and sampling interval (from daily to monthly)
+
+```{python}
+r = np.log(2) / 7
+beta = 1 / 14
+k_hat = 100
+ra_i_01 = 1e-7
+# Convert from weekly incidence to prevalence and per 1% to per 1
+b = ra_i_01 * 100 * (r + beta) * 7
+c_hat = 0.01
+delta_t = np.arange(1.0, 30, 1)
+t_d = 7.0
+
+n_cont = depth_required(r, beta, k_hat, b, c_hat, delta_t, "continuous", t_d)
+n_grab = depth_required(r, beta, k_hat, b, c_hat, delta_t, "grab", t_d)
+plt.plot(delta_t, 30 * n_cont, label="continuous")
+plt.plot(delta_t, 30 * n_grab, label="grab")
+plt.legend(title="Sampling scheme")
+plt.ylabel("Reads required per month")
+plt.xlabel("Sampling interval (days)");
+```
+
+## Next steps
+
+- Vary the other parameters, make plots of interest?
+- Consider per-sample and per-read costs. Find the optimal sampling interval for each scheme.
+- Relax deterministic assumptions:
+  - Poisson read count noise
+  - "Excess" read count noise
+  - Randomness in the spread of the virus
+- Consider multiple sites
+  - Accounting for global spread
+  - Determining how to spread monitoring effort across locations

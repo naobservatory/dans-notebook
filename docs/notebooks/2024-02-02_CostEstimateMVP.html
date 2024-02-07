@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -101,11 +135,14 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#cumulative-incidence" id="toc-cumulative-incidence" class="nav-link" data-scroll-target="#cumulative-incidence">Cumulative incidence</a></li>
   <li><a href="#domain-of-validity" id="toc-domain-of-validity" class="nav-link" data-scroll-target="#domain-of-validity">Domain of validity</a></li>
   </ul></li>
-  <li><a href="#counts-and-detection" id="toc-counts-and-detection" class="nav-link" data-scroll-target="#counts-and-detection">Counts and detection</a>
+  <li><a href="#sampling-sequencing-and-detection" id="toc-sampling-sequencing-and-detection" class="nav-link" data-scroll-target="#sampling-sequencing-and-detection">Sampling, sequencing, and detection</a>
   <ul class="collapse">
+  <li><a href="#sampling-to-relative-abundance" id="toc-sampling-to-relative-abundance" class="nav-link" data-scroll-target="#sampling-to-relative-abundance">Sampling to relative abundance</a></li>
   <li><a href="#continuous-sampling" id="toc-continuous-sampling" class="nav-link" data-scroll-target="#continuous-sampling">Continuous sampling</a></li>
   <li><a href="#grab-sampling" id="toc-grab-sampling" class="nav-link" data-scroll-target="#grab-sampling">Grab sampling</a></li>
   </ul></li>
+  <li><a href="#numerical-example" id="toc-numerical-example" class="nav-link" data-scroll-target="#numerical-example">Numerical example</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next steps</a></li>
   </ul>
 </nav>
     </div>
@@ -229,28 +266,262 @@ C(t) &amp; \ll N / 2.
 </section>
 </section>
 </section>
-<section id="counts-and-detection" class="level2">
-<h2 class="anchored" data-anchor-id="counts-and-detection">Counts and detection</h2>
+<section id="sampling-sequencing-and-detection" class="level2">
+<h2 class="anchored" data-anchor-id="sampling-sequencing-and-detection">Sampling, sequencing, and detection</h2>
+<p>Consider a set of samples taken at times <span class="math inline">\(\{t_0, t_1, \ldots\}\)</span>, where <span class="math inline">\(t_0 \ge 0\)</span> is the the first sampling time after the virus begins to spread. (Presumably sampling has been ongoing but we’ll ignore the earlier samples.) We sequence sample <span class="math inline">\(i\)</span> to a total depth of <span class="math inline">\(n_i\)</span> reads and find that <span class="math inline">\(k_i\)</span> match the sequence of the pandemic virus.</p>
+<p>We consider the virus to be detected when the cumulative number of viral reads reaches a threshold <span class="math inline">\(\hat{K}\)</span>. We’ll define <span class="math inline">\(\hat{t}\)</span> to be the smallest sample time <span class="math inline">\(t_i\)</span> such that: <span class="math display">\[
+K_i \equiv \sum_{j=0}^i k_j \geq \hat{K}.
+\]</span> We also want to consider the effect of the delay, <span class="math inline">\(t_d\)</span>, between when the critical sample is collected and when we have processed, sequenced, and analyzed the data.</p>
+<p>We will assess the success of a method by the (population-scaled) cumulative incidence at the time of detection, accounting for the delay: <span class="math display">\[
+c(\hat{t} + t_d) \equiv C(\hat{t} + t_d) / N
+\]</span></p>
+<p>Because we’re interested in population-scale quantities and because we’ve shown that our model is not accurate when there are only a few individuals, we will make two assumptions:</p>
 <ul>
-<li>Sample at times <span class="math inline">\(\{t_0, t_1, \ldots\}\)</span>.</li>
-<li>Sequence <span class="math inline">\(n_i\)</span> reads in sample taken at <span class="math inline">\(t_i\)</span>.</li>
-<li>Deterministic relative abundance: <span class="math inline">\(a_i = b p(t_i)\)</span>, where <span class="math inline">\(b\)</span> is a fixed conversion factor between prevalence and relative abundance.</li>
-<li>Deterministic viral read counts: <span class="math inline">\(k_i = n_i a_i\)</span></li>
-<li>Cumulative count: <span class="math inline">\(K_i = \sum_{j=0}^i k_j\)</span></li>
-<li>Detection when cumulative counts exceed a threshold <span class="math inline">\(K_i &gt; \hat{K}\)</span></li>
+<li>The prevalence at detection <span class="math inline">\(P(t) = e^{rt} \sim N\)</span>, as <span class="math inline">\(N \to \infty\)</span>.</li>
+<li>We can neglect any smaller terms that do not scale with <span class="math inline">\(N\)</span>.</li>
 </ul>
+<p>Using the equations above for cumulative incidence, we have the following simplification: <span class="math display">\[
+\begin{align}
+c(t) &amp; = \frac{1 + \frac{r + \beta}{r}\left(e^{rt} - 1\right)}{N} \\
+     &amp; = \frac{r + \beta}{r} \frac{e^{rt}}{N} + \mathcal{O}(N^{-1}).
+\end{align}
+\]</span></p>
+<p>Note that we can immediately see the cost of delay: <span class="math display">\[
+c(\hat{t} + t_d) = \frac{r + \beta}{r} \frac{e^{r\hat{t}}}{N} e^{r t_d}.
+\]</span> With an exponentially growing pandemic, post-sampling delay multiplies our cumulative incidence at detection by <span class="math inline">\(e^{rt_d}\)</span>.</p>
+<p>In the rest of this section, we answer the question:</p>
+<blockquote class="blockquote">
+<p>If we want to detect the virus by the time it reaches a particular cumulative incidence, <span class="math inline">\(\hat{c}\)</span>, how much sequencing do we need to do per unit time?</p>
+</blockquote>
+<section id="sampling-to-relative-abundance" class="level3">
+<h3 class="anchored" data-anchor-id="sampling-to-relative-abundance">Sampling to relative abundance</h3>
+<p>Here we make two more important deterministic assumptions:</p>
+<ol type="1">
+<li>The viral read counts are deterministic, given the expected relative abundance, <span class="math inline">\(a_i\)</span>, in each sample: <span class="math inline">\(k_i = n_i a_i\)</span>.</li>
+<li>The expected relative abundance is itself a deterministic functional of the prevalence: <span class="math display">\[
+a_i = b \int \frac{P(t)}{N} \rho_i(t) dt.
+\]</span> Here, <span class="math inline">\(\rho_i\)</span> is a density that says how much of sample <span class="math inline">\(i\)</span> was collected at different times, and <span class="math inline">\(b\)</span> is a fixed conversion factor between prevalence and relative abundance. (Note <span class="math inline">\(b = RA_p(1)\)</span> in the P2RA manuscript.)</li>
+</ol>
+<p>From here on, it will simplify thing to specify two concrete sampling schemes. Both schemes collect evenly-spaced samples with the same depth:</p>
+<ul>
+<li><span class="math inline">\(n_i = n\)</span></li>
+<li><span class="math inline">\(t_i - t_{i-1} = \delta t\)</span></li>
+<li><span class="math inline">\(0 \leq t_0 &lt; \delta t\)</span>, since we don’t know how long before the first sample the pandemic began.</li>
+</ul>
+<p>Our two schemes differ in when the material for the samples is collected. They are:</p>
+<ol type="1">
+<li>Continuous sampling: <span class="math inline">\(\rho_i(t) = \frac{1}{\delta t}\)</span> for <span class="math inline">\(t \in [t_{i-1}, t_i)\)</span>.</li>
+<li>Grab sampling: <span class="math inline">\(\rho_i(t) = \delta(t - t_i)\)</span>, i.e., the whole sample is collected at <span class="math inline">\(t_i\)</span>.</li>
+</ol>
+</section>
 <section id="continuous-sampling" class="level3">
 <h3 class="anchored" data-anchor-id="continuous-sampling">Continuous sampling</h3>
-<ul>
-<li>Connection to P2RA report calculation.</li>
-<li>What to do about <span class="math inline">\(t_0\)</span></li>
-</ul>
+<p>First, we use the assumptions in the previous section to calculate the cumulative reads by sample <span class="math inline">\(i\)</span>: <span class="math display">\[
+\begin{align}
+K_i &amp; = \sum_{j=0}^{i} n a_i \\
+    &amp; = n \sum_{j=0}^{i} b \int_{t_{j-1}}^{t_j} \frac{P(t)}{N} \frac{dt}{\delta t} \\
+    &amp; = \frac{n b}{\delta t} \int_{0}^{t_i} \frac{P(t)}{N} dt.
+\end{align}
+\]</span></p>
+<p>At this point, we could make the substitution <span class="math inline">\(I(t) = (r + \beta) P(t)\)</span> from our exponential model. This would give us: <span class="math display">\[
+\begin{align}
+K_i &amp; = \frac{nb}{\delta t} (r + \beta) \int_{0}^{t_i} \frac{I(t)}{N} dt \\
+    &amp; = \frac{n b (r + \beta)}{\delta t} c(t_i),
+\end{align}
+\]</span> which is the result from the simple calculation in the P2RA manuscript, using the conversion factor <span class="math inline">\(r + \beta\)</span> to convert between <span class="math inline">\(RA_p\)</span> and <span class="math inline">\(RA_i\)</span>, which is only valid in the exponential growth case.</p>
+<p>Instead, we’ll proceed in a more general way, which will extend to the grab sampling model and account for the discrete nature of our sampling.</p>
+<p>Using our exponential growth model for <span class="math inline">\(P\)</span>, we have: <span class="math display">\[
+\begin{align}
+K_i &amp; = \frac{nb}{\delta t}
+\end{align}
+\]</span></p>
+<p>One complication is that the sample <span class="math inline">\(i\)</span> that <span class="math inline">\(K_i \geq \hat{K}\)</span> depends on the precise timing of our samples. In the figure below, the three colored series show <span class="math inline">\(K_i\)</span> for three series of samples that differ only by the relative timing of their sample collection (e.g., all samples are collected weekly, but one series collects on Mondays, another on Tuesdays, etc.) Note that the red figure, whose first sample was taken latest relative to the start of the pandemic, crosses the threshold (solid black line) one sample earlier than the others.</p>
+<div class="cell" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>t_max <span class="op">=</span> <span class="dv">8</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>k_hat <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>time <span class="op">=</span> np.arange(<span class="dv">0</span>, t_max, <span class="fl">0.1</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>plt.plot(time, np.exp(r <span class="op">*</span> time), <span class="st">"k:"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t_0 <span class="kw">in</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>]:</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> np.arange(t_0, t_max, dt)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> np.exp(r <span class="op">*</span> t)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    plt.plot(t, k, <span class="st">"o"</span>, label<span class="op">=</span>t_0)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>plt.hlines(k_hat, <span class="dv">0</span>, t_max, <span class="st">"k"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Cumulative reads $K$"</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Time"</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Effect of sample timing"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">"$t_0$"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-02_CostEstimateMVP_files/figure-html/cell-2-output-1.png" width="591" height="449"></p>
+</div>
+</div>
+<p>We account for this effect by splitting <span class="math inline">\(\hat{t}\)</span> into two components:</p>
+<ol type="1">
+<li>The earliest time possible to detect, <span class="math inline">\(t^{\star}\)</span>, found by allowing <span class="math inline">\(K\)</span> to vary continously in time (dotted line above)</li>
+<li>The residual time waiting for the next sample to be collected. Because we have no reason to expect this waiting time to take any particular value, we average it over a uniform distribution.</li>
+</ol>
+<p>First, we will find an implicit equation for <span class="math inline">\(t^{\star}\)</span>: <span class="math display">\[
+\begin{align}
+\hat{K} &amp; = \frac{nb}{\delta t} \int_0^{t^{\star}} \frac{P(t)}{N} dt \\
+        &amp; = \frac{nb}{\delta t} \left(\frac{e^{r t^{\star}}}{rN} + \mathcal{O}(N^{-1})\right)\\
+\end{align}
+\]</span></p>
+<p>Next we average our target cumulative incidence over the sample waiting time: <span class="math display">\[
+\begin{align}
+\hat{c} &amp; = \int_{t^{\star}}^{t^{\star} + \delta t} c(\hat{t} + t_d) \frac{d \hat{t}}{\delta t} \\
+        &amp; = \int_{t^{\star}}^{t^{\star} + \delta t}
+                \frac{r + \beta}{r} \frac{e^{r(\hat{t} + t_d)}}{N} \frac{d \hat{t}}{\delta t}
+                + \mathcal{O}(N^{-1}) \\
+        &amp; = (r + \beta)
+            \left(\frac{e^{r t^{\star}}}{r N} \right)
+            \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
+            e^{r t_d}
+            + \mathcal{O}(N^{-1}) \\
+\end{align}
+\]</span> The the third term in parentheses is the cost incurred from having widely spaced samples. As <span class="math inline">\(r \delta t \to 0\)</span>, this cost goes to zero. When <span class="math inline">\(r \delta t\)</span> is large, this cost grows exponentially.</p>
+<p>Finally, we notice that the second term in parentheses appears in our implicit equation for <span class="math inline">\(t^{\star}\)</span> above. Substituting and rearranging gives the sequencing effort required to detect by cumulative incidence <span class="math inline">\(\hat{c}\)</span>: <span class="math display">\[
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+    \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
+    e^{r t_d}
+    + \mathcal{O}(N^{-1})
+\]</span> Some observations:</p>
+<ol type="1">
+<li>Faster-growing and faster-recovering viruses require more sequencing because the current prevalence is a smaller fraction of the cumulative incidence.</li>
+<li>Higher detection thresholds, lower P2RA factors (<span class="math inline">\(b\)</span>), and lower target cumulative incidence, require more sequencing.</li>
+<li>There is a cost associated with longer sampling intervals and delays between collection and analysis. The latter grows faster than the former.</li>
+</ol>
 </section>
 <section id="grab-sampling" class="level3">
 <h3 class="anchored" data-anchor-id="grab-sampling">Grab sampling</h3>
-
-
+<p>Now we turn to grab sampling at the collection times <span class="math inline">\(\{t_0, t_1, \ldots\}\)</span>. The analysis is the same as for continuous sampling, except that we will have a different implicit equation for <span class="math inline">\(t^{\star}\)</span>.</p>
+<p>With grab sampling, <span class="math inline">\(\rho_i(t) = \delta(t - t_i)\)</span>, we have cumulative counts: <span class="math display">\[
+\begin{align}
+K_i &amp; = n \sum_{j=0}^{i} b \frac{P(t_i)}{N} \\
+    &amp; = \frac{n b}{N} \sum_{j=0}^{i} e^{r (t_0 + j \delta t)} \\
+    &amp; = \frac{n b}{N} e^{r t_0} \frac{e^{r(i+1)\delta t} - 1}{e^{r\delta t} - 1} \\
+    &amp; = \frac{n b}{\delta t} \left(\frac{e^{r t_i}}{rN}\right)
+        \left(\frac{r \delta t \, e^{r \delta t}}{e^{r \delta t} - 1}\right)
+        + \mathcal{O}(N^{-1}). \\
+\end{align}
+\]</span> Making the continuous time substitution as before, gives <span class="math display">\[
+\hat{K} = \frac{n b}{\delta t} \left(\frac{e^{r t^{\star}}}{rN}\right)
+            \left(\frac{r \delta t \, e^{r \delta t}}{e^{r \delta t} - 1}\right)
+            + \mathcal{O}(N^{-1}).
+\]</span> The first two terms are identical to the continuous sampling case. The third term is the effect of grab sampling: because the sample is collected entirely at the end of the interval, the prevalence is higher than the average over the interval and you get more reads.</p>
+<p>Using this equation for <span class="math inline">\(t^{\star}\)</span>, we find that the required sequencing effort for grab sampling is: <span class="math display">\[
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+    \left(\frac
+        {e^{-r\delta t} {\left(e^{r \delta t} - 1\right)}^2}
+        {{\left(r \delta t\right)}^2}
+        \right)
+    e^{r t_d}
+    + \mathcal{O}(N^{-1})
+\]</span> This is similar to the continous sampling case but with weaker dependence on the sampling interval:</p>
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.arange(<span class="fl">0.01</span>, <span class="dv">2</span>, <span class="fl">0.01</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>plt.plot(t, (np.exp(t) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> t, label<span class="op">=</span><span class="vs">r"Continuous sampling"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>plt.plot(t, np.exp(<span class="op">-</span>t) <span class="op">*</span> ((np.exp(t) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> t) <span class="op">**</span> <span class="dv">2</span>, label<span class="op">=</span><span class="vs">r"Grab sampling"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Effect of wider sampling intervals"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Sampling interval, $r \delta t$"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Multiplicative effect on required sequencing depth"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-02_CostEstimateMVP_files/figure-html/cell-3-output-1.png" width="589" height="451"></p>
+</div>
+</div>
 </section>
+</section>
+<section id="numerical-example" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-example">Numerical example</h2>
+<p>A function that calculates the depth required per unit time to detect by a given cumulative incidence:</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> depth_required(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    growth_rate: <span class="bu">float</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    recovery_rate: <span class="bu">float</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    read_threshold: <span class="bu">int</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    p2ra_factor: <span class="bu">float</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    cumulative_incidence_target: <span class="bu">float</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    sampling_interval: <span class="bu">float</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    sampling_scheme: <span class="bu">str</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    delay: <span class="bu">float</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    leading_term <span class="op">=</span> (</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        (growth_rate <span class="op">+</span> recovery_rate)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span> read_threshold</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> (p2ra_factor <span class="op">*</span> cumulative_incidence_target)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> growth_rate <span class="op">*</span> sampling_interval</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> sampling_scheme <span class="op">==</span> <span class="st">"continuous"</span>:</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        sampling_term <span class="op">=</span> (np.exp(x) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> x</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> sampling_scheme <span class="op">==</span> <span class="st">"grab"</span>:</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        sampling_term <span class="op">=</span> np.exp(<span class="op">-</span>x) <span class="op">*</span> ((np.exp(x) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> x) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"sampling_scheme must be continuous or grab"</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    delay_term <span class="op">=</span> np.exp(growth_rate <span class="op">*</span> delay)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> leading_term <span class="op">*</span> sampling_term <span class="op">*</span> delay_term</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll measure time in days. Let’s assume:</p>
+<ul>
+<li>A virus with a doubling time of 1 week and recovery timescale of two weeks</li>
+<li>A read threshold of 100 viral reads</li>
+<li>An <span class="math inline">\(RA_i(1%)\)</span> of 1e-7 (approximate median SARS-CoV2 in Rothman)</li>
+<li>A cumulative incidence target of 1%</li>
+<li>A delay of one week for sample processing and sequencing</li>
+<li>Vary the sampling scheme and sampling interval (from daily to monthly)</li>
+</ul>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> <span class="dv">7</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> <span class="dv">14</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>k_hat <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>ra_i_01 <span class="op">=</span> <span class="fl">1e-7</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert from weekly incidence to prevalence and per 1% to per 1</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> ra_i_01 <span class="op">*</span> <span class="dv">100</span> <span class="op">*</span> (r <span class="op">+</span> beta) <span class="op">*</span> <span class="dv">7</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>c_hat <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> np.arange(<span class="fl">1.0</span>, <span class="dv">30</span>, <span class="dv">1</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>t_d <span class="op">=</span> <span class="fl">7.0</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>n_cont <span class="op">=</span> depth_required(r, beta, k_hat, b, c_hat, delta_t, <span class="st">"continuous"</span>, t_d)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>n_grab <span class="op">=</span> depth_required(r, beta, k_hat, b, c_hat, delta_t, <span class="st">"grab"</span>, t_d)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, <span class="dv">30</span> <span class="op">*</span> n_cont, label<span class="op">=</span><span class="st">"continuous"</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, <span class="dv">30</span> <span class="op">*</span> n_grab, label<span class="op">=</span><span class="st">"grab"</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">"Sampling scheme"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Reads required per month"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Sampling interval (days)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-02_CostEstimateMVP_files/figure-html/cell-5-output-1.png" width="578" height="443"></p>
+</div>
+</div>
+</section>
+<section id="next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="next-steps">Next steps</h2>
+<ul>
+<li>Vary the other parameters, make plots of interest?</li>
+<li>Consider per-sample and per-read costs. Find the optimal sampling interval for each scheme.</li>
+<li>Relax deterministic assumptions:
+<ul>
+<li>Poisson read count noise</li>
+<li>“Excess” read count noise</li>
+<li>Randomness in the spread of the virus</li>
+</ul></li>
+<li>Consider multiple sites
+<ul>
+<li>Accounting for global spread</li>
+<li>Determining how to spread monitoring effort across locations</li>
+</ul></li>
+</ul>
+
+
 </section>
 
 </main> <!-- /main -->
