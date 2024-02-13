@@ -1,0 +1,123 @@
+---
+title: "NAO Cost Estimate MVP -- Optimizing the sampling interval"
+author: "Dan Rice"
+date: 2024-02-13
+format:
+  html:
+    code-fold: false
+    toc: true
+jupyter: python3
+filters:
+    - black-formatter
+---
+
+## Background
+
+See [previous notebook](https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html).
+The goal of this notebook is to use our simple, deterministic cost estimate to answer the question:
+
+> How often should we process and sequence samples?
+
+We want to understand the tradeoff between:
+
+1. catching the virus earlier by sampling more frequently, and
+1. saving on processing costs by sampling less frequently.
+
+To this end, we posit a two-component cost model:
+
+* Per-read sequencing costs, and
+* Per-sample processing costs
+
+and find the optimal sampling interval $\delta t$ that minimizes total costs,
+while sequencing to sufficient depth per sample $n$ to detect a virus by cumulative incidence $\hat{c}$.
+
+## A two-component cost model
+
+Consider the cost averaged over a long time interval $T$ in which we will take many samples.
+If we collect and process samples every $\delta t$ days, we will take $T / \delta t$ samples in this interval.
+If we sample $n$ reads per sample, our total sequencing depth is $n \frac{\delta t}{T}$ reads.
+Assume that our costs can be divided into a per-sample cost $d_s$ (including costs of collection, transportation, and processing for sequencing) and a per-read cost $d_r$ of sequencing.
+(Note: the $d$ is sort of awkward because we've already used $c$ for "cumulative incidence".
+You can think of it as standing for "dollars".)
+
+We will seek to minimize the total cost of detection:
+$$
+d_{\text{tot}} = d_s \frac{T}{\delta t} + d_r \frac{nT}{\delta t}.
+$$
+Equivalently, we can divide by the arbitrary time-interval $T$ to get the total rate of spending:
+$$
+\frac{d_{\text{tot}}}{T} = \frac{d_s}{\delta t} + d_r \frac{n}{\delta t}.
+$$
+
+In our [previous post](https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html),
+we found that the read depth per time required to detect a virus by the time it reaches cumulative incidence $\hat{c}$ is:
+
+$$
+\begin{align}
+\frac{n}{\delta t} & = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}}\right) e^{r t_d} f(r \delta t) \\
+                   & = A f(r \delta t),
+\end{align}
+$$
+
+where the function $f$ depends on the sampling scheme,
+and we've defined the constant $A$ to contain all the terms that do not depend on $\delta t$.
+Substituting this into the rate of spending, we have:
+$$
+\frac{d_{\text{tot}}}{T} = \frac{d_s}{\delta t} + A d_r f(r \delta t).
+$$
+
+In the next section, we will find the value of $\delta t$ that minimizes the rate of spending.
+
+### Limitations of the two-component model
+
+* We assume that we process each sample as it comes in. In practice, we could stockpile a set of $m$ samples and process them simultaneously.
+  This would require splitting out the cost of sampling from the cost of sample prep.
+* We do not consider the fact that sequencing (and presumably to some extent sample prep) unit costs decrease with greater depth.
+  (I.e., it's cheaper per-read to do bigger runs.)
+* We neglect the "batch" effects of sequencing. Typically you buy sequencing in units of "lanes" rather than asking for an arbitrary number of reads. This will introduce threshold effects, where we want to batach our samples to use lanes efficiently.
+* We do not account for fixed costs that accumulate per unit time regardless of our sampling and sequencing protocols.
+  These do not affect the optimization here, but they do add to the total cost of the system.
+
+## Optimizing the sampling interval
+
+To find the optimal $\delta t$, we look for a zero of the derivative of spending rate:
+
+$$
+\begin{align}
+\frac{d}{d \delta t} \frac{d_{\text{tot}}}{T} & = - \frac{d_s}{{\delta t}^2} + A d_r r f'(r\delta t).
+\end{align}
+$$
+
+Setting the right-hand side equal to zero and rearranging gives:
+
+$$
+r {\delta t}^2 f'(r \delta t) = \frac{d_s}{d_r} A^{-1}
+$$
+
+To get any farther, we need to specify $f$ and therefore a sampling scheme.
+[Note: If we give some general properties of $f$, we can say some things here that are general to the sampling scheme]
+
+### Grab sampling
+
+We first consider grab sampling, where the entire sample is collected at the sampling time.
+In that case, we have:
+$$
+\begin{align}
+f(x) & = \frac{e^{-x}{(e^x - 1)}^2}{x^2} \\
+     & = 1 + \frac{x^2}{12} + \mathcal{O}(x^3).
+\end{align}
+$$
+We are particularly interested in the small-$x$ regime:
+The depth required becomes exponentially large when $r \delta t \gg 1$,
+so it is likely that the optimal interval satisfies $r \delta t \lesssim 1$.
+We can check this for self-consistency in any specific numerical examples.
+
+This gives us the derivative:
+$$
+f'(x) \approx \frac{x}{6}.
+$$
+
+Using this in our optimization equation yields:
+$$
+{(r \delta t)}^3 \approx 6 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}.
+$$
