@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -102,6 +136,15 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#optimizing-the-sampling-interval" id="toc-optimizing-the-sampling-interval" class="nav-link" data-scroll-target="#optimizing-the-sampling-interval">Optimizing the sampling interval</a>
   <ul class="collapse">
   <li><a href="#grab-sampling" id="toc-grab-sampling" class="nav-link" data-scroll-target="#grab-sampling">Grab sampling</a></li>
+  <li><a href="#continuous-sampling" id="toc-continuous-sampling" class="nav-link" data-scroll-target="#continuous-sampling">Continuous sampling</a></li>
+  <li><a href="#windowed-composite-sampling" id="toc-windowed-composite-sampling" class="nav-link" data-scroll-target="#windowed-composite-sampling">Windowed composite sampling</a></li>
+  <li><a href="#general-properties" id="toc-general-properties" class="nav-link" data-scroll-target="#general-properties">General properties</a></li>
+  </ul></li>
+  <li><a href="#a-numerical-example" id="toc-a-numerical-example" class="nav-link" data-scroll-target="#a-numerical-example">A numerical example</a>
+  <ul class="collapse">
+  <li><a href="#optimal-delta-t" id="toc-optimal-delta-t" class="nav-link" data-scroll-target="#optimal-delta-t">Optimal <span class="math inline">\(\delta t\)</span></a></li>
+  <li><a href="#cost-sensitivity-to-delta-t" id="toc-cost-sensitivity-to-delta-t" class="nav-link" data-scroll-target="#cost-sensitivity-to-delta-t">Cost sensitivity to <span class="math inline">\(\delta t\)</span></a></li>
+  <li><a href="#sensitivity-of-optimal-delta-t-to-p2ra-factor" id="toc-sensitivity-of-optimal-delta-t-to-p2ra-factor" class="nav-link" data-scroll-target="#sensitivity-of-optimal-delta-t-to-p2ra-factor">Sensitivity of optimal <span class="math inline">\(\delta t\)</span> to P2RA factor</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -195,7 +238,7 @@ d_{\text{tot}} = d_s \frac{T}{\delta t} + d_r \frac{nT}{\delta t}.
 \]</span></p>
 <p>Setting the right-hand side equal to zero and rearranging gives:</p>
 <p><span class="math display">\[
-r {\delta t}^2 f'(r \delta t) = \frac{d_s}{d_r} A^{-1}
+{(r \delta t)}^2 f'(r \delta t) = \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}
 \]</span></p>
 <p>To get any farther, we need to specify <span class="math inline">\(f\)</span> and therefore a sampling scheme. [Note: If we give some general properties of <span class="math inline">\(f\)</span>, we can say some things here that are general to the sampling scheme]</p>
 <section id="grab-sampling" class="level3">
@@ -212,6 +255,289 @@ f'(x) \approx \frac{x}{6}.
 <p>Using this in our optimization equation yields: <span class="math display">\[
 {(r \delta t)}^3 \approx 6 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}.
 \]</span></p>
+</section>
+<section id="continuous-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="continuous-sampling">Continuous sampling</h3>
+<p>In the case of continuous sampling, where the sample taken at time <span class="math inline">\(t\)</span> is a composite sample uniformly collected over the interval <span class="math inline">\([t - \delta t, t)\)</span>, we have: <span class="math display">\[
+\begin{align}
+f(x) &amp; = \frac{e^x - 1}{x} \\
+     &amp; = 1 + \frac{x}{2} + \mathcal{O}(x^2) \\
+f'(x) &amp; \approx \frac{1}{2}
+\end{align}
+\]</span> for small <span class="math inline">\(x\)</span>. Note the difference in functional form from the grab sample case.</p>
+<p>Substituting this into the optimization equation yields: <span class="math display">\[
+{(r \delta t)}^2 \approx 2 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}.
+\]</span></p>
+</section>
+<section id="windowed-composite-sampling" class="level3">
+<h3 class="anchored" data-anchor-id="windowed-composite-sampling">Windowed composite sampling</h3>
+<p>An intermediate (and more realistic) model of sampling is windowed composite sampling. In this scheme, the sample at time <span class="math inline">\(t\)</span> is a composite sample taken over a window of width <span class="math inline">\(w\)</span> (e.g., 24hours) from <span class="math inline">\(t - w\)</span> to <span class="math inline">\(t\)</span>. Notably, when the sampling interval (<span class="math inline">\(\delta t\)</span>) increases, the length of the window does not. In this case we have [TODO: add derivation to other notebook]:</p>
+<p><span class="math display">\[
+\begin{align}
+f(x) &amp; = \frac{rw}{1 - e^{-rw}} \frac{e^{-x}{(e^x - 1)}^2}{x^2} \\
+     &amp; \approx \left(1 + \frac{rw}{2}\right) \frac{e^{-x}{(e^x - 1)}^2}{x^2} \\
+     &amp; \approx \left(1 + \frac{rw}{2}\right) + \left(1 + \frac{rw}{2}\right) \left(\frac{x^2}{12}\right) \\
+f'(x) &amp; \approx \left(1 + \frac{rw}{2}\right) \left(\frac{x}{6}\right) \\
+\end{align}
+\]</span> for small <span class="math inline">\(rw\)</span> and <span class="math inline">\(x\)</span>. Note that as <span class="math inline">\(rw \to 0\)</span>, we recover grab sampling.</p>
+<p>Since we’re keeping only the leading term in <span class="math inline">\(x = r \delta t\)</span>, and <span class="math inline">\(w \leq \delta t\)</span>, for consistency we should also drop the <span class="math inline">\(\frac{rw}{2}\)</span> (or keep more terms of the expansion). Thus, we’ll treat windowed composite sampling for small windows as equivalent to grab sampling. The key reason for this is that changing the sampling interval does not change the window. Note that for <span class="math inline">\(\delta t \approx w\)</span>, i.e.&nbsp;<span class="math inline">\(x \approx rw\)</span>, <span class="math inline">\(f(x) \approx 1 + \frac{rw}{2}\)</span>, just as with continuous sampling, but <span class="math inline">\(f'(x)\)</span> still behaves like grab sampling.</p>
+</section>
+<section id="general-properties" class="level3">
+<h3 class="anchored" data-anchor-id="general-properties">General properties</h3>
+<p>In general, we have: <span class="math display">\[
+r \delta t \approx {\left( a\frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d} \right)}^{1/b},
+\]</span> where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are positive constants that depend on the sampling scheme. We can observe some general features:</p>
+<ul>
+<li>Faster-growing viruses (higher <span class="math inline">\(r\)</span>) <strong>decreases</strong> the optimal sampling interval.</li>
+<li>Increasing the cost per sample <span class="math inline">\(d_s\)</span> <strong>increases</strong> the optimal sampling interval.</li>
+<li>Increasing the cost per read <span class="math inline">\(d_r\)</span> <strong>decreases</strong> the optimal sampling interval.</li>
+<li>Increasing the P2RA factor <span class="math inline">\(b\)</span> or the target cumulative incidence <span class="math inline">\(c\)</span> <strong>increases</strong> the optimal sampling interval.</li>
+<li>Increasing the detection threshold <span class="math inline">\(\hat{K}\)</span> <strong>decreases</strong> the optimal sampling interval.</li>
+<li>Increasing the delay between sampling and detection <span class="math inline">\(t_d\)</span> <strong>decreases</strong> the optimal sampling interval.</li>
+</ul>
+<p>One general trend is: the more optimistic we are about our method (higher <span class="math inline">\(b\)</span>, smaller <span class="math inline">\(\hat{K}\)</span>, shorter <span class="math inline">\(t_d\)</span>), the longer we can wait between samples.</p>
+</section>
+</section>
+<section id="a-numerical-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-numerical-example">A numerical example</h2>
+<section id="optimal-delta-t" class="level3">
+<h3 class="anchored" data-anchor-id="optimal-delta-t">Optimal <span class="math inline">\(\delta t\)</span></h3>
+<div class="cell" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> optimal_interval(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    per_sample_cost: <span class="bu">float</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    per_read_cost: <span class="bu">float</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    growth_rate: <span class="bu">float</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    recovery_rate: <span class="bu">float</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    read_threshold: <span class="bu">int</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    p2ra_factor: <span class="bu">float</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    cumulative_incidence_target: <span class="bu">float</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    sampling_scheme: <span class="bu">str</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    delay: <span class="bu">float</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    constant_term <span class="op">=</span> (</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        (per_sample_cost <span class="op">/</span> per_read_cost)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span> ((p2ra_factor <span class="op">*</span> cumulative_incidence_target) <span class="op">/</span> read_threshold)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span> (growth_rate <span class="op">/</span> (growth_rate <span class="op">+</span> recovery_rate))</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span> np.exp(<span class="op">-</span>growth_rate <span class="op">*</span> delay)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> sampling_scheme <span class="op">==</span> <span class="st">"continuous"</span>:</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        b <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> sampling_scheme <span class="op">==</span> <span class="st">"grab"</span>:</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        b <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"sampling_scheme must be continuous or grab"</span>)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (a <span class="op">*</span> constant_term) <span class="op">**</span> (<span class="dv">1</span> <span class="op">/</span> b) <span class="op">/</span> growth_rate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>I asked the NAO in (Twist)[https://twist.com/a/197793/ch/565514/t/5896609/] for info on sequencing and sample-processing costs. Based on their answers, a reasonable order-of-magnitude cost estimate is $500. As discussed above, our cost model is highly simplified and the specifics of when samples are collected, transported, processed, and batched for sequencing will make this calculation much more complicated in practice.</p>
+<p>Let’s use these numbers plus our virus model from the (last post)[https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html#numerical-example] to find the optimal sampling interval:</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_s <span class="op">=</span> <span class="dv">500</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>d_r <span class="op">=</span> <span class="dv">5000</span> <span class="op">*</span> <span class="fl">1e-9</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Weekly doubling</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> <span class="dv">7</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Recovery in two weeks</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> <span class="dv">14</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Detect when 100 cumulative reads</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>k_hat <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Median P2RA factor for SARS-CoV-2 in Rothman</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>ra_i_01 <span class="op">=</span> <span class="fl">1e-7</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert from weekly incidence to prevalence and per 1% to per 1</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> ra_i_01 <span class="op">*</span> <span class="dv">100</span> <span class="op">*</span> (r <span class="op">+</span> beta) <span class="op">*</span> <span class="dv">7</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Goal of detecting by 1% cumulative incidence</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>c_hat <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Delay from sampling to detecting of 1 week</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>t_d <span class="op">=</span> <span class="fl">7.0</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>delta_t_grab <span class="op">=</span> optimal_interval(d_s, d_r, r, beta, k_hat, b, c_hat, <span class="st">"grab"</span>, t_d)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>delta_t_cont <span class="op">=</span> optimal_interval(d_s, d_r, r, beta, k_hat, b, c_hat, <span class="st">"continuous"</span>, t_d)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Optimal sampling interval with grab sampling:</span><span class="ch">\t\t</span><span class="sc">{</span>delta_t_grab<span class="sc">:.2f}</span><span class="ss"> days"</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\t</span><span class="ss">r delta_t = </span><span class="sc">{</span>r<span class="op">*</span>delta_t_grab<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Optimal sampling interval with continuous sampling:</span><span class="ch">\t</span><span class="sc">{</span>delta_t_cont<span class="sc">:.2f}</span><span class="ss"> days"</span>)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\t</span><span class="ss">r delta_t = </span><span class="sc">{</span>r<span class="op">*</span>delta_t_cont<span class="sc">:.2f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimal sampling interval with grab sampling:       5.98 days
+    r delta_t = 0.59
+Optimal sampling interval with continuous sampling: 2.66 days
+    r delta_t = 0.26</code></pre>
+</div>
+</div>
+<p>We should check that <span class="math inline">\(r \delta_t\)</span> is small enough that our approximation for <span class="math inline">\(f(x)\)</span> is accurate:</p>
+<div class="cell" data-execution_count="3">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.arange(<span class="fl">0.01</span>, <span class="dv">3</span>, <span class="fl">0.01</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>plt.plot(x, np.exp(<span class="op">-</span>x) <span class="op">*</span> ((np.exp(x) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> x) <span class="op">**</span> <span class="dv">2</span>, label<span class="op">=</span><span class="st">"exact"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>plt.plot(x, <span class="dv">1</span> <span class="op">+</span> x<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> <span class="dv">12</span>, label<span class="op">=</span><span class="st">"approx"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="dv">2</span>])</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"$x$"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"$f(x)$"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Grab sampling"</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>plt.plot(x, (np.exp(x) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> x, label<span class="op">=</span><span class="st">"exact"</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>plt.plot(x, <span class="dv">1</span> <span class="op">+</span> x <span class="op">/</span> <span class="dv">2</span>, label<span class="op">=</span><span class="st">"approx"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="dv">5</span>])</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"$x$"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"$f(x)$"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Continuous sampling"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-08_OptimalSamplingInterval_files/figure-html/cell-4-output-1.png" width="598" height="449"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-08_OptimalSamplingInterval_files/figure-html/cell-4-output-2.png" width="577" height="449"></p>
+</div>
+</div>
+<p>Looks fine in both cases.</p>
+</section>
+<section id="cost-sensitivity-to-delta-t" class="level3">
+<h3 class="anchored" data-anchor-id="cost-sensitivity-to-delta-t">Cost sensitivity to <span class="math inline">\(\delta t\)</span></h3>
+<p>In a real system, we won’t be able to optimize <span class="math inline">\(\delta t\)</span> exactly. Let’s see how the cost varies with the sampling interval:</p>
+<div class="cell" data-execution_count="4">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> depth_required(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    growth_rate: <span class="bu">float</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    recovery_rate: <span class="bu">float</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    read_threshold: <span class="bu">int</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    p2ra_factor: <span class="bu">float</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    cumulative_incidence_target: <span class="bu">float</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    sampling_interval: <span class="bu">float</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    sampling_scheme: <span class="bu">str</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    delay: <span class="bu">float</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    leading_term <span class="op">=</span> (</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        (growth_rate <span class="op">+</span> recovery_rate)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span> read_threshold</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> (p2ra_factor <span class="op">*</span> cumulative_incidence_target)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> growth_rate <span class="op">*</span> sampling_interval</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> sampling_scheme <span class="op">==</span> <span class="st">"continuous"</span>:</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        sampling_term <span class="op">=</span> (np.exp(x) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> x</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> sampling_scheme <span class="op">==</span> <span class="st">"grab"</span>:</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        sampling_term <span class="op">=</span> np.exp(<span class="op">-</span>x) <span class="op">*</span> ((np.exp(x) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> x) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"sampling_scheme must be continuous or grab"</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    delay_term <span class="op">=</span> np.exp(growth_rate <span class="op">*</span> delay)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> leading_term <span class="op">*</span> sampling_term <span class="op">*</span> delay_term</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cost_per_time(</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    per_sample_cost: <span class="bu">float</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    per_read_cost: <span class="bu">float</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    sampling_interval: <span class="bu">float</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    sample_depth_per_time: <span class="bu">float</span>,</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> sample_cost_per_time(per_sample_cost, sampling_interval) <span class="op">+</span> seq_cost_per_time(</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>        per_read_cost, sample_depth_per_time</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_cost_per_time(per_sample_cost, sampling_interval):</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> per_sample_cost <span class="op">/</span> sampling_interval</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> seq_cost_per_time(per_read_cost, sample_depth_per_time):</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> per_read_cost <span class="op">*</span> sample_depth_per_time</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="5">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> np.arange(<span class="fl">1.0</span>, <span class="dv">21</span>, <span class="dv">1</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>n_cont <span class="op">=</span> depth_required(r, beta, k_hat, b, c_hat, delta_t, <span class="st">"continuous"</span>, t_d)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>n_grab <span class="op">=</span> depth_required(r, beta, k_hat, b, c_hat, delta_t, <span class="st">"grab"</span>, t_d)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>cost_cont <span class="op">=</span> cost_per_time(d_s, d_r, delta_t, n_cont)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>cost_grab <span class="op">=</span> cost_per_time(d_s, d_r, delta_t, n_grab)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, cost_cont, label<span class="op">=</span><span class="st">"continuous"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, cost_grab, label<span class="op">=</span><span class="st">"grab"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="dv">5000</span>])</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Cost per day"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Sampling interval $\delta t$"</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-08_OptimalSamplingInterval_files/figure-html/cell-6-output-1.png" width="601" height="436"></p>
+</div>
+</div>
+<p>It looks like the cost curve is pretty flat for the grab sampling, suggesting that we could choose a range of sampling intervals without dramatically increasing the cost. For continuous sampling, the cost increases more steeply with increasing sampling interval.</p>
+<p>Finally, let’s break the costs down between sampling and sequencing:</p>
+<div class="cell" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, cost_grab, label<span class="op">=</span><span class="st">"Total"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, sample_cost_per_time(d_s, delta_t), label<span class="op">=</span><span class="st">"Sampling"</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, seq_cost_per_time(d_r, n_grab), label<span class="op">=</span><span class="st">"Sequencing"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Cost per day"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Sampling interval $\delta t$"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Grab sampling"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-08_OptimalSamplingInterval_files/figure-html/cell-7-output-1.png" width="602" height="451"></p>
+</div>
+</div>
+<p>We can observe a few things:</p>
+<ul>
+<li>Sequencing costs are always quite a bit higher than sampling costs.</li>
+<li>Increasing the sampling interval from one day to about five generates a significant savings in sampling cost, any longer than that gives strongly diminishing returns. (This makes sense from the functional form <span class="math inline">\(d_s / \delta t\)</span>.)</li>
+<li>The required sequencing depth increases slowly in this range.</li>
+</ul>
+</section>
+<section id="sensitivity-of-optimal-delta-t-to-p2ra-factor" class="level3">
+<h3 class="anchored" data-anchor-id="sensitivity-of-optimal-delta-t-to-p2ra-factor">Sensitivity of optimal <span class="math inline">\(\delta t\)</span> to P2RA factor</h3>
+<p>We have a lot of uncertainty in the P2RA factor, even for a specific known virus with a fixed protocol. Let’s see how the optimal sampling interval varies with it. (We’ll only do this for grab sampling.)</p>
+<div class="cell" data-execution_count="7">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ra_i_01 <span class="op">=</span> np.logspace(<span class="op">-</span><span class="dv">9</span>, <span class="op">-</span><span class="dv">6</span>, <span class="dv">100</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert from weekly incidence to prevalence and per 1% to per 1</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> ra_i_01 <span class="op">*</span> <span class="dv">100</span> <span class="op">*</span> (r <span class="op">+</span> beta) <span class="op">*</span> <span class="dv">7</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>delta_t_opt <span class="op">=</span> optimal_interval(d_s, d_r, r, beta, k_hat, b, c_hat, <span class="st">"grab"</span>, t_d)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>plt.semilogx(ra_i_01, delta_t_opt)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"P2RA factor, $RA_i(1\%)$"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Optimal sampling interval, $\delta t$"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="dv">13</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-08_OptimalSamplingInterval_files/figure-html/cell-8-output-1.png" width="587" height="432"></p>
+</div>
+</div>
+<p>As expected, the theory predicts that with higher P2RA factors, we can get away with wider sampling intervals. Also, for this range of P2RA factors, it never recommends daily sampling.</p>
+<p>However, we can also see that the cost per day depends much more strongly on the P2RA factor than on optimizing the sampling interval:</p>
+<div class="cell" data-execution_count="8">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> np.arange(<span class="fl">1.0</span>, <span class="dv">21</span>, <span class="dv">1</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ra_i_01 <span class="kw">in</span> [<span class="fl">1e-8</span>, <span class="fl">1e-7</span>, <span class="fl">1e-6</span>]:</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> ra_i_01 <span class="op">*</span> <span class="dv">100</span> <span class="op">*</span> (r <span class="op">+</span> beta) <span class="op">*</span> <span class="dv">7</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> depth_required(r, beta, k_hat, b, c_hat, delta_t, <span class="st">"grab"</span>, t_d)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    cost <span class="op">=</span> cost_per_time(d_s, d_r, delta_t, n)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(delta_t, cost, label<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>ra_i_01<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Cost per day"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Sampling interval $\delta t$"</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">"$RA_i(1\%)$"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-08_OptimalSamplingInterval_files/figure-html/cell-9-output-1.png" width="591" height="431"></p>
+</div>
+</div>
 
 
 </section>

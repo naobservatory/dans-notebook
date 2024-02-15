@@ -91,7 +91,7 @@ $$
 Setting the right-hand side equal to zero and rearranging gives:
 
 $$
-r {\delta t}^2 f'(r \delta t) = \frac{d_s}{d_r} A^{-1}
+{(r \delta t)}^2 f'(r \delta t) = \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}
 $$
 
 To get any farther, we need to specify $f$ and therefore a sampling scheme.
@@ -121,3 +121,288 @@ Using this in our optimization equation yields:
 $$
 {(r \delta t)}^3 \approx 6 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}.
 $$
+
+### Continuous sampling
+
+In the case of continuous sampling, where the sample taken at time $t$ is a composite sample uniformly collected over the interval $[t - \delta t, t)$, we have:
+$$
+\begin{align}
+f(x) & = \frac{e^x - 1}{x} \\
+     & = 1 + \frac{x}{2} + \mathcal{O}(x^2) \\
+f'(x) & \approx \frac{1}{2}
+\end{align}
+$$
+for small $x$.
+Note the difference in functional form from the grab sample case.
+
+Substituting this into the optimization equation yields:
+$$
+{(r \delta t)}^2 \approx 2 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d}.
+$$
+
+### Windowed composite sampling
+
+An intermediate (and more realistic) model of sampling is windowed composite sampling.
+In this scheme, the sample at time $t$ is a composite sample taken over a window of width $w$ (e.g., 24hours) from $t - w$ to $t$.
+Notably, when the sampling interval ($\delta t$) increases, the length of the window does not.
+In this case we have [TODO: add derivation to other notebook]:
+
+$$
+\begin{align}
+f(x) & = \frac{rw}{1 - e^{-rw}} \frac{e^{-x}{(e^x - 1)}^2}{x^2} \\
+     & \approx \left(1 + \frac{rw}{2}\right) \frac{e^{-x}{(e^x - 1)}^2}{x^2} \\
+     & \approx \left(1 + \frac{rw}{2}\right) + \left(1 + \frac{rw}{2}\right) \left(\frac{x^2}{12}\right) \\
+f'(x) & \approx \left(1 + \frac{rw}{2}\right) \left(\frac{x}{6}\right) \\
+\end{align}
+$$
+for small $rw$ and $x$.
+Note that as $rw \to 0$, we recover grab sampling.
+
+Since we're keeping only the leading term in $x = r \delta t$, and $w \leq \delta t$,
+for consistency we should also drop the $\frac{rw}{2}$ (or keep more terms of the expansion).
+Thus, we'll treat windowed composite sampling for small windows as equivalent to grab sampling.
+The key reason for this is that changing the sampling interval does not change the window.
+Note that for $\delta t \approx w$, i.e. $x \approx rw$, $f(x) \approx 1 + \frac{rw}{2}$, just as with continuous sampling, but $f'(x)$ still behaves like grab sampling.
+
+### General properties
+
+In general, we have:
+$$
+r \delta t \approx {\left( a\frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d} \right)}^{1/b},
+$$
+where $a$ and $b$ are positive constants that depend on the sampling scheme.
+We can observe some general features:
+
+* Faster-growing viruses (higher $r$) **decreases** the optimal sampling interval.
+* Increasing the cost per sample $d_s$ **increases** the optimal sampling interval.
+* Increasing the cost per read $d_r$ **decreases** the optimal sampling interval.
+* Increasing the P2RA factor $b$ or the target cumulative incidence $c$ **increases** the optimal sampling interval.
+* Increasing the detection threshold $\hat{K}$ **decreases** the optimal sampling interval.
+* Increasing the delay between sampling and detection $t_d$ **decreases** the optimal sampling interval.
+
+One general trend is: the more optimistic we are about our method (higher $b$, smaller $\hat{K}$, shorter $t_d$), the longer we can wait between samples.
+
+## A numerical example
+
+### Optimal $\delta t$
+
+```{python}
+#| code-fold: true
+import numpy as np
+import matplotlib.pyplot as plt
+
+def optimal_interval(
+    per_sample_cost: float,
+    per_read_cost: float,
+    growth_rate: float,
+    recovery_rate: float,
+    read_threshold: int,
+    p2ra_factor: float,
+    cumulative_incidence_target: float,
+    sampling_scheme: str,
+    delay: float,
+) -> float:
+    constant_term = (
+        (per_sample_cost / per_read_cost)
+        * ((p2ra_factor * cumulative_incidence_target) / read_threshold)
+        * (growth_rate / (growth_rate + recovery_rate))
+        * np.exp(- growth_rate * delay)
+    )
+    if sampling_scheme == "continuous":
+        a = 2
+        b = 2
+    elif sampling_scheme == "grab":
+        a = 6
+        b = 3
+    else:
+        raise ValueError("sampling_scheme must be continuous or grab")
+    return (a * constant_term)**(1 / b) / growth_rate
+```
+
+I asked the NAO in (Twist)[https://twist.com/a/197793/ch/565514/t/5896609/] for info on sequencing and sample-processing costs.
+Based on their answers, a reasonable order-of-magnitude cost estimate is $500.
+As discussed above, our cost model is highly simplified and the specifics of when samples are collected, transported, processed, and batched for sequencing will make this calculation much more complicated in practice.
+
+Let's use these numbers plus our virus model from the (last post)[https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html#numerical-example] to find the optimal sampling interval:
+
+```{python}
+d_s = 500
+d_r = 5000 * 1e-9
+
+# Weekly doubling
+r = np.log(2) / 7
+# Recovery in two weeks
+beta = 1 / 14
+# Detect when 100 cumulative reads
+k_hat = 100
+# Median P2RA factor for SARS-CoV-2 in Rothman
+ra_i_01 = 1e-7
+# Convert from weekly incidence to prevalence and per 1% to per 1
+b = ra_i_01 * 100 * (r + beta) * 7
+# Goal of detecting by 1% cumulative incidence
+c_hat = 0.01
+# Delay from sampling to detecting of 1 week
+t_d = 7.0
+
+delta_t_grab = optimal_interval(d_s, d_r, r, beta, k_hat, b, c_hat, "grab", t_d)
+delta_t_cont = optimal_interval(d_s, d_r, r, beta, k_hat, b, c_hat, "continuous", t_d)
+print(f"Optimal sampling interval with grab sampling:\t\t{delta_t_grab:.2f} days")
+print(f"\tr delta_t = {r*delta_t_grab:.2f}")
+print(f"Optimal sampling interval with continuous sampling:\t{delta_t_cont:.2f} days")
+print(f"\tr delta_t = {r*delta_t_cont:.2f}")
+```
+
+We should check that $r \delta_t$ is small enough that our approximation for $f(x)$ is accurate:
+
+```{python}
+# | code-fold: true
+x = np.arange(0.01, 3, 0.01)
+plt.plot(x, np.exp(-x) * ((np.exp(x) - 1) / x)**2, label="exact")
+plt.plot(x, 1 + x**2 / 12, label="approx")
+plt.ylim([0,2])
+plt.legend()
+plt.xlabel("$x$")
+plt.ylabel("$f(x)$")
+plt.title("Grab sampling")
+plt.show()
+
+plt.plot(x, (np.exp(x) - 1) / x, label="exact")
+plt.plot(x, 1 + x / 2, label="approx")
+plt.ylim([0,5])
+plt.legend()
+plt.xlabel("$x$")
+plt.ylabel("$f(x)$")
+plt.title("Continuous sampling")
+plt.show()
+```
+
+Looks fine in both cases.
+
+### Cost sensitivity to $\delta t$
+
+In a real system, we won't be able to optimize $\delta t$ exactly.
+Let's see how the cost varies with the sampling interval:
+
+```{python}
+# | code-fold: true
+
+def depth_required(
+    growth_rate: float,
+    recovery_rate: float,
+    read_threshold: int,
+    p2ra_factor: float,
+    cumulative_incidence_target: float,
+    sampling_interval: float,
+    sampling_scheme: str,
+    delay: float,
+) -> float:
+    leading_term = (
+        (growth_rate + recovery_rate)
+        * read_threshold
+        / (p2ra_factor * cumulative_incidence_target)
+    )
+    x = growth_rate * sampling_interval
+    if sampling_scheme == "continuous":
+        sampling_term = (np.exp(x) - 1) / x
+    elif sampling_scheme == "grab":
+        sampling_term = np.exp(-x) * ((np.exp(x) - 1) / x) ** 2
+    else:
+        raise ValueError("sampling_scheme must be continuous or grab")
+    delay_term = np.exp(growth_rate * delay)
+    return leading_term * sampling_term * delay_term
+
+def cost_per_time(
+    per_sample_cost: float,
+    per_read_cost: float,
+    sampling_interval: float,
+    sample_depth_per_time: float,
+) -> float:
+    return (
+        sample_cost_per_time(per_sample_cost, sampling_interval)
+        + seq_cost_per_time(per_read_cost, sample_depth_per_time)
+    )
+
+def sample_cost_per_time(per_sample_cost, sampling_interval):
+    return per_sample_cost / sampling_interval
+
+def seq_cost_per_time(per_read_cost, sample_depth_per_time):
+    return per_read_cost * sample_depth_per_time
+```
+
+```{python}
+#| code-fold: true
+delta_t = np.arange(1.0, 21, 1)
+n_cont = depth_required(r, beta, k_hat, b, c_hat, delta_t, "continuous", t_d)
+n_grab = depth_required(r, beta, k_hat, b, c_hat, delta_t, "grab", t_d)
+cost_cont = cost_per_time(d_s, d_r, delta_t, n_cont)
+cost_grab = cost_per_time(d_s, d_r, delta_t, n_grab)
+plt.plot(delta_t, cost_cont, label="continuous")
+plt.plot(delta_t, cost_grab, label="grab")
+plt.ylim([0, 5000])
+plt.ylabel("Cost per day")
+plt.xlabel(r"Sampling interval $\delta t$")
+plt.legend();
+```
+
+It looks like the cost curve is pretty flat for the grab sampling, suggesting that we could choose a range of sampling intervals without dramatically increasing the cost.
+For continuous sampling, the cost increases more steeply with increasing sampling interval.
+
+Finally, let's break the costs down between sampling and sequencing:
+
+```{python}
+#| code-fold: true
+plt.plot(delta_t, cost_grab, label="Total")
+plt.plot(delta_t, sample_cost_per_time(d_s, delta_t), label="Sampling")
+plt.plot(delta_t, seq_cost_per_time(d_r, n_grab), label="Sequencing")
+plt.legend()
+plt.ylabel("Cost per day")
+plt.xlabel(r"Sampling interval $\delta t$")
+plt.title("Grab sampling");
+```
+
+We can observe a few things:
+
+* Sequencing costs are always quite a bit higher than sampling costs.
+* Increasing the sampling interval from one day to about five generates a significant savings in sampling cost, any longer than that gives strongly diminishing returns.
+  (This makes sense from the functional form $d_s / \delta t$.)
+* The required sequencing depth increases slowly in this range.
+
+### Sensitivity of optimal $\delta t$ to P2RA factor
+
+We have a lot of uncertainty in the P2RA factor, even for a specific known virus with a fixed protocol.
+Let's see how the optimal sampling interval varies with it.
+(We'll only do this for grab sampling.)
+
+
+```{python}
+#| code-fold: true
+ra_i_01 = np.logspace(-9, -6, 100)
+# Convert from weekly incidence to prevalence and per 1% to per 1
+b = ra_i_01 * 100 * (r + beta) * 7
+
+delta_t_opt = optimal_interval(d_s, d_r, r, beta, k_hat, b, c_hat, "grab", t_d)
+
+plt.semilogx(ra_i_01, delta_t_opt)
+plt.xlabel("P2RA factor, $RA_i(1\%)$")
+plt.ylabel("Optimal sampling interval, $\delta t$")
+plt.ylim([0, 13]);
+```
+
+As expected, the theory predicts that with higher P2RA factors, we can get away with wider sampling intervals.
+Also, for this range of P2RA factors, it never recommends daily sampling.
+
+However, we can also see that the cost per day depends much more strongly on the P2RA factor than on optimizing the sampling interval:
+
+```{python}
+#| code-fold: true
+delta_t = np.arange(1.0, 21, 1)
+for ra_i_01 in [1e-8, 1e-7, 1e-6]:
+    b = ra_i_01 * 100 * (r + beta) * 7
+    n = depth_required(r, beta, k_hat, b, c_hat, delta_t, "grab", t_d)
+    cost = cost_per_time(d_s, d_r, delta_t, n)
+    plt.plot(delta_t, cost, label=f"{ra_i_01}")
+plt.yscale("log")
+plt.ylabel("Cost per day")
+plt.xlabel(r"Sampling interval $\delta t$")
+plt.legend(title="$RA_i(1\%)$");
+```
