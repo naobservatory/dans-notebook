@@ -1,0 +1,661 @@
+---
+title: "NAO Cost Estimate MVP -- Adding noise"
+author: "Dan Rice"
+date: 2024-03-04
+format:
+  html:
+    code-fold: false
+    toc: true
+jupyter: python3
+filters:
+    - black-formatter
+---
+
+## Background
+
+Previously, we have worked out a deterministic model of the sequencing depth required to detect a novel pandemic virus by the time it reaches a fixed cumulative incidence (number of people ever infected).
+However, in the real world, there are a number of sources of noise that will affect our ability to detect a virus.
+In this post, we ask the question:
+**How much sequencing is required to have an $x$% chance to detect a virus by the time it reaches a fixed cumulative incidence, given a particular model of the noise?**
+
+## Model
+
+It is useful to categorize noise sources by how they behave as various parameters like the sequencing depth change.
+For example, three types of noise that are relevant to our problem are:
+
+1. Noise whose coefficient of variation decreases as the sequencing depth increases.
+   This includes poisson counting noise in the number of reads mapping to a sequence,
+   due to finite sampling effects.
+2. Noise whose coefficient of variation goes to a constant value as the sequencing depth increases.
+   For example, the relative abundances in a sequencing library depend on biases in enrichment efficiency.
+   If there is a class of abundant sequences that are efficiently enriched by our lab protocol, random variation in the abundance of that class of sequences will generate noise in the counts of all the other sequences that is only weakly dependent on the total read depth.
+3. Noise that depends on the number of people contributing to a sample.
+   For example, in the limit where each sample is taken from a single person,
+   the noise in the counts of reads mapping to the pandemic virus will be dominated by whether that single person is infected or not.
+
+In the following, we consider noise classes 1. and 2.
+We neglect 3 for the moment because in well-mixed municipal wastewater samples, we expect this to be a small effect.
+However, similar analysis to that presented here could be applied in that case as well.
+
+We will consider a sequence of samples indexed by $i$, where the random variable $Y_i$ represents the number of reads corresponding to the pandemic virus in sample $i$.
+We model $Y_i$ as independent draws from a Poisson mixture distribution:
+$$
+Y_i \sim \text{Poisson}(X_i),
+$$
+where $X_i$ is a latent variable that represents excess noise not accounted for by the Poisson model.
+To connect this model to our previous deterministic model, we set the mean of $X_i$ to the number of reads in the deterministic model:
+
+$$
+E[X_i] = \mu_i = \frac{n b}{N} e^{r(t_0 + j \delta t)}
+$$
+
+where:
+
+- $n$ is the sequencing depth
+- $b$ is the P2RA factor
+- $N$ is the population size
+- $r$ is the growth rate of the virus
+- $t_0$ is the time of the first sample after the start of the pandemic
+- $\delta t$ is the time between samples.
+
+Note that for simplicity this is assuming instantaneous grab sampling, which is a good approximation to 24-hr composite sampling.
+
+Recall that in our detection model, we declare a virus to be detected when the cumulative number of reads matching the virus cross a threshold.
+Thus, to calculate the probability of detection, we need to calculate the probability that the cumulative number of reads ($\sum_{j=0}^{i} Y_j$) is greater than the threshold value $\hat{K}$.
+We will proceed in two steps:
+
+1. Calculate the cumulant generating function of the random variable $Y = \sum_j Y_j$.
+   This is natural to calculate because the CGF of a sum of independent random variables is the sum of their individual CGFs.
+2. Approximate the cumulative distribution function (CDF) of $Y$ from a finite set of cumulants using the [Cornish-Fisher expansion](https://en.wikipedia.org/wiki/Cornish%E2%80%93Fisher_expansion).
+   In this notebook, we will explore under what conditions we can truncate the Cornish-Fisher expansion at a certain number of terms.
+
+## Cumulant generating function of the cumulative read count, $Y$
+
+The cumulant generating function $K_Y$ of random variable $Y$ is given by the log of its moment generating function:
+
+$$
+K_Y(z) = \log \mathbb{E}[e^{zY}].
+$$
+
+If $Y_i$ is Poisson distributed with random mean $X_i$,
+
+$$
+\begin{align}
+K_{Y_i}(z) & = \log \mathbb{E}\left[\mathbb{E}[e^{zY_{i}} | X_i]\right] \\
+       & = \log \mathbb{E}\left[\exp X_i (e^{z} - 1)\right] \\
+       & = K_{X_i} \left(e^{z} - 1\right),
+\end{align}
+$$
+where the second line uses the moment-generating fuction of a Poisson random variable,
+and $K_{X_i}$ is the CGF of $X_i$.
+
+If we assume that the $Y_i$ are independent of one another, then we can add their CGFs to get the CGF of the cumulative read count:
+$$
+\begin{align}
+K_Y(z) & = K_{\sum_i Y_i}(z) \\
+       & = \sum_i K_{Y_i}(z) \\
+       & = \sum_i K_{X_i}(e^z - 1) \\
+       & = K_{X}(e^z - 1),
+\end{align}
+$$
+where we define $X \equiv \sum_i X_i$.
+
+The last equation tells us how to combine the cumulants of $X$ to get the cumulants of $Y$.
+Let the cumulants of $Y$ be denoted $\kappa_1, \kappa_2, \ldots$ and the cumulants of $X$ by $\chi_1, \chi_2, \ldots$.
+Expanding the CGF gives:
+$$
+\begin{align}
+K_Y(z) & = K_X(e^z - 1) \\
+       & = \chi_1 (e^z - 1) + \chi_2 \frac{{(e^z-1)}^2}{2} + \chi_3 \frac{{(e^z-1)}^3}{3!} + \cdots \\
+       & = \chi_1 \sum_{j=1}^{\infty} \frac{z^j}{j!} + \chi_2 \frac{{\left(\sum_{j=1}^{\infty} \frac{z^j}{j!}\right)}^2}{2} + \chi_3 \frac{{\left(\sum_{j=1}^{\infty} \frac{z^j}{j!}\right)}^3}{3!} + \cdots \\
+\end{align}
+$$
+Then, by equating powers of $z$, we find
+$$
+\begin{align}
+\kappa_1 & = \chi_1 \\
+\kappa_2 & = \chi_1 + \chi_2 \\
+\kappa_3 & = \chi_1 + 3 \chi_2 + \chi_3 \\
+\kappa_4 & = \chi_1 + 7 \chi_2 + 6 \chi_3 + \chi_4 \\
+         & \cdots
+\end{align}
+$$
+This cumulant series has the intuitive property that if $X \to \lambda$ constant, $\chi_\alpha \to \lambda \delta_{\alpha, 1}$ and $\kappa_\alpha \to \chi_1$.
+That is, $Y \to \text{Poisson}(\lambda)$.
+For random $X$, in constrast, all of the cumulants of $Y$ are increased from their Poisson value of $\chi_1$ by the cumulants of $X$.
+In particular, the variance of $Y$, $\kappa_2$ is equal to the Poisson variance $\chi_1$ plus the variance of $X$, $\chi_2$.
+
+### Cumulants of the latent variable $X$
+
+It remains to find the cumulants of $X$, $\chi_\alpha$.
+For this, we need to specify a distribution for the latent variables at each sample, $X_i$.
+For simplicity, we will choose the Gamma distribution, which allows us to vary the mean and variance independently.
+We will parameterize the distribution by its mean $\mu$, and inverse dispersion $\phi$.
+In standard shape-scale parameterization, we have:
+$$
+X_i \sim \text{Gamma}(\phi, \mu_i / \phi)
+$$
+where we assume that the inverse dispersion is constant in time.
+Note that the coefficient of variation of $X_i$ is $\phi^{-1/2}$, independent of $\mu_i$.
+
+The gamma distribution has CGF:
+$$
+\begin{align}
+K_{X_i}(z) & = - \phi \log(1 - \frac{\mu_i}{\phi} z) \\
+           & = \phi \sum_{\alpha=1}^{\infty} \frac{1}{\alpha} {\left(\frac{\mu_i}{\phi}z\right)}^{\alpha}
+\end{align}
+$$
+
+By the summation property of CGFs, we have the CGF of $X = \sum_j X_j$ at time $t_i$:
+$$
+\begin{align}
+K_{X}(z) & = \sum_{j=0}^i K_{X_j}(z) \\
+         & = \phi \sum_{j=0}^i \sum_{\alpha=1}^{\infty} \frac{1}{\alpha} {\left(\frac{\mu_i}{\phi}z\right)}^{\alpha} \\
+         & = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} \left( \sum_{j=0}^{i} \mu_j^\alpha \right) z^\alpha.
+\end{align}
+$$
+Because the prevalence is growing exponentially in our model, $\mu_j$ is growing exponentially (see above).
+Letting $A \equiv \frac{nb}{N} e^{rt_0}$, we have $\mu_j = A e^{rj\delta t}$ and thus
+
+$$
+\begin{align}
+K_X(z) & = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} \left(\sum_{j=0}^{i} A^\alpha e^{\alpha r j \delta t} \right) z^\alpha \\
+       & = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} A^\alpha \left(\frac{e^{\alpha r (i+1) \delta t} - 1}{e^{\alpha r \delta t} - 1} \right) z^\alpha \\
+       & \approx \sum_{\alpha=1}^{\infty} \frac{\phi}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha \left(\frac{\alpha r \delta t e^{\alpha r \delta t}}{e^{\alpha r \delta t} - 1} \right) z^\alpha \\
+       & \approx \sum_{\alpha=1}^{\infty} \frac{\phi}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha z^\alpha
+\end{align}
+$$
+Where the first approximation requries the prevalence to be large compared to one, and the second approximation requires $\alpha r \delta t \ll 1$.
+(TODO: generalize the second approximation.)
+
+It is illuminating to parameterize the distribution of $X$ by its mean, $\mu$, and a shape parameter $\nu$:
+$$
+\begin{align}
+\mu & \equiv K_X'(0) \\
+    & = \frac{A e^{r i \delta t}}{r \delta t}. \\
+\nu & \equiv \frac{\phi}{r \delta t}.
+\end{align}
+$$
+Substituting these into the equation above gives
+$$
+K_X(z) = \nu \sum_{\alpha=1}^{\infty} \frac{1}{\alpha^2} {\left(\frac{\mu}{\nu}\right)}^\alpha z^\alpha.
+$$
+(Note that this is similar to the CGF of the gamma distribution but with the logarithm replaced by a dilogarithm.)
+
+Finally, examination of the CGF yields the cumulants of $X$:
+$$
+\chi_\alpha = \frac{(\alpha - 1)!}{\alpha} \nu {\left(\frac{\mu}{\nu}\right)}^{\alpha}.
+$$
+
+We can say a few things about this result:
+
+- By construction, the mean of $X$, $\mu$, is our previous deterministic prediction for the counts.
+  (In the small $r \delta t$ limit).
+- The shape parameter $\nu$ controls the dispersion of $X$. $\text{Var}[X] = \chi_2 = \frac{\mu^2}{2\nu}$. That is: larger $\nu$ means a smaller coefficient of variation.
+- $\nu$ is controled by the latent inverse dispersion $\phi$ and the scaled sampling interval $r \delta t$. Smaller sampling inverval means we take more independent samples per unit time, which reduces the variance of the sum.
+- $\frac{\mu}{\nu}$ is a pure scale parameter of the distribution of $X$.
+
+### Cumulants of the cumulative counts $Y$
+
+Substituting our equation for the cumulants of $X$ $\chi_\alpha$ into the equation for the cumulants of $Y$ above gives
+$$
+\begin{align}
+\kappa_1 & = \mu \\
+\kappa_2 & = \mu + \frac{1}{2} \frac{\mu^2}{\nu} \\
+\kappa_3 & = \mu + \frac{3}{2} \frac{\mu^2}{\nu} + \frac{2}{3} \frac{\mu^3}{\nu^2} \\
+\kappa_4 & = \mu + \frac{7}{2} \frac{\mu^2}{\nu} + 4 \frac{\mu^3}{\nu^2} + \frac{3}{2} \frac{\mu^4}{\nu^3}. \\
+\end{align}
+$$
+
+We have two regimes, controled by the parameter $\mu / \nu$:
+
+- If $\frac{\mu}{\nu} \ll 1$, the Poisson noise dominates and $\kappa_\alpha \approx \mu$.
+- If $\frac{\mu}{\nu} \gg 1$, the latent noise dominates and $\kappa_\alpha \approx \chi_\alpha$.
+
+For higher cumulants, the separation between the regimes becomes less clean (i.e. it takes a smaller/larger $\mu/\nu$ for one term to dominate.)
+
+In terms of model parameters:
+
+- More frequent samples (smaller $\delta t$, larger $\nu$) pushes us toward the Poisson-dominant regime.
+- More variable latent abundances (smaller $\phi$, smaller $\nu$) pushes us toward the latent-dominant regime.
+- A higher threshold of detection (larger $\mu$) pushes us toward the latent-dominant regime.
+
+## The Cornish-Fisher expansion of the quantiles of $Y$
+
+Ultimately, our goal is to estimate the probability that $Y > \hat{K}$, the detection threshold.
+Thus, we need to estimate the CDF of $Y$ from its cumulants $\kappa_\alpha$.
+For that we will use the Cornish-Fisher expansion.
+The idea behind the expansion is to start by approximating the CDF as that of a Gaussian random variable with the correct mean and variance, and then iteratively adjust it for higher-order cumulants (skew, kurtosis, etc).
+It is defined as follows:
+
+The quantile function $y(p)$ (i.e. the value for which $\text{CDF}(y) = p$) is approximated by $y(p) \approx \kappa_1 + {\kappa_2}^{1/2} w_p$, where
+(TODO: fix formatting here)
+$$
+\begin{align}
+w_p & = x \\
+    & + \gamma_1 h_1(x) \\
+    & + \gamma_2 h_2(x) + {\gamma_1}^2 h_{11}(x) \\
+    & + \cdots \\
+x   & = \Phi^{-1}(p) \\
+\gamma_{\alpha-2} & = \frac{\kappa_\alpha}{{\kappa_2}^{\alpha/2}} \\
+h_1(x) & = \frac{\text{He}_2(x)}{6} \\
+h_2(x) & = \frac{\text{He}_3(x)}{24} \\
+h_{11}(x) & = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
+\end{align}
+$$
+Where $\Phi$ is the CGF of the standard normal distribution and $\text{He}$ are the probabilists' Hermite polynomials.
+Note that each line of the sum must be included as a whole for the approximation to be valid at that level.
+
+For fixed $x$ (and therefore fixed quantile), the relative sizes of the terms of the expansion are controlled by the coefficients $\gamma$.
+In the Poisson-dominated regime:
+$$
+\begin{align}
+\gamma_1 & = \mu^{-1/2} \\
+\gamma_2 & = \gamma_1^2 = \mu^{-1} \\
+\end{align}
+$$
+so truncating the expansion at a few terms should work well when $\mu > 1$.
+Since we're interested in having a significant probability of detection (e.g. >90%), and our threshold of detection is at least one read, this is not a very limiting requirement.
+
+In the latent-noise-dominated regime:
+$$
+\begin{align}
+\gamma_1 & = \frac{2^{5/2}}{3} \nu^{-1/2} \\
+\gamma_2 & = 6 \nu^{-1}
+\end{align}
+$$
+so truncating the series at a few terms should work well when $\nu \gg 1$.
+This is also not very limiting, because $\nu$ can be large either by making $\phi$ large (which is likely unless our data source is extremely noisy) or by sampling frequently so that $r \delta t$ is small.
+
+Notice that in the latent regime, the only $\nu$ (which controls the latent coefficient of variation) matters for the validity of the expansion, not $\mu$.
+However, for this regime to hold $\mu \gg \nu > 1$.
+If we put our requirements for the two regimes together, we see that the approximation is good if both $\mu > 1$ and $\nu \gg 1$.
+[TODO: write this more clearly and illustrate with figure.]
+
+## Numerical illustrations (to-do)
+
+## Implications for cost
+
+Sketch of implications:
+
+In the Poisson-dominated regime, a Gaussian approximation is pretty good, so
+$$
+y(p) \approx \mu + \mu^{1/2} \Phi^{-1}(p)
+$$
+Set $p$ to be one minus the target probability of detection, set $y(p) = \hat{K}$, the detection threshold.
+Solve for $\mu$.
+Then compare this $\mu$ to the deterministic model.
+Will predict that there's a delay in detection due to having to wait for the mean to be larger than the threshold to have a high probability of detection.
+
+In the Latent-dominated regime, the terms of the Cornish-Fisher expansion just depend on $\nu$, not on $\mu$, so:
+$$
+\begin{align}
+y(p) & \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
+     & = \mu \left(1 +\frac{1}{{(2\nu)}^{1/2}} w_p(\nu)\right) \\
+\end{align}
+$$
+Can caluclate $w_p(\nu)$ to as high order as we need, then solve for $\mu$ as in the Poisson regime
+Because $w_p$ will be negative (since $p$ is small), this will inflate the required $\mu$ for by a factor.
+
+## Playground (ignore)
+
+```{python}
+import numpy as np
+from scipy.stats import poisson, norm, nbinom
+import matplotlib.pyplot as plt
+
+k = np.arange(40)
+lamb = 4
+
+plt.plot(k, poisson.cdf(k, lamb))
+plt.plot(k, norm.cdf(k, loc=lamb, scale=np.sqrt(lamb)))
+```
+
+
+```{python}
+p = np.arange(0.01, 0.20, 0.001)
+x = norm.ppf(p)
+for lamb in [1, 2, 4, 10, 20]:
+    plt.plot(p, poisson.ppf(p, lamb), label="Poisson")
+    plt.plot(p, lamb + np.sqrt(lamb) * x, label="Normal")
+    plt.plot(p, lamb + np.sqrt(lamb) * x + (x**2 - 1) / 6, label="Cornish")
+    plt.legend()
+    plt.title(f"$\lambda = {lamb}$")
+    plt.show()
+```
+
+```{python}
+p = np.arange(0.01, 0.50, 0.001)
+x = norm.ppf(p)
+for lamb in [1, 2, 4, 10, 20]:
+    plt.plot(p, poisson.ppf(p, lamb), label="Poisson")
+    plt.plot(p, lamb + np.sqrt(lamb) * x, label="Normal")
+    plt.plot(p, lamb + np.sqrt(lamb) * x + (x**2 - 1) / 6, label="Cornish")
+    plt.legend()
+    plt.title(f"$\lambda = {lamb}$")
+    plt.show()
+```
+
+```{python}
+lamb = np.arange(1, 20, 1)
+for p in [0.05, 0.1, 0.1587, 0.2]:
+    x = norm.ppf(p)
+    plt.plot(lamb, poisson.ppf(p, lamb), label="Poisson")
+    plt.plot(lamb, lamb + np.sqrt(lamb) * x, label="Normal")
+    plt.plot(lamb, lamb + np.sqrt(lamb) * x + (x**2 - 1) / 6, label="Cornish")
+    plt.legend()
+    plt.xlabel("$\lambda$")
+    plt.ylabel(f"$p = {p}$ quartile")
+    plt.show()
+```
+
+Looks like the Cornish-Fisher adjustment doesn't really matter for $p > 0.05$.
+
+```{python}
+r = np.log(2) / 7
+phi = 2
+delta_t = 3
+p = 0.1
+x = norm.ppf(p)
+m = np.arange(0, 100, 1)
+print(r * delta_t / (2 * phi))
+plt.plot(m, m)
+plt.plot(m, m + np.sqrt(m + m**2 * r * delta_t / (2 * phi)) * x)
+```
+
+```{python}
+r = np.log(2) / 7
+phi = 2
+delta_t = 6
+p = 0.1
+x = norm.ppf(p)
+m = np.arange(0, 100, 1)
+print(r * delta_t / (2 * phi))
+plt.plot(m, m)
+plt.plot(m, m + np.sqrt(m + m**2 * r * delta_t / (2 * phi)) * x)
+```
+
+```{python}
+r = np.log(2) / 7
+phi = 50
+delta_t = 3
+p = 0.1
+x = norm.ppf(p)
+m = np.arange(0, 100, 1)
+print(r * delta_t / (2 * phi))
+plt.plot(m, m)
+plt.plot(m, m + np.sqrt(m + m**2 * r * delta_t / (2 * phi)) * x)
+```
+
+```{python}
+r = np.log(2) / 7
+phi = 2
+delta_t = 3
+p = 0.1
+x = norm.ppf(p)
+m = np.arange(0, 100, 1)
+print(x)
+print(np.sqrt(r * delta_t / (2 * phi)))
+print(r * delta_t / (2 * phi))
+print((x**2 - 1) / 6)
+plt.plot(m, m)
+plt.plot(m, m + np.sqrt(m + m**2 * r * delta_t / (2 * phi)) * x)
+plt.plot(m, m + np.sqrt(m + m**2 * r * delta_t / (2 * phi)) * x + m * r * delta_t / (3 * phi) * (x**2 - 1) / 6)
+```
+
+### Gamma-Poisson mixture
+
+Question: When is the Gaussian approximation to the PPF good enough and when does third-order Cornish-Fisher help?
+
+```{python}
+def cornish_fisher_ppf(p, mean, variance, skew=0.0):
+    x = norm.ppf(p)
+    return mean + np.sqrt(variance) * (x + skew * (x**2 - 1) / 6)
+```
+
+```{python}
+p = np.arange(0.001, 0.20, 0.001)
+for lamb in [1.0, 2.0, 4.0, 8.0]:
+    dist = poisson(lamb)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(p, dist.ppf(p), label="Poisson")
+    plt.plot(p, cornish_fisher_ppf(p, m, v), label="Normal")
+    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label="Cornish")
+    plt.legend()
+    plt.title(f"$\lambda = {lamb}$")
+    plt.show()
+```
+
+
+```{python}
+def nbinom2(mean, phi):
+    n = phi
+    p = phi / (mean + phi)
+    return nbinom(n, p)
+
+phi = 4
+for mean in [0.5, 1.0, 2.0, 4.0]:
+    dist = nbinom2(mean, phi)
+    m, v = (mean, mean + mean**2 / phi)
+    print(np.allclose(dist.stats("mv"), (m, v)))
+```
+
+```{python}
+p = np.arange(0.001, 0.20, 0.001)
+mus = np.logspace(0, 8, 9, base=2)
+
+phi = 100
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(p, dist.ppf(p), label="Poisson")
+    plt.plot(p, cornish_fisher_ppf(p, m, v), label="Normal")
+    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label="Cornish")
+    plt.ylim([0, mu])
+    plt.legend()
+    plt.title(f"$\mu = {mu}$")
+    plt.show()
+```
+
+```{python}
+p = np.arange(0.001, 0.20, 0.001)
+phi = 4
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(p, dist.ppf(p), label="Poisson")
+    plt.plot(p, cornish_fisher_ppf(p, m, v), label="Normal")
+    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label="Cornish")
+    plt.ylim([0, mu])
+    plt.legend()
+    plt.title(f"$\mu = {mu}$")
+    plt.show()
+```
+
+```{python}
+p = np.arange(0.001, 0.20, 0.001)
+phi = 2
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(p, dist.ppf(p), label="Poisson")
+    plt.plot(p, cornish_fisher_ppf(p, m, v), label="Normal")
+    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label="Cornish")
+    plt.ylim([0, mu])
+    plt.legend()
+    plt.title(f"$\mu = {mu}$")
+    plt.show()
+```
+
+```{python}
+p = np.arange(0.001, 0.999, 0.001)
+
+phi = 1
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(p, dist.ppf(p), label="Poisson")
+    plt.plot(p, cornish_fisher_ppf(p, m, v), label="Normal")
+    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label="Cornish")
+    plt.ylim([0, 3*mu])
+    plt.legend()
+    plt.title(f"$\mu = {mu}$")
+    plt.show()
+```
+
+```{python}
+p = 0.1
+mus = np.logspace(0, 8, 9, base=2)
+phi = 100
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(mu, dist.ppf(p), '.', color="C0", label="Poisson")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v), '.', color="C1", label="Normal")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), '.', color="C2", label="Cornish")
+plt.ylim([0.1, mus[-1]])
+plt.yscale("log")
+plt.xscale("log")
+# plt.legend()
+# plt.title(f"$\mu = {mu}$")
+plt.show()
+```
+
+```{python}
+p = 0.1
+mus = np.logspace(0, 8, 9, base=2)
+phi = 4
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(mu, dist.ppf(p), '.', color="C0", label="Poisson")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v), '.', color="C1", label="Normal")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), '.', color="C2", label="Cornish")
+plt.ylim([0.1, mus[-1]])
+plt.yscale("log")
+plt.xscale("log")
+# plt.legend()
+# plt.title(f"$\mu = {mu}$")
+plt.show()
+```
+
+
+```{python}
+p = 0.1
+mus = np.logspace(0, 8, 9, base=2)
+phi = 2
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(mu, dist.ppf(p), '.', color="C0", label="Poisson")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v), '.', color="C1", label="Normal")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), '.', color="C2", label="Cornish")
+plt.ylim([0.1, mus[-1]])
+plt.yscale("log")
+plt.xscale("log")
+# plt.legend()
+# plt.title(f"$\mu = {mu}$")
+plt.show()
+```
+
+```{python}
+p = 0.1
+mus = np.logspace(0, 8, 9, base=2)
+phi = 1
+for mu in mus:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(mu, dist.ppf(p), '.', color="C0", label="Poisson")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v), '.', color="C1", label="Normal")
+    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), '.', color="C2", label="Cornish")
+plt.ylim([0.1, mus[-1]])
+plt.yscale("log")
+plt.xscale("log")
+# plt.legend()
+# plt.title(f"$\mu = {mu}$")
+plt.show()
+```
+
+
+```{python}
+x = norm.ppf(0.1)
+print(6 * x / (x**2 - 1))
+```
+
+```{python}
+p = 0.1
+# mus = np.logspace(0, 8, 9, base=2)
+mu = 40
+phis = np.logspace(0, 7, 8, base=2)
+for phi in phis:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(phi, dist.ppf(p), '.', color="C0", label="Poisson")
+    plt.plot(phi, cornish_fisher_ppf(p, m, v), '.', color="C1", label="Normal")
+    plt.plot(phi, cornish_fisher_ppf(p, m, v, s), '.', color="C2", label="Cornish")
+# plt.ylim([0.1, phis[-1]])
+plt.yscale("log")
+plt.xscale("log")
+# plt.legend()
+# plt.title(f"$\mu = {mu}$")
+plt.show()
+```
+
+```{python}
+p = 0.1
+# mus = np.logspace(0, 8, 9, base=2)
+mu = 10
+phis = np.logspace(0, 7, 8, base=2)
+for phi in phis:
+    dist = nbinom2(mu, phi)
+    m, v, s = dist.stats(moments="mvs")
+    plt.plot(phi, dist.ppf(p), '.', color="C0", label="Poisson")
+    plt.plot(phi, cornish_fisher_ppf(p, m, v), '.', color="C1", label="Normal")
+    plt.plot(phi, cornish_fisher_ppf(p, m, v, s), '.', color="C2", label="Cornish")
+# plt.ylim([0.1, phis[-1]])
+plt.yscale("log")
+plt.xscale("log")
+# plt.legend()
+# plt.title(f"$\mu = {mu}$")
+plt.show()
+```
+
+```{python}
+from numpy.polynomial.hermite_e import HermiteE
+
+def cf_approx(shape, order: int = 3):
+    poly = HermiteE((0, 1))
+    if order > 2:
+        poly += 1.9 * shape**(-1/2) * HermiteE((0, 0, 1/6))
+    if order > 3:
+        poly += 6 * shape**(-1) * HermiteE((0, 0, 1/24))
+        poly += 1.9**2 * shape**(-1) * HermiteE((0, -1/36, 0, -2/36))
+    if order > 4:
+        raise ValueError
+    return poly
+
+p = np.arange(0.01, 1.0, 0.01)
+# x = np.arange(-2, 2, 0.01)
+x = norm.ppf(p)
+
+shape = 8
+plt.plot(p, cf_approx(shape, order = 2)(x))
+plt.plot(p, cf_approx(shape, order = 3)(x))
+plt.plot(p, cf_approx(shape, order = 4)(x))
+plt.title(shape)
+plt.show()
+
+shape = 4
+plt.plot(p, cf_approx(shape, order = 2)(x))
+plt.plot(p, cf_approx(shape, order = 3)(x))
+plt.plot(p, cf_approx(shape, order = 4)(x))
+plt.title(shape)
+plt.show()
+
+shape = 1
+plt.plot(p, cf_approx(shape, order = 2)(x))
+plt.plot(p, cf_approx(shape, order = 3)(x))
+plt.plot(p, cf_approx(shape, order = 4)(x))
+plt.title(shape)
+plt.show()
+```
