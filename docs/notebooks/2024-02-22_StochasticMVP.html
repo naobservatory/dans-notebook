@@ -136,12 +136,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#cumulants-of-the-cumulative-counts-y" id="toc-cumulants-of-the-cumulative-counts-y" class="nav-link" data-scroll-target="#cumulants-of-the-cumulative-counts-y">Cumulants of the cumulative counts <span class="math inline">\(Y\)</span></a></li>
   </ul></li>
   <li><a href="#the-cornish-fisher-expansion-of-the-quantiles-of-y" id="toc-the-cornish-fisher-expansion-of-the-quantiles-of-y" class="nav-link" data-scroll-target="#the-cornish-fisher-expansion-of-the-quantiles-of-y">The Cornish-Fisher expansion of the quantiles of <span class="math inline">\(Y\)</span></a></li>
-  <li><a href="#numerical-illustrations-to-do" id="toc-numerical-illustrations-to-do" class="nav-link" data-scroll-target="#numerical-illustrations-to-do">Numerical illustrations (to-do)</a></li>
-  <li><a href="#implications-for-cost" id="toc-implications-for-cost" class="nav-link" data-scroll-target="#implications-for-cost">Implications for cost</a></li>
-  <li><a href="#playground-ignore" id="toc-playground-ignore" class="nav-link" data-scroll-target="#playground-ignore">Playground (ignore)</a>
+  <li><a href="#numerical-calculations" id="toc-numerical-calculations" class="nav-link" data-scroll-target="#numerical-calculations">Numerical calculations</a>
   <ul class="collapse">
-  <li><a href="#gamma-poisson-mixture" id="toc-gamma-poisson-mixture" class="nav-link" data-scroll-target="#gamma-poisson-mixture">Gamma-Poisson mixture</a></li>
+  <li><a href="#checking-the-cornish-fisher-expansion-against-common-distributions" id="toc-checking-the-cornish-fisher-expansion-against-common-distributions" class="nav-link" data-scroll-target="#checking-the-cornish-fisher-expansion-against-common-distributions">Checking the Cornish-Fisher expansion against common distributions</a></li>
+  <li><a href="#cornish-fisher-expansions-for-the-cumulative-count-distribution" id="toc-cornish-fisher-expansions-for-the-cumulative-count-distribution" class="nav-link" data-scroll-target="#cornish-fisher-expansions-for-the-cumulative-count-distribution">Cornish-Fisher expansions for the cumulative count distribution</a></li>
+  <li><a href="#percentiles" id="toc-percentiles" class="nav-link" data-scroll-target="#percentiles">Percentiles</a></li>
   </ul></li>
+  <li><a href="#implications-for-cost" id="toc-implications-for-cost" class="nav-link" data-scroll-target="#implications-for-cost">Implications for cost</a></li>
   </ul>
 </nav>
     </div>
@@ -349,8 +350,274 @@ h_{11}(x) &amp; = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 \]</span> so truncating the series at a few terms should work well when <span class="math inline">\(\nu \gg 1\)</span>. This is also not very limiting, because <span class="math inline">\(\nu\)</span> can be large either by making <span class="math inline">\(\phi\)</span> large (which is likely unless our data source is extremely noisy) or by sampling frequently so that <span class="math inline">\(r \delta t\)</span> is small.</p>
 <p>Notice that in the latent regime, the only <span class="math inline">\(\nu\)</span> (which controls the latent coefficient of variation) matters for the validity of the expansion, not <span class="math inline">\(\mu\)</span>. However, for this regime to hold <span class="math inline">\(\mu \gg \nu &gt; 1\)</span>. If we put our requirements for the two regimes together, we see that the approximation is good if both <span class="math inline">\(\mu &gt; 1\)</span> and <span class="math inline">\(\nu \gg 1\)</span>. [TODO: write this more clearly and illustrate with figure.]</p>
 </section>
-<section id="numerical-illustrations-to-do" class="level2">
-<h2 class="anchored" data-anchor-id="numerical-illustrations-to-do">Numerical illustrations (to-do)</h2>
+<section id="numerical-calculations" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-calculations">Numerical calculations</h2>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numpy.polynomial.polynomial <span class="im">import</span> Polynomial</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numpy.polynomial.hermite_e <span class="im">import</span> HermiteE</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> factorial</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> poisson, norm, gamma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cgf_x_series(mu: <span class="bu">float</span>, nu: <span class="bu">float</span>, order: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>) <span class="op">-&gt;</span> Polynomial:</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    coeffs <span class="op">=</span> np.zeros(order <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># No zeroth coefficient</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> np.arange(<span class="dv">1</span>, order <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    coeffs[<span class="dv">1</span>:] <span class="op">=</span> nu <span class="op">*</span> (mu <span class="op">/</span> nu) <span class="op">**</span> k <span class="op">/</span> k<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Polynomial(coeffs)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> expm1_series(order: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>) <span class="op">-&gt;</span> Polynomial:</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> np.arange(order <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Polynomial(<span class="fl">1.0</span> <span class="op">/</span> factorial(k)) <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cgf_y_series(mu: <span class="bu">float</span>, nu: <span class="bu">float</span>, order: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>):</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cgf_x_series(mu, nu, order)(expm1_series(order)).cutdeg(order)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cumulant_from_cgf(cgf: Polynomial, order: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cgf.deriv(order)(<span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Spot-check cumulants:</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>nu <span class="op">=</span> <span class="fl">10.0</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>cgf <span class="op">=</span> cgf_x_series(mu, nu)(expm1_series()).cutdeg(<span class="dv">4</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>coeffs <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, (<span class="dv">1</span>, <span class="dv">1</span> <span class="op">/</span> <span class="dv">2</span>), (<span class="dv">1</span>, <span class="dv">3</span> <span class="op">/</span> <span class="dv">2</span>, <span class="dv">2</span> <span class="op">/</span> <span class="dv">3</span>), (<span class="dv">1</span>, <span class="dv">7</span> <span class="op">/</span> <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">3</span> <span class="op">/</span> <span class="dv">2</span>)]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>predicted_cumulants <span class="op">=</span> [mu <span class="op">*</span> Polynomial(c)(mu <span class="op">/</span> nu) <span class="cf">for</span> c <span class="kw">in</span> coeffs]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(cumulant_from_cgf(cgf, k), predicted_cumulants[k])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.0 0.0
+2.0 2.0
+2.2 2.2
+2.6533333333333333 2.6533333333333333
+3.7439999999999998 3.744</code></pre>
+</div>
+</div>
+<p>Check variance:</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>nu <span class="op">=</span> <span class="fl">10.0</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">100</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>k2 <span class="op">=</span> [cumulant_from_cgf(cgf_y_series(m, nu), <span class="dv">2</span>) <span class="cf">for</span> m <span class="kw">in</span> mu]</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>plt.plot(mu, k2)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>plt.plot(mu, mu <span class="op">+</span> (<span class="dv">1</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> mu<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> nu, <span class="st">":"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.plot(mu, (<span class="dv">1</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> mu<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> nu, <span class="st">"--"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-1.png" width="575" height="411"></p>
+</div>
+</div>
+<p>Note that it is growing quadratically, but the <span class="math inline">\(\mu\)</span> term is not negligible.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cornish_fisher(<span class="op">*</span>cumulants):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># cumulants = (k_1, k_2, ...)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    order <span class="op">=</span> <span class="bu">len</span>(cumulants)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&lt;</span> <span class="dv">2</span>:</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Order of approximation must be &gt;= 2"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&gt;</span> <span class="dv">4</span>:</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Order of approximation must be &lt;= 4"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    sigma <span class="op">=</span> np.sqrt(cumulants[<span class="dv">1</span>])</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    poly <span class="op">=</span> HermiteE((<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&gt;=</span> <span class="dv">3</span>:</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        gamma_1 <span class="op">=</span> cumulants[<span class="dv">2</span>] <span class="op">/</span> sigma<span class="op">**</span><span class="dv">3</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        h_1 <span class="op">=</span> HermiteE((<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">/</span> <span class="dv">6</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        poly <span class="op">+=</span> gamma_1 <span class="op">*</span> h_1</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&gt;=</span> <span class="dv">4</span>:</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        gamma_2 <span class="op">=</span> cumulants[<span class="dv">3</span>] <span class="op">/</span> sigma<span class="op">**</span><span class="dv">4</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        h_2 <span class="op">=</span> HermiteE((<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">/</span> <span class="dv">24</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        h_11 <span class="op">=</span> <span class="op">-</span>HermiteE((<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">2</span>)) <span class="op">/</span> <span class="dv">36</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        poly <span class="op">+=</span> gamma_2 <span class="op">*</span> h_2 <span class="op">+</span> gamma_1<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> h_11</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cumulants[<span class="dv">0</span>] <span class="op">+</span> sigma <span class="op">*</span> poly</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="checking-the-cornish-fisher-expansion-against-common-distributions" class="level3">
+<h3 class="anchored" data-anchor-id="checking-the-cornish-fisher-expansion-against-common-distributions">Checking the Cornish-Fisher expansion against common distributions</h3>
+<p>Check against Poisson distribution:</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.01</span>, <span class="fl">1.0</span>, <span class="fl">0.01</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lamb <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>]:</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    poisson_cumulants <span class="op">=</span> [lamb] <span class="op">*</span> order</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>, order <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        cf_poisson <span class="op">=</span> cornish_fisher(<span class="op">*</span>poisson_cumulants[:o])</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        plt.plot(p, cf_poisson(x), label<span class="op">=</span>o)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, poisson(lamb).ppf(p), color<span class="op">=</span><span class="st">"k"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"exact"</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\lambda$ = </span><span class="sc">{</span>lamb<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-7-output-1.png" width="569" height="431"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-7-output-2.png" width="569" height="431"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-7-output-3.png" width="558" height="431"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-7-output-4.png" width="566" height="431"></p>
+</div>
+</div>
+<p>When <span class="math inline">\(\lambda &gt; 1\)</span>, you quickly converge to a Gaussian distribution, and the higher-order corrections don’t matter.</p>
+<p>Check against Gamma distribution:</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>scale <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> np.arange(<span class="dv">1</span>, order <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> shape <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>]:</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    gamma_cumulants <span class="op">=</span> factorial(k <span class="op">-</span> <span class="dv">1</span>) <span class="op">*</span> shape <span class="op">*</span> scale<span class="op">**</span>k</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>, order <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        cf_gamma <span class="op">=</span> cornish_fisher(<span class="op">*</span>gamma_cumulants[:o])</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        plt.plot(p, cf_gamma(x), label<span class="op">=</span>o)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        p, gamma(shape, scale<span class="op">=</span>scale).ppf(p), color<span class="op">=</span><span class="st">"k"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"exact"</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"shape = </span><span class="sc">{</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-8-output-1.png" width="569" height="431"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-8-output-2.png" width="569" height="431"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-8-output-3.png" width="566" height="431"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-8-output-4.png" width="566" height="431"></p>
+</div>
+</div>
+<p>The shape parameter controls deviations from Gaussian. For shape &gt; 1, three terms gets you close and 4 gets you very close.</p>
+</section>
+<section id="cornish-fisher-expansions-for-the-cumulative-count-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="cornish-fisher-expansions-for-the-cumulative-count-distribution">Cornish-Fisher expansions for the cumulative count distribution</h3>
+<p>For the cumulative count distribution, there are two parameters, <span class="math inline">\(\mu\)</span> (the mean) and <span class="math inline">\(\nu\)</span> (which determines the shape).</p>
+<p>For small <span class="math inline">\(\nu\)</span>, the noise is quickly dominated by the latent variable so the distribution goes to a constant shape, scaled by <span class="math inline">\(\mu\)</span>.</p>
+<p>Even with <span class="math inline">\(\nu = 2\)</span>, the CF expansion converges quickly. 3 terms is quite good, 4 is indistinguisable from higher:</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>nu <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">32</span>]:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    cgf <span class="op">=</span> cgf_y_series(mu, nu)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    cumulants <span class="op">=</span> [cumulant_from_cgf(cgf, k) <span class="cf">for</span> k <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>]]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>, order <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        cf <span class="op">=</span> cornish_fisher(<span class="op">*</span>cumulants[:o])</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        plt.plot(p, cf(x), label<span class="op">=</span>o)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="vs">r"$\nu$"</span> <span class="ss">f" = </span><span class="sc">{</span>nu<span class="sc">}</span><span class="ss">, "</span> <span class="vs">r"$\mu$ = "</span> <span class="ss">f"</span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-9-output-1.png" width="569" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-9-output-2.png" width="569" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-9-output-3.png" width="569" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-9-output-4.png" width="566" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-9-output-5.png" width="566" height="432"></p>
+</div>
+</div>
+<p>With larger <span class="math inline">\(\nu\)</span>, the shape of the distribution is closer to Gaussian:</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>nu <span class="op">=</span> <span class="fl">10.0</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>]:</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    cgf <span class="op">=</span> cgf_y_series(mu, nu)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    cumulants <span class="op">=</span> [cumulant_from_cgf(cgf, k) <span class="cf">for</span> k <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>]]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>, order <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        cf <span class="op">=</span> cornish_fisher(<span class="op">*</span>cumulants[:o])</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        plt.plot(p, cf(x), label<span class="op">=</span>o)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="vs">r"$\nu$"</span> <span class="ss">f" = </span><span class="sc">{</span>nu<span class="sc">}</span><span class="ss">, "</span> <span class="vs">r"$\mu$ = "</span> <span class="ss">f"</span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-10-output-1.png" width="569" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-10-output-2.png" width="579" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-10-output-3.png" width="575" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-10-output-4.png" width="583" height="432"></p>
+</div>
+</div>
+<p>With <span class="math inline">\(\nu = 100\)</span>, there is a wide Poisson-dominated regime the convergence to Gaussian is quite fast.</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>nu <span class="op">=</span> <span class="fl">100.0</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>]:</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    cgf <span class="op">=</span> cgf_y_series(mu, nu)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    cumulants <span class="op">=</span> [cumulant_from_cgf(cgf, k) <span class="cf">for</span> k <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>]]</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>, order <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        cf <span class="op">=</span> cornish_fisher(<span class="op">*</span>cumulants[:o])</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        plt.plot(p, cf(x), label<span class="op">=</span>o)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="vs">r"$\nu$"</span> <span class="ss">f" = </span><span class="sc">{</span>nu<span class="sc">}</span><span class="ss">, "</span> <span class="vs">r"$\mu$ = "</span> <span class="ss">f"</span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-1.png" width="569" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-2.png" width="566" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-3.png" width="575" height="432"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-4.png" width="583" height="432"></p>
+</div>
+</div>
+</section>
+<section id="percentiles" class="level3">
+<h3 class="anchored" data-anchor-id="percentiles">Percentiles</h3>
+<p>The following show the mean (dashed grey lines) and the 10th percentile (black dots) of cumulative counts as a function of the mean <span class="math inline">\(\mu\)</span>” Each plot has a different shape parameter <span class="math inline">\(\nu\)</span>.</p>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 10th percentile</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">100</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> nu <span class="kw">in</span> [<span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">100</span>]:</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    cgfs <span class="op">=</span> [cgf_y_series(m, nu) <span class="cf">for</span> m <span class="kw">in</span> mu]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    cumulants <span class="op">=</span> [[cumulant_from_cgf(cgf, k) <span class="cf">for</span> k <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>]] <span class="cf">for</span> cgf <span class="kw">in</span> cgfs]</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> m, cs <span class="kw">in</span> <span class="bu">zip</span>(mu, cumulants):</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        cf <span class="op">=</span> cornish_fisher(<span class="op">*</span>cs)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        plt.plot(m, cf(x), <span class="st">".k"</span>)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, mu, <span class="st">"--"</span>, color<span class="op">=</span><span class="st">"grey"</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="vs">r"$\mu$"</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Cumulative counts"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="vs">r"$\nu = $"</span> <span class="ss">f"</span><span class="sc">{</span>nu<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-12-output-1.png" width="593" height="449"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-12-output-2.png" width="593" height="449"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-12-output-3.png" width="593" height="449"></p>
+</div>
+</div>
+<p>Observations:</p>
+<ul>
+<li>Smaller <span class="math inline">\(\nu\)</span> means that we have a greater reduction of the 10th percentile from the mean.</li>
+<li>Smaller <span class="math inline">\(\nu\)</span> means that the 10th percentile increase linearly (as expected in the latent regime).</li>
+<li>As <span class="math inline">\(\nu\)</span> gets larger, there is a wider Poisson-dominated regime where the tenth percentile increases like <span class="math inline">\(\mu + \mu^{1/2} const.\)</span>.</li>
+</ul>
+</section>
 </section>
 <section id="implications-for-cost" class="level2">
 <h2 class="anchored" data-anchor-id="implications-for-cost">Implications for cost</h2>
@@ -364,580 +631,8 @@ y(p) &amp; \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
      &amp; = \mu \left(1 +\frac{1}{{(2\nu)}^{1/2}} w_p(\nu)\right) \\
 \end{align}
 \]</span> Can caluclate <span class="math inline">\(w_p(\nu)\)</span> to as high order as we need, then solve for <span class="math inline">\(\mu\)</span> as in the Poisson regime Because <span class="math inline">\(w_p\)</span> will be negative (since <span class="math inline">\(p\)</span> is small), this will inflate the required <span class="math inline">\(\mu\)</span> for by a factor.</p>
-</section>
-<section id="playground-ignore" class="level2">
-<h2 class="anchored" data-anchor-id="playground-ignore">Playground (ignore)</h2>
-<div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> poisson, norm, nbinom</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> np.arange(<span class="dv">40</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>lamb <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>plt.plot(k, poisson.cdf(k, lamb))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>plt.plot(k, norm.cdf(k, loc<span class="op">=</span>lamb, scale<span class="op">=</span>np.sqrt(lamb)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-2-output-1.png" width="571" height="411"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.01</span>, <span class="fl">0.20</span>, <span class="fl">0.001</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lamb <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">20</span>]:</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, poisson.ppf(p, lamb), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, lamb <span class="op">+</span> np.sqrt(lamb) <span class="op">*</span> x, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, lamb <span class="op">+</span> np.sqrt(lamb) <span class="op">*</span> x <span class="op">+</span> (x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">6</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\lambda = </span><span class="sc">{</span>lamb<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-3-output-1.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-3-output-2.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-3-output-3.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-3-output-4.png" width="558" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-3-output-5.png" width="566" height="431"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.01</span>, <span class="fl">0.50</span>, <span class="fl">0.001</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lamb <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">20</span>]:</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, poisson.ppf(p, lamb), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, lamb <span class="op">+</span> np.sqrt(lamb) <span class="op">*</span> x, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, lamb <span class="op">+</span> np.sqrt(lamb) <span class="op">*</span> x <span class="op">+</span> (x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">6</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\lambda = </span><span class="sc">{</span>lamb<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-4-output-1.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-4-output-2.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-4-output-3.png" width="558" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-4-output-4.png" width="566" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-4-output-5.png" width="566" height="431"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>lamb <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">20</span>, <span class="dv">1</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> [<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.1587</span>, <span class="fl">0.2</span>]:</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    plt.plot(lamb, poisson.ppf(p, lamb), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    plt.plot(lamb, lamb <span class="op">+</span> np.sqrt(lamb) <span class="op">*</span> x, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(lamb, lamb <span class="op">+</span> np.sqrt(lamb) <span class="op">*</span> x <span class="op">+</span> (x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">6</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">"$\lambda$"</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="ss">f"$p = </span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">$ quartile"</span>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-1.png" width="587" height="429"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-2.png" width="587" height="429"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-3.png" width="587" height="429"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-4.png" width="587" height="432"></p>
-</div>
-</div>
-<p>Looks like the Cornish-Fisher adjustment doesn’t really matter for <span class="math inline">\(p &gt; 0.05\)</span>.</p>
-<div class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> <span class="dv">7</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> <span class="dv">3</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">1</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi))</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m <span class="op">+</span> np.sqrt(m <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi)) <span class="op">*</span> x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.07426576934570842</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-6-output-2.png" width="575" height="411"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> <span class="dv">7</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> <span class="dv">6</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">1</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m <span class="op">+</span> np.sqrt(m <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi)) <span class="op">*</span> x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.14853153869141683</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-7-output-2.png" width="575" height="411"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> <span class="dv">7</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">50</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> <span class="dv">3</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">1</span>)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi))</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m <span class="op">+</span> np.sqrt(m <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi)) <span class="op">*</span> x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.0029706307738283366</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-8-output-2.png" width="575" height="411"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.log(<span class="dv">2</span>) <span class="op">/</span> <span class="dv">7</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>delta_t <span class="op">=</span> <span class="dv">3</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">1</span>)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(x)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(np.sqrt(r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi)))</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi))</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>((x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">6</span>)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m)</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>plt.plot(m, m <span class="op">+</span> np.sqrt(m <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi)) <span class="op">*</span> x)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>plt.plot(</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    m,</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    m</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> np.sqrt(m <span class="op">+</span> m<span class="op">**</span><span class="dv">2</span> <span class="op">*</span> r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> phi)) <span class="op">*</span> x</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> m <span class="op">*</span> r <span class="op">*</span> delta_t <span class="op">/</span> (<span class="dv">3</span> <span class="op">*</span> phi) <span class="op">*</span> (x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">6</span>,</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>-1.2815515655446004
-0.2725174661296197
-0.07426576934570842
-0.10706240252496935</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-9-output-2.png" width="575" height="411"></p>
-</div>
-</div>
-<section id="gamma-poisson-mixture" class="level3">
-<h3 class="anchored" data-anchor-id="gamma-poisson-mixture">Gamma-Poisson mixture</h3>
-<p>Question: When is the Gaussian approximation to the PPF good enough and when does third-order Cornish-Fisher help?</p>
-<div class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cornish_fisher_ppf(p, mean, variance, skew<span class="op">=</span><span class="fl">0.0</span>):</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> mean <span class="op">+</span> np.sqrt(variance) <span class="op">*</span> (x <span class="op">+</span> skew <span class="op">*</span> (x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.001</span>, <span class="fl">0.20</span>, <span class="fl">0.001</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lamb <span class="kw">in</span> [<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">4.0</span>, <span class="fl">8.0</span>]:</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> poisson(lamb)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, dist.ppf(p), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v), label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\lambda = </span><span class="sc">{</span>lamb<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-1.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-2.png" width="582" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-3.png" width="569" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-11-output-4.png" width="569" height="431"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nbinom2(mean, phi):</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> phi</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> phi <span class="op">/</span> (mean <span class="op">+</span> phi)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> nbinom(n, p)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mean <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">4.0</span>]:</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mean, phi)</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    m, v <span class="op">=</span> (mean, mean <span class="op">+</span> mean<span class="op">**</span><span class="dv">2</span> <span class="op">/</span> phi)</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(np.allclose(dist.stats(<span class="st">"mv"</span>), (m, v)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>True
-True
-True
-True</code></pre>
-</div>
-</div>
-<div class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.001</span>, <span class="fl">0.20</span>, <span class="fl">0.001</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mus <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">8</span>, <span class="dv">9</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, dist.ppf(p), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v), label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    plt.ylim([<span class="dv">0</span>, mu])</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\mu = </span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-1.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-2.png" width="579" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-3.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-4.png" width="558" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-5.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-6.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-7.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-8.png" width="575" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-9.png" width="575" height="432"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.001</span>, <span class="fl">0.20</span>, <span class="fl">0.001</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, dist.ppf(p), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v), label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    plt.ylim([<span class="dv">0</span>, mu])</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\mu = </span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-1.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-2.png" width="579" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-3.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-4.png" width="558" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-5.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-6.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-7.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-8.png" width="575" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-14-output-9.png" width="575" height="432"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.001</span>, <span class="fl">0.20</span>, <span class="fl">0.001</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, dist.ppf(p), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v), label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    plt.ylim([<span class="dv">0</span>, mu])</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\mu = </span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-1.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-2.png" width="579" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-3.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-4.png" width="558" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-5.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-6.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-7.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-8.png" width="575" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-9.png" width="575" height="432"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.001</span>, <span class="fl">0.999</span>, <span class="fl">0.001</span>)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, dist.ppf(p), label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v), label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(p, cornish_fisher_ppf(p, m, v, s), label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    plt.ylim([<span class="dv">0</span>, <span class="dv">3</span> <span class="op">*</span> mu])</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"$\mu = </span><span class="sc">{</span>mu<span class="sc">}</span><span class="ss">$"</span>)</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-1.png" width="571" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-2.png" width="558" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-3.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-4.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-5.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-6.png" width="566" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-7.png" width="575" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-8.png" width="575" height="432"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-16-output-9.png" width="575" height="432"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>mus <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">8</span>, <span class="dv">9</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, dist.ppf(p), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C2"</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="fl">0.1</span>, mus[<span class="op">-</span><span class="dv">1</span>]])</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.legend()</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title(f"$\mu = {mu}$")</span></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-17-output-1.png" width="580" height="412"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>mus <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">8</span>, <span class="dv">9</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, dist.ppf(p), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C2"</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="fl">0.1</span>, mus[<span class="op">-</span><span class="dv">1</span>]])</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.legend()</span></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title(f"$\mu = {mu}$")</span></span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-18-output-1.png" width="580" height="412"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>mus <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">8</span>, <span class="dv">9</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, dist.ppf(p), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C2"</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="fl">0.1</span>, mus[<span class="op">-</span><span class="dv">1</span>]])</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.legend()</span></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title(f"$\mu = {mu}$")</span></span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-19-output-1.png" width="580" height="412"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>mus <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">8</span>, <span class="dv">9</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>phi <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> mu <span class="kw">in</span> mus:</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, dist.ppf(p), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, cornish_fisher_ppf(p, m, v, s), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C2"</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="fl">0.1</span>, mus[<span class="op">-</span><span class="dv">1</span>]])</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.legend()</span></span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title(f"$\mu = {mu}$")</span></span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-20-output-1.png" width="580" height="412"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(<span class="fl">0.1</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="dv">6</span> <span class="op">*</span> x <span class="op">/</span> (x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>-11.970136437445571</code></pre>
-</div>
-</div>
-<div class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># mus = np.logspace(0, 8, 9, base=2)</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="dv">40</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>phis <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">7</span>, <span class="dv">8</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> phi <span class="kw">in</span> phis:</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(phi, dist.ppf(p), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(phi, cornish_fisher_ppf(p, m, v), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    plt.plot(phi, cornish_fisher_ppf(p, m, v, s), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C2"</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.ylim([0.1, phis[-1]])</span></span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.legend()</span></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title(f"$\mu = {mu}$")</span></span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-22-output-1.png" width="572" height="412"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="22">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># mus = np.logspace(0, 8, 9, base=2)</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> <span class="dv">10</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>phis <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">7</span>, <span class="dv">8</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> phi <span class="kw">in</span> phis:</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    dist <span class="op">=</span> nbinom2(mu, phi)</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    m, v, s <span class="op">=</span> dist.stats(moments<span class="op">=</span><span class="st">"mvs"</span>)</span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    plt.plot(phi, dist.ppf(p), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"Poisson"</span>)</span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(phi, cornish_fisher_ppf(p, m, v), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"Normal"</span>)</span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>    plt.plot(phi, cornish_fisher_ppf(p, m, v, s), <span class="st">"."</span>, color<span class="op">=</span><span class="st">"C2"</span>, label<span class="op">=</span><span class="st">"Cornish"</span>)</span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.ylim([0.1, phis[-1]])</span></span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)</span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.legend()</span></span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.title(f"$\mu = {mu}$")</span></span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-23-output-1.png" width="580" height="412"></p>
-</div>
-</div>
-<div class="cell" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numpy.polynomial.hermite_e <span class="im">import</span> HermiteE</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cf_approx(shape, order: <span class="bu">int</span> <span class="op">=</span> <span class="dv">3</span>):</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    poly <span class="op">=</span> HermiteE((<span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&gt;</span> <span class="dv">2</span>:</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>        poly <span class="op">+=</span> <span class="fl">1.9</span> <span class="op">*</span> shape <span class="op">**</span> (<span class="op">-</span><span class="dv">1</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> HermiteE((<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span> <span class="op">/</span> <span class="dv">6</span>))</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&gt;</span> <span class="dv">3</span>:</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>        poly <span class="op">+=</span> <span class="dv">6</span> <span class="op">*</span> shape <span class="op">**</span> (<span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> HermiteE((<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span> <span class="op">/</span> <span class="dv">24</span>))</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>        poly <span class="op">+=</span> <span class="fl">1.9</span><span class="op">**</span><span class="dv">2</span> <span class="op">*</span> shape <span class="op">**</span> (<span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> HermiteE((<span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span> <span class="op">/</span> <span class="dv">36</span>, <span class="dv">0</span>, <span class="op">-</span><span class="dv">2</span> <span class="op">/</span> <span class="dv">36</span>))</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> order <span class="op">&gt;</span> <span class="dv">4</span>:</span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span></span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> poly</span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> np.arange(<span class="fl">0.01</span>, <span class="fl">1.0</span>, <span class="fl">0.01</span>)</span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="co"># x = np.arange(-2, 2, 0.01)</span></span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>shape <span class="op">=</span> <span class="dv">8</span></span>
-<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">2</span>)(x))</span>
-<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">3</span>)(x))</span>
-<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">4</span>)(x))</span>
-<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>plt.title(shape)</span>
-<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>shape <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">2</span>)(x))</span>
-<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">3</span>)(x))</span>
-<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">4</span>)(x))</span>
-<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>plt.title(shape)</span>
-<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>shape <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">2</span>)(x))</span>
-<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">3</span>)(x))</span>
-<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>plt.plot(p, cf_approx(shape, order<span class="op">=</span><span class="dv">4</span>)(x))</span>
-<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>plt.title(shape)</span>
-<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-24-output-1.png" width="569" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-24-output-2.png" width="569" height="431"></p>
-</div>
-<div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-24-output-3.png" width="569" height="431"></p>
-</div>
-</div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
