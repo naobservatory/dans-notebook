@@ -446,26 +446,34 @@ for mu in [1, 10, 100, 1000]:
 
 ### Percentiles
 
-The following show the mean (dashed grey lines) and the 10th percentile (black dots) of cumulative counts as a function of the mean $\mu$"
+The following show the mean (dashed grey lines) and the 10th percentile (black) of cumulative counts as a function of the mean $\mu$".
+Colored lines are the latent and poisson regime approximations.
 Each plot has a different shape parameter $\nu$.
 
 ```{python}
 order = 4
+ks = range(1, order+1)
 # 10th percentile
 p = 0.1
 x = norm.ppf(p)
 
-mu = np.arange(1, 100)
+mus = np.arange(1, 100)
 for nu in [4, 10, 100]:
-    cgfs = [cgf_y_series(m, nu) for m in mu]
-    cumulants = [[cumulant_from_cgf(cgf, k) for k in [1, 2, 3, 4]] for cgf in cgfs]
-    for m, cs in zip(mu, cumulants):
-        cf = cornish_fisher(*cs)
-        plt.plot(m, cf(x), '.k')
-    plt.plot(mu, mu, '--', color="grey")
+    cgfs = [cgf_y_series(mu, nu) for mu in mus]
+    cumulants = [[cumulant_from_cgf(cgf, k) for k in ks] for cgf in cgfs]
+    cumulants_latent = [[factorial(k-1) / k * nu * (mu / nu)**k for k in ks] for mu in mus]
+    cumulants_poisson = [[mu for _ in ks] for mu in mus]
+    cf = [cornish_fisher(*cs)(x) for cs in cumulants]
+    cf_l = [cornish_fisher(*cs)(x) for cs in cumulants_latent]
+    cf_p = [cornish_fisher(*cs)(x) for cs in cumulants_poisson]
+    plt.plot(mus, cf, 'k', label="full")
+    plt.plot(mus, cf_l, color="C0", label="latent")
+    plt.plot(mus, cf_p, color="C1", label="poisson")
+    plt.plot(mus, mus, '--', color="grey", label="mean")
     plt.xlabel(r"$\mu$")
     plt.ylabel("Cumulative counts")
     plt.title(r"$\nu = $" f"{nu}")
+    plt.legend()
     plt.show()
 ```
 
@@ -474,6 +482,7 @@ Observations:
 - Smaller $\nu$ means that we have a greater reduction of the 10th percentile from the mean.
 - Smaller $\nu$ means that the 10th percentile increase linearly (as expected in the latent regime).
 - As $\nu$ gets larger, there is a wider Poisson-dominated regime where the tenth percentile increases like $\mu + \mu^{1/2} const.$.
+- Unless $\nu$ is very large, we can probably get away with the latent-regime approximation
 
 ## Implications for cost
 

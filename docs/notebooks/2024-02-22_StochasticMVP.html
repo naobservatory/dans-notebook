@@ -582,25 +582,34 @@ h_{11}(x) &amp; = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 </section>
 <section id="percentiles" class="level3">
 <h3 class="anchored" data-anchor-id="percentiles">Percentiles</h3>
-<p>The following show the mean (dashed grey lines) and the 10th percentile (black dots) of cumulative counts as a function of the mean <span class="math inline">\(\mu\)</span>” Each plot has a different shape parameter <span class="math inline">\(\nu\)</span>.</p>
+<p>The following show the mean (dashed grey lines) and the 10th percentile (black) of cumulative counts as a function of the mean <span class="math inline">\(\mu\)</span>“. Colored lines are the latent and poisson regime approximations. Each plot has a different shape parameter <span class="math inline">\(\nu\)</span>.</p>
 <div class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 10th percentile</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">100</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> nu <span class="kw">in</span> [<span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">100</span>]:</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    cgfs <span class="op">=</span> [cgf_y_series(m, nu) <span class="cf">for</span> m <span class="kw">in</span> mu]</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    cumulants <span class="op">=</span> [[cumulant_from_cgf(cgf, k) <span class="cf">for</span> k <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>]] <span class="cf">for</span> cgf <span class="kw">in</span> cgfs]</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> m, cs <span class="kw">in</span> <span class="bu">zip</span>(mu, cumulants):</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        cf <span class="op">=</span> cornish_fisher(<span class="op">*</span>cs)</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        plt.plot(m, cf(x), <span class="st">".k"</span>)</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    plt.plot(mu, mu, <span class="st">"--"</span>, color<span class="op">=</span><span class="st">"grey"</span>)</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="vs">r"$\mu$"</span>)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Cumulative counts"</span>)</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="vs">r"$\nu = $"</span> <span class="ss">f"</span><span class="sc">{</span>nu<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>ks <span class="op">=</span> <span class="bu">range</span>(<span class="dv">1</span>, order <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 10th percentile</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> norm.ppf(p)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>mus <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">100</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> nu <span class="kw">in</span> [<span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">100</span>]:</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    cgfs <span class="op">=</span> [cgf_y_series(mu, nu) <span class="cf">for</span> mu <span class="kw">in</span> mus]</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    cumulants <span class="op">=</span> [[cumulant_from_cgf(cgf, k) <span class="cf">for</span> k <span class="kw">in</span> ks] <span class="cf">for</span> cgf <span class="kw">in</span> cgfs]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    cumulants_latent <span class="op">=</span> [</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        [factorial(k <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> k <span class="op">*</span> nu <span class="op">*</span> (mu <span class="op">/</span> nu) <span class="op">**</span> k <span class="cf">for</span> k <span class="kw">in</span> ks] <span class="cf">for</span> mu <span class="kw">in</span> mus</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    cumulants_poisson <span class="op">=</span> [[mu <span class="cf">for</span> _ <span class="kw">in</span> ks] <span class="cf">for</span> mu <span class="kw">in</span> mus]</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    cf <span class="op">=</span> [cornish_fisher(<span class="op">*</span>cs)(x) <span class="cf">for</span> cs <span class="kw">in</span> cumulants]</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    cf_l <span class="op">=</span> [cornish_fisher(<span class="op">*</span>cs)(x) <span class="cf">for</span> cs <span class="kw">in</span> cumulants_latent]</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    cf_p <span class="op">=</span> [cornish_fisher(<span class="op">*</span>cs)(x) <span class="cf">for</span> cs <span class="kw">in</span> cumulants_poisson]</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    plt.plot(mus, cf, <span class="st">"k"</span>, label<span class="op">=</span><span class="st">"full"</span>)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    plt.plot(mus, cf_l, color<span class="op">=</span><span class="st">"C0"</span>, label<span class="op">=</span><span class="st">"latent"</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    plt.plot(mus, cf_p, color<span class="op">=</span><span class="st">"C1"</span>, label<span class="op">=</span><span class="st">"poisson"</span>)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    plt.plot(mus, mus, <span class="st">"--"</span>, color<span class="op">=</span><span class="st">"grey"</span>, label<span class="op">=</span><span class="st">"mean"</span>)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="vs">r"$\mu$"</span>)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Cumulative counts"</span>)</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="vs">r"$\nu = $"</span> <span class="ss">f"</span><span class="sc">{</span>nu<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-12-output-1.png" width="593" height="449"></p>
 </div>
@@ -616,6 +625,7 @@ h_{11}(x) &amp; = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 <li>Smaller <span class="math inline">\(\nu\)</span> means that we have a greater reduction of the 10th percentile from the mean.</li>
 <li>Smaller <span class="math inline">\(\nu\)</span> means that the 10th percentile increase linearly (as expected in the latent regime).</li>
 <li>As <span class="math inline">\(\nu\)</span> gets larger, there is a wider Poisson-dominated regime where the tenth percentile increases like <span class="math inline">\(\mu + \mu^{1/2} const.\)</span>.</li>
+<li>Unless <span class="math inline">\(\nu\)</span> is very large, we can probably get away with the latent-regime approximation</li>
 </ul>
 </section>
 </section>
