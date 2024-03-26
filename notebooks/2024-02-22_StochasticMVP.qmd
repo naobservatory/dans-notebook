@@ -36,6 +36,7 @@ For example, three types of noise that are relevant to our problem are:
 In the following, we consider noise classes 1 and 2.
 We neglect 3 for the moment because in well-mixed municipal wastewater samples, we expect this to be a small effect.
 However, similar analysis to that presented here could be applied in that case as well.
+(Update: see Appendix for update with a treatment of 3).
 
 We will consider a sequence of samples indexed by $i$, where the random variable $Y_i$ represents the number of reads corresponding to the pandemic virus in sample $i$.
 We model $Y_i$ as independent draws from a Poisson mixture distribution:
@@ -579,3 +580,64 @@ This suggests that the deterministic approximation will be within a doubling whe
 However, it is never very close.
 
 Putting these results together suggests that regardless of the regime, we expect the mean at detection to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.
+
+# Appendix: Small pool noise
+
+So far we have assumed that our reads come from a homogenized sample of a large population as in wastewater.
+However, there is another potential source of noise when our sequenced sample comes from a small number of people such pooled samples from tens of nasal swabs.
+Depending on the sample collection details, aggregated airplane waste may also fit into this category.
+In this case, we must account for noise from the random number of infected individual contributing to the sample.
+We expect this noise to decrease as the size of the pool grows.
+
+As above, let the number of viral reads in sample $i$ be $Y_i \sim Poisson(X_i)$ with $X_i$ random.
+If we sample a pool of $n_p$ individuals, each with an independent probability $p_i$ of  being infected, and each infected person expected to contribute $a$ viral reads to our sample, we have
+
+\begin{align}
+K_{X_i}(z) & = n_p \log \left(1 + p_i (e^{a z} - 1) \right) \\
+           & \approx n_p p_i (e^{a z} - 1) \\
+K_{Y_i}(z) & \approx n_p p_i \left[\exp \left(a (e^z - 1)\right) - 1 \right]
+\end{align}
+
+where the approximation is equivalent to a Poisson approximation to the number of sick people in the pool.
+Summing over samples and noting that $\mu_i = a n_p p_i$, gives:
+
+\begin{align}
+K_Y(z) & = \sum_i K_{Y_i}(z) \\
+       & = \mu \left[ \frac{\exp \left(a \left(e^z - 1\right)\right) - 1}{a} \right]
+\end{align}
+
+Examining this, we see that the shape of the distribution is controlled by $a$, the average number of reads each sick person contributes to the sample:
+
+1. When $a \ll 1$, $K_Y(z) \approx \mu \left(e^z - 1\right)$, i.e. the Poisson read count count noise dominates, as expected.
+2. When $a \gg 1$, $K_Y(z) \approx \frac{\mu}{a} \left(e^{az} - 1\right)$, i.e. the noise in the number of sick people in the pool dominates. (This is a scaled poisson random variable).
+
+We have already examined case 1.
+In case 2, the probability of detection is going to be determined by the probability of getting $\lceil \hat{K} / a \rceil$ sick individuals in our pool.
+When $a > \hat{K}$, any sick individual in the pool will probably contribute enough reads for detection.
+
+To see the effect of a small pool, consider the the special case that we detect upon seeing one read ($\hat{K} = 1$).
+(I believe that the conclusions here generalize to other \hat{K}, but it's harder to show analytically.)
+In that case, detection happens as soon as $Y > 0$:
+
+\begin{align}
+Pr\{Y \geq \hat{K}\} & = 1 - Pr\{Y = 0\} \\
+           & = 1 - \exp \left[ \lim_{z \to - \infty} K_Y(z) \right] \\
+           & = 1 - \exp \left[ -\frac{\mu}{a} (1 - e^{-a}) \right]
+\end{align}
+
+Say we want to detect with probability $1 - p_{miss}$ by the time the cumulative incidence reaches our target.
+We'll reach this detection probability when
+
+$$
+\mu =  \left( \frac{a}{1 - e^{-a}} \right) (- \log p_{miss}).
+$$
+
+```{python}
+a = np.arange(0.1, 10, 0.1)
+plt.plot(a, a / (1 - np.exp(-a)))
+plt.xlabel(r"Viral reads per sick individual in pool, $a$")
+plt.ylabel(r"Inflation of $\mu$ at detection")
+plt.ylim([0, 10])
+```
+
+This shows that, all else equal, we prefer a larger pool to improve our consistency of detection.

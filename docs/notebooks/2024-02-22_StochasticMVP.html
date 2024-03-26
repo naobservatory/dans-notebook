@@ -146,6 +146,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#percentiles" id="toc-percentiles" class="nav-link" data-scroll-target="#percentiles">Percentiles</a></li>
   </ul></li>
   <li><a href="#implications-for-cost" id="toc-implications-for-cost" class="nav-link" data-scroll-target="#implications-for-cost">Implications for cost</a></li>
+  <li><a href="#appendix-small-pool-noise" id="toc-appendix-small-pool-noise" class="nav-link" data-scroll-target="#appendix-small-pool-noise">Appendix: Small pool noise</a></li>
   </ul>
 </nav>
     </div>
@@ -193,7 +194,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Noise whose coefficient of variation goes to a constant value as the sequencing depth increases. For example, the relative abundances in a sequencing library depend on biases in enrichment efficiency. If there is a class of abundant sequences that are efficiently enriched by our lab protocol, random variation in the abundance of that class of sequences will generate noise in the counts of all the other sequences that is only weakly dependent on the total read depth.</li>
 <li>Noise that depends on the number of people contributing to a sample. For example, in the limit where each sample is taken from a single person, the noise in the counts of reads mapping to the pandemic virus will be dominated by whether that single person is infected or not.</li>
 </ol>
-<p>In the following, we consider noise classes 1 and 2. We neglect 3 for the moment because in well-mixed municipal wastewater samples, we expect this to be a small effect. However, similar analysis to that presented here could be applied in that case as well.</p>
+<p>In the following, we consider noise classes 1 and 2. We neglect 3 for the moment because in well-mixed municipal wastewater samples, we expect this to be a small effect. However, similar analysis to that presented here could be applied in that case as well. (Update: see Appendix for update with a treatment of 3).</p>
 <p>We will consider a sequence of samples indexed by <span class="math inline">\(i\)</span>, where the random variable <span class="math inline">\(Y_i\)</span> represents the number of reads corresponding to the pandemic virus in sample <span class="math inline">\(i\)</span>. We model <span class="math inline">\(Y_i\)</span> as independent draws from a Poisson mixture distribution: <span class="math display">\[
 Y_i \sim \text{Poisson}(X_i),
 \]</span> where <span class="math inline">\(X_i\)</span> is a latent variable that represents excess noise not accounted for by the Poisson model. To connect this model to our previous deterministic model, we set the mean of <span class="math inline">\(X_i\)</span> to the number of reads in the deterministic model:</p>
@@ -414,8 +415,8 @@ h_{11}(x) &amp; = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"$\mu$"</span>)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r"Variance of $Y$"</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="82">
-<pre><code>&lt;matplotlib.legend.Legend at 0x166470f10&gt;</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="97">
+<pre><code>&lt;matplotlib.legend.Legend at 0x130768e50&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-2.png" width="593" height="429"></p>
@@ -694,7 +695,7 @@ y(p) \approx \mu + \mu^{1/2} \Phi^{-1}(p)
 <div class="cell-output cell-output-display">
 <p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-2.png" width="587" height="434"></p>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="90">
+<div class="cell-output cell-output-display" data-execution_count="105">
 <pre><code>(1.0, 4.5)</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -721,7 +722,7 @@ y(p) &amp; \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Inflation factor relative to deterministic"</span>)</span>
 <span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Shape parameter $\nu$"</span>)</span>
 <span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">1</span>, <span class="fl">4.5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="91">
+<div class="cell-output cell-output-display" data-execution_count="106">
 <pre><code>(1.0, 4.5)</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -730,6 +731,51 @@ y(p) &amp; \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
 </div>
 <p>This suggests that the deterministic approximation will be within a doubling when <span class="math inline">\(\nu \gtrapprox 5\)</span>. However, it is never very close.</p>
 <p>Putting these results together suggests that regardless of the regime, we expect the mean at detection to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.</p>
+</section>
+<section id="appendix-small-pool-noise" class="level1">
+<h1>Appendix: Small pool noise</h1>
+<p>So far we have assumed that our reads come from a homogenized sample of a large population as in wastewater. However, there is another potential source of noise when our sequenced sample comes from a small number of people such pooled samples from tens of nasal swabs. Depending on the sample collection details, aggregated airplane waste may also fit into this category. In this case, we must account for noise from the random number of infected individual contributing to the sample. We expect this noise to decrease as the size of the pool grows.</p>
+<p>As above, let the number of viral reads in sample <span class="math inline">\(i\)</span> be <span class="math inline">\(Y_i \sim Poisson(X_i)\)</span> with <span class="math inline">\(X_i\)</span> random. If we sample a pool of <span class="math inline">\(n_p\)</span> individuals, each with an independent probability <span class="math inline">\(p_i\)</span> of being infected, and each infected person expected to contribute <span class="math inline">\(a\)</span> viral reads to our sample, we have</p>
+<p><span class="math display">\[\begin{align}
+K_{X_i}(z) &amp; = n_p \log \left(1 + p_i (e^{a z} - 1) \right) \\
+           &amp; \approx n_p p_i (e^{a z} - 1) \\
+K_{Y_i}(z) &amp; \approx n_p p_i \left[\exp \left(a (e^z - 1)\right) - 1 \right]
+\end{align}\]</span></p>
+<p>where the approximation is equivalent to a Poisson approximation to the number of sick people in the pool. Summing over samples and noting that <span class="math inline">\(\mu_i = a n_p p_i\)</span>, gives:</p>
+<p><span class="math display">\[\begin{align}
+K_Y(z) &amp; = \sum_i K_{Y_i}(z) \\
+       &amp; = \mu \left[ \frac{\exp \left(a \left(e^z - 1\right)\right) - 1}{a} \right]
+\end{align}\]</span></p>
+<p>Examining this, we see that the shape of the distribution is controlled by <span class="math inline">\(a\)</span>, the average number of reads each sick person contributes to the sample:</p>
+<ol type="1">
+<li>When <span class="math inline">\(a \ll 1\)</span>, <span class="math inline">\(K_Y(z) \approx \mu \left(e^z - 1\right)\)</span>, i.e.&nbsp;the Poisson read count count noise dominates, as expected.</li>
+<li>When <span class="math inline">\(a \gg 1\)</span>, <span class="math inline">\(K_Y(z) \approx \frac{\mu}{a} \left(e^{az} - 1\right)\)</span>, i.e.&nbsp;the noise in the number of sick people in the pool dominates. (This is a scaled poisson random variable).</li>
+</ol>
+<p>We have already examined case 1. In case 2, the probability of detection is going to be determined by the probability of getting <span class="math inline">\(\lceil \hat{K} / a \rceil\)</span> sick individuals in our pool. When <span class="math inline">\(a &gt; \hat{K}\)</span>, any sick individual in the pool will probably contribute enough reads for detection.</p>
+<p>To see the effect of a small pool, consider the the special case that we detect upon seeing one read (<span class="math inline">\(\hat{K} = 1\)</span>). (I believe that the conclusions here generalize to other , but it’s harder to show analytically.) In that case, detection happens as soon as <span class="math inline">\(Y &gt; 0\)</span>:</p>
+<p><span class="math display">\[\begin{align}
+Pr\{Y \geq \hat{K}\} &amp; = 1 - Pr\{Y = 0\} \\
+           &amp; = 1 - \exp \left[ \lim_{z \to - \infty} K_Y(z) \right] \\
+           &amp; = 1 - \exp \left[ -\frac{\mu}{a} (1 - e^{-a}) \right]
+\end{align}\]</span></p>
+<p>Say we want to detect with probability <span class="math inline">\(1 - p_{miss}\)</span> by the time the cumulative incidence reaches our target. We’ll reach this detection probability when</p>
+<p><span class="math display">\[
+\mu =  \left( \frac{a}{1 - e^{-a}} \right) (- \log p_{miss}).
+\]</span></p>
+<div class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> np.arange(<span class="fl">0.1</span>, <span class="dv">10</span>, <span class="fl">0.1</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>plt.plot(a, a <span class="op">/</span> (<span class="dv">1</span> <span class="op">-</span> np.exp(<span class="op">-</span>a)))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Viral reads per sick individual in pool, $a$"</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r"Inflation of $\mu$ at detection"</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="dv">10</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="107">
+<pre><code>(0.0, 10.0)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-15-output-2.png" width="587" height="436"></p>
+</div>
+</div>
+<p>This shows that, all else equal, we prefer a larger pool to improve our consistency of detection.</p>
 
 
 </section>
