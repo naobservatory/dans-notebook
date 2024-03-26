@@ -13,7 +13,7 @@ filters:
 
 ## Background
 
-Previously, we have worked out a deterministic model of the sequencing depth required to detect a novel pandemic virus by the time it reaches a fixed cumulative incidence (number of people ever infected).
+[Previously](./2024-02-02_CostEstimateMVP.html), we have worked out a deterministic model of the sequencing depth required to detect a novel pandemic virus by the time it reaches a fixed cumulative incidence (number of people ever infected).
 However, in the real world, there are a number of sources of noise that will affect our ability to detect a virus.
 In this post, we ask the question:
 **How much sequencing is required to have an $x$% chance to detect a virus by the time it reaches a fixed cumulative incidence, given a particular model of the noise?**
@@ -33,7 +33,7 @@ For example, three types of noise that are relevant to our problem are:
    For example, in the limit where each sample is taken from a single person,
    the noise in the counts of reads mapping to the pandemic virus will be dominated by whether that single person is infected or not.
 
-In the following, we consider noise classes 1. and 2.
+In the following, we consider noise classes 1 and 2.
 We neglect 3 for the moment because in well-mixed municipal wastewater samples, we expect this to be a small effect.
 However, similar analysis to that presented here could be applied in that case as well.
 
@@ -46,7 +46,7 @@ where $X_i$ is a latent variable that represents excess noise not accounted for 
 To connect this model to our previous deterministic model, we set the mean of $X_i$ to the number of reads in the deterministic model:
 
 $$
-E[X_i] = \mu_i = \frac{n b}{N} e^{r(t_0 + j \delta t)}
+E[X_i] = \mu_i = \frac{n b}{N} e^{r(t_0 + i \delta t)}
 $$
 
 where:
@@ -64,8 +64,8 @@ Recall that in our detection model, we declare a virus to be detected when the c
 Thus, to calculate the probability of detection, we need to calculate the probability that the cumulative number of reads ($\sum_{j=0}^{i} Y_j$) is greater than the threshold value $\hat{K}$.
 We will proceed in two steps:
 
-1. Calculate the cumulant generating function of the random variable $Y = \sum_j Y_j$.
-   This is natural to calculate because the CGF of a sum of independent random variables is the sum of their individual CGFs.
+1. Calculate the cumulant generating function (CGF) of the random variable $Y = \sum_j Y_j$.
+   It is convenient to work with the CGF because the CGF of a sum of independent random variables is the sum of their individual CGFs.
 2. Approximate the cumulative distribution function (CDF) of $Y$ from a finite set of cumulants using the [Cornish-Fisher expansion](https://en.wikipedia.org/wiki/Cornish%E2%80%93Fisher_expansion).
    In this notebook, we will explore under what conditions we can truncate the Cornish-Fisher expansion at a certain number of terms.
 
@@ -82,7 +82,7 @@ If $Y_i$ is Poisson distributed with random mean $X_i$,
 $$
 \begin{align}
 K_{Y_i}(z) & = \log \mathbb{E}\left[\mathbb{E}[e^{zY_{i}} | X_i]\right] \\
-       & = \log \mathbb{E}\left[\exp X_i (e^{z} - 1)\right] \\
+       & = \log \mathbb{E}\left[\exp \left\{ X_i (e^{z} - 1) \right\} \right] \\
        & = K_{X_i} \left(e^{z} - 1\right),
 \end{align}
 $$
@@ -129,7 +129,7 @@ In particular, the variance of $Y$, $\kappa_2$ is equal to the Poisson variance 
 
 It remains to find the cumulants of $X$, $\chi_\alpha$.
 For this, we need to specify a distribution for the latent variables at each sample, $X_i$.
-For simplicity, we will choose the Gamma distribution, which allows us to vary the mean and variance independently.
+For simplicity, we will choose the Gamma distribution, which allows us to vary the mean and coefficient of variation independently.
 We will parameterize the distribution by its mean $\mu$, and inverse dispersion $\phi$.
 In standard shape-scale parameterization, we have:
 $$
@@ -137,6 +137,7 @@ X_i \sim \text{Gamma}(\phi, \mu_i / \phi)
 $$
 where we assume that the inverse dispersion is constant in time.
 Note that the coefficient of variation of $X_i$ is $\phi^{-1/2}$, independent of $\mu_i$.
+Thus our latent gamma model accounts for noise type 2 above.
 
 The gamma distribution has CGF:
 $$
@@ -161,8 +162,8 @@ $$
 \begin{align}
 K_X(z) & = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} \left(\sum_{j=0}^{i} A^\alpha e^{\alpha r j \delta t} \right) z^\alpha \\
        & = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} A^\alpha \left(\frac{e^{\alpha r (i+1) \delta t} - 1}{e^{\alpha r \delta t} - 1} \right) z^\alpha \\
-       & \approx \sum_{\alpha=1}^{\infty} \frac{\phi}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha \left(\frac{\alpha r \delta t e^{\alpha r \delta t}}{e^{\alpha r \delta t} - 1} \right) z^\alpha \\
-       & \approx \sum_{\alpha=1}^{\infty} \frac{\phi}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha z^\alpha
+       & \approx \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha \left(\frac{\alpha r \delta t e^{\alpha r \delta t}}{e^{\alpha r \delta t} - 1} \right) z^\alpha \\
+       & \approx \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha z^\alpha
 \end{align}
 $$
 Where the first approximation requries the prevalence to be large compared to one, and the second approximation requires $\alpha r \delta t \ll 1$.
@@ -212,13 +213,13 @@ We have two regimes, controled by the parameter $\mu / \nu$:
 - If $\frac{\mu}{\nu} \ll 1$, the Poisson noise dominates and $\kappa_\alpha \approx \mu$.
 - If $\frac{\mu}{\nu} \gg 1$, the latent noise dominates and $\kappa_\alpha \approx \chi_\alpha$.
 
-For higher cumulants, the separation between the regimes becomes less clean (i.e. it takes a smaller/larger $\mu/\nu$ for one term to dominate.)
+For higher cumulants, the separation between the regimes becomes less clean (i.e. it takes a smaller or larger $\mu/\nu$ for one term to dominate.)
 
 In terms of model parameters:
 
-- More frequent samples (smaller $\delta t$, larger $\nu$) pushes us toward the Poisson-dominant regime.
-- More variable latent abundances (smaller $\phi$, smaller $\nu$) pushes us toward the latent-dominant regime.
-- A higher threshold of detection (larger $\mu$) pushes us toward the latent-dominant regime.
+- More frequent samples (smaller $\delta t$, thus larger $\nu$) pushes us toward the Poisson-dominant regime.
+- More variable latent abundances (smaller $\phi$, thus smaller $\nu$) pushes us toward the latent-dominant regime.
+- A higher threshold of detection (larger $\mu$ at the time of detection) pushes us toward the latent-dominant regime.
 
 ## The Cornish-Fisher expansion of the quantiles of $Y$
 
@@ -229,7 +230,6 @@ The idea behind the expansion is to start by approximating the CDF as that of a 
 It is defined as follows:
 
 The quantile function $y(p)$ (i.e. the value for which $\text{CDF}(y) = p$) is approximated by $y(p) \approx \kappa_1 + {\kappa_2}^{1/2} w_p$, where
-(TODO: fix formatting here)
 $$
 \begin{align}
 w_p & = x \\
@@ -245,6 +245,8 @@ h_{11}(x) & = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 $$
 Where $\Phi$ is the CGF of the standard normal distribution and $\text{He}$ are the probabilists' Hermite polynomials.
 Note that each line of the sum must be included as a whole for the approximation to be valid at that level.
+
+### Validity of the expansion
 
 For fixed $x$ (and therefore fixed quantile), the relative sizes of the terms of the expansion are controlled by the coefficients $\gamma$.
 In the Poisson-dominated regime:
@@ -264,13 +266,15 @@ $$
 \gamma_2 & = 6 \nu^{-1}
 \end{align}
 $$
-so truncating the series at a few terms should work well when $\nu \gg 1$.
+so truncating the series at a few terms should work well when $\nu > 1$.
 This is also not very limiting, because $\nu$ can be large either by making $\phi$ large (which is likely unless our data source is extremely noisy) or by sampling frequently so that $r \delta t$ is small.
 
-Notice that in the latent regime, the only $\nu$ (which controls the latent coefficient of variation) matters for the validity of the expansion, not $\mu$.
-However, for this regime to hold $\mu \gg \nu > 1$.
-If we put our requirements for the two regimes together, we see that the approximation is good if both $\mu > 1$ and $\nu \gg 1$.
-[TODO: write this more clearly and illustrate with figure.]
+Putting these together, we can see that for our purposes, the expansion will be good when $\nu > 1$.
+We're concerned with the value of $\mu$ when a particular quantile (e.g. 5%) passes the detection threshold $\hat{K}$
+The detection threshold by definition must be at least one read.
+Therefore, at detection, $\mu > 1$.
+If $\mu < \nu$, the Poisson noise dominates we can use $\mu > 1$ to establish the validity of the CF expansion.
+If $\mu > \nu$, the latent noise dominates and we can use $\nu > 1$ for validity.
 
 ## Numerical calculations
 
@@ -320,13 +324,18 @@ Check variance:
 nu = 10.0
 mu = np.arange(1, 100)
 k2 = [cumulant_from_cgf(cgf_y_series(m, nu), 2) for m in mu]
-plt.plot(mu, k2)
-plt.plot(mu, mu + (1/2) * mu**2 / nu, ":")
-plt.plot(mu, (1/2) * mu**2 / nu, "--")
+plt.plot(mu, k2, label="exact")
+plt.plot(mu, (1/2) * mu**2 / nu, "--", label="latent approximation")
+plt.xlabel(r"$\mu$")
+plt.ylabel(r"Variance of $Y$")
+plt.legend()
 ```
 
-Note that it is growing quadratically, but the $\mu$ term is not negligible.
+Note that the variance is growing quadratically, but the Poisson contribution to the variance is not totally negligible even for large $\nu$.
 
+### Checking the Cornish-Fisher expansion against common distributions
+
+In this section, we compare the Cornish-Fisher expansion of the quantile function to the exact quantile function for several known distributions to get a sense of its accuracy at different orders.
 
 ```{python}
 def cornish_fisher(*cumulants):
@@ -350,8 +359,6 @@ def cornish_fisher(*cumulants):
     return cumulants[0] + sigma * poly
 ```
 
-### Checking the Cornish-Fisher expansion against common distributions
-
 Check against Poisson distribution:
 
 ```{python}
@@ -365,12 +372,14 @@ for lamb in [1, 2, 4, 8]:
         cf_poisson = cornish_fisher(*poisson_cumulants[:o])
         plt.plot(p, cf_poisson(x), label=o)
     plt.plot(p, poisson(lamb).ppf(p), color="k", linestyle="--", label="exact")
-    plt.legend()
+    plt.legend(title="order")
+    plt.xlabel("quantile")
+    plt.ylabel("value")
     plt.title(f"$\lambda$ = {lamb}")
     plt.show()
 ```
 
-When $\lambda > 1$, you quickly converge to a Gaussian distribution, and the higher-order corrections don't matter.
+In the Poisson case, when $\lambda > 1$, the distribution converges quickly to a Gaussian, and the higher-order corrections don't matter.
 
 Check against Gamma distribution:
 
@@ -378,18 +387,22 @@ Check against Gamma distribution:
 scale = 1
 k = np.arange(1, order + 1)
 
-for shape in [1, 2, 4, 8]:
+for shape in [1/2, 1, 2, 4, 8]:
     gamma_cumulants = factorial(k - 1) * shape * scale ** k
     for o in range(2, order + 1):
         cf_gamma = cornish_fisher(*gamma_cumulants[:o])
         plt.plot(p, cf_gamma(x), label=o)
     plt.plot(p, gamma(shape, scale=scale).ppf(p), color="k", linestyle="--", label="exact")
-    plt.legend()
+    plt.legend(title="order")
+    plt.xlabel("quantile")
+    plt.ylabel("value")
     plt.title(f"shape = {shape}")
     plt.show()
 ```
 
-The shape parameter controls deviations from Gaussian. For shape > 1, three terms gets you close and 4 gets you very close.
+The shape parameter controls deviations from Gaussian and the error of the higher order approximations.
+For shape > 1, three terms gets you close and 4 gets you very close.
+For shape = 1/2, the Gaussian approximation is quite bad, but the order-4 Cornish fisher approximation is decent except for small quantiles. (It does not capture the power-law left tail of the distribution.)
 
 ### Cornish-Fisher expansions for the cumulative count distribution
 
@@ -398,6 +411,7 @@ For the cumulative count distribution, there are two parameters, $\mu$ (the mean
 For small $\nu$, the noise is quickly dominated by the latent variable so the distribution goes to a constant shape, scaled by $\mu$.
 
 Even with $\nu = 2$, the CF expansion converges quickly. 3 terms is quite good, 4 is indistinguisable from higher:
+
 ```{python}
 order = 6
 nu = 2.0
@@ -407,7 +421,9 @@ for mu in [1, 2, 4, 8, 32]:
     for o in range(2, order + 1):
         cf = cornish_fisher(*cumulants[:o])
         plt.plot(p, cf(x), label=o)
-    plt.legend()
+    plt.legend(title="order")
+    plt.xlabel("quantile")
+    plt.ylabel("value")
     plt.title(r"$\nu$" f" = {nu}, " r"$\mu$ = " f"{mu}")
     plt.show()
 ```
@@ -423,8 +439,9 @@ for mu in [1, 10, 100, 1000]:
     for o in range(2, order + 1):
         cf = cornish_fisher(*cumulants[:o])
         plt.plot(p, cf(x), label=o)
-    plt.legend()
     plt.title(r"$\nu$" f" = {nu}, " r"$\mu$ = " f"{mu}")
+    plt.xlabel("quantile")
+    plt.ylabel("value")
     plt.show()
 ```
 
@@ -439,14 +456,15 @@ for mu in [1, 10, 100, 1000]:
     for o in range(2, order + 1):
         cf = cornish_fisher(*cumulants[:o])
         plt.plot(p, cf(x), label=o)
-    plt.legend()
+    plt.xlabel("quantile")
+    plt.ylabel("value")
     plt.title(r"$\nu$" f" = {nu}, " r"$\mu$ = " f"{mu}")
     plt.show()
 ```
 
 ### Percentiles
 
-The following show the mean (dashed grey lines) and the 10th percentile (black) of cumulative counts as a function of the mean $\mu$".
+The following show the mean (dashed grey lines) and the 10th percentile (black) of cumulative counts as a function of the mean $\mu$.
 Colored lines are the latent and poisson regime approximations.
 Each plot has a different shape parameter $\nu$.
 
@@ -497,6 +515,40 @@ Solve for $\mu$.
 Then compare this $\mu$ to the deterministic model.
 Will predict that there's a delay in detection due to having to wait for the mean to be larger than the threshold to have a high probability of detection.
 
+The Poisson regime will be more appropriate for small read counts and thus small thresholds.
+Let's consider the effect of stochasticity on detection when the threshold $\hat{K}$ is low.
+If we detect when we observe two reads, the previous equation shows that we will need $\mu geq 4.8$ to detect 10% of the time.
+In contrast, our deterministic model predicts that we dectect when $\mu = 2$.
+Thus, the Poisson noise costs us over a full doubling time in detection sensitivity.
+
+```{python}
+from scipy.optimize import fsolve
+
+def mu_at_detection(k_hat, p):
+    def f(mu):
+        return mu + norm.ppf(p) * mu **(1/2) - k_hat
+    return fsolve(f, k_hat)[0]
+
+print(mu_at_detection(2.0, 0.1))
+
+k_hat = np.arange(1, 20)
+mu_10 = np.array([mu_at_detection(k, 0.1) for k in k_hat])
+mu_05 = np.array([mu_at_detection(k, 0.05) for k in k_hat])
+plt.plot(k_hat, mu_10, ".", label="Pr{detect}=0.1")
+plt.plot(k_hat, mu_05, ".", label="Pr{detect}=0.05")
+plt.plot(k_hat, k_hat, "--k", label="deterministic")
+plt.legend()
+plt.ylabel(r"$\mu$ at detection")
+plt.xlabel(r"Detection threshold $\hat{K}$")
+plt.show()
+
+plt.plot(k_hat, mu_10 / k_hat)
+plt.plot(k_hat, mu_05 / k_hat)
+plt.ylabel("Inflation factor relative to deterministic")
+plt.xlabel(r"Detection threshold $\hat{K}$")
+plt.ylim([1, 4.5])
+```
+
 In the Latent-dominated regime, the terms of the Cornish-Fisher expansion just depend on $\nu$, not on $\mu$, so:
 $$
 \begin{align}
@@ -506,3 +558,24 @@ y(p) & \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
 $$
 Can caluclate $w_p(\nu)$ to as high order as we need, then solve for $\mu$ as in the Poisson regime
 Because $w_p$ will be negative (since $p$ is small), this will inflate the required $\mu$ for by a factor.
+This suggests a path for data analysis: if we can estimate $\nu$ from data (by estimating the overdispersion parameter $\phi$ in the read count distribution and then scaling by $r \delta t$, we can estimate the inflation factor.
+
+```{python}
+def cf_latent(nu):
+    return HermiteE((1, (2*nu)**(-1/2), (2 / 9) / nu))
+
+nu = np.arange(1.0, 20.0)
+factor_10 = np.array([cf_latent(n)(norm.ppf(0.1)) for n in nu])
+factor_05 = np.array([cf_latent(n)(norm.ppf(0.05)) for n in nu])
+plt.plot(nu, 1 / factor_10, label="Pr{detect}=0.1")
+plt.plot(nu, 1 / factor_05, label="Pr{detect}=0.05")
+plt.legend()
+plt.ylabel("Inflation factor relative to deterministic")
+plt.xlabel(r"Shape parameter $\nu$")
+plt.ylim([1, 4.5])
+```
+
+This suggests that the deterministic approximation will be within a doubling when $\nu \gtrapprox 5$.
+However, it is never very close.
+
+Putting these results together suggests that regardless of the regime, we expect the mean at detection to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.
