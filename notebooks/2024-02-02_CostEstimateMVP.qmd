@@ -26,8 +26,8 @@ We focus on the phase of the epidemic when it is growing exponentially.
 This will be approximately true at an intermediate time when the virus is common enough
 that we can neglect noise in reproduction, but rare enough that it is not running out of
 susceptible people to infect.
-Let the rate of new infections per interaction per unit time to be $\alpha$ and the rate of recovery of an infected person to be $\beta$.
-Then, we have the following ODE for the prevalence $P(t)$:
+Let the rate of new infections per infected persion per unit time be $N \alpha$ and the rate of recovery of an infected person to be $\beta$.
+Then, we have the following ODE for the prevalence (the number of infected people, not the proportion of the population as in the P2RA report) $P(t)$:
 
 $$
 \frac{dP}{dt} \approx \alpha N P - \beta P.
@@ -77,7 +77,7 @@ For a virus like SARS-CoV-2, where both doubling and recovery times were on the 
 
 ### Domain of validity
 
-As described above, the approximation of deterministic exponential growth is valid when the number of infected individuals is large enough that the growth is roughly deteriminstic but small enough that most of the population is still susceptible.
+As described above, the approximation of deterministic exponential growth is valid when the number of infected individuals is large enough that the growth is roughly deterministic but small enough that most of the population is still susceptible.
 Here we'll approximate those bounds.
 
 #### Deterministic growth
@@ -119,7 +119,7 @@ $$
 When this condition is met, we expect the epidemic to grow approximately deterministically at rate $r$.
 
 Note that this condition is violated at $t = 0$.
-We must thus reinterpret $t = 0$ as the *effective* time that the epidemic would have infected a single person if our derterministic approximation for $P \gg 1 + 2\beta/r$ were extended backwards in time.
+We must thus reinterpret $t = 0$ as the *effective* time that the epidemic would have infected a single person if our deterministic approximation for $P \gg 1 + 2\beta/r$ were extended backwards in time.
 [TODO: estimate the error in cumulative infections introduced by making this approximation.]
 
 #### Exponential growth
@@ -146,7 +146,7 @@ Using $C = \frac{r + \beta}{r} P$ in the exponential regime, we can put this tog
 $$
 1 + 2\beta / r \ll P \ll \frac{N}{2 (1 + \beta / r)}.
 $$
-This shows that as long as the population is large ($N \gg 1$), and the growth rate is not too slow compared to the recovery rate ($r \gtrsim \beta$), there will be a wide regime of approximately deterministic exponential growth.
+This shows that as long as the population is large ($N \gg 1$), and the growth rate is not too slow compared to the recovery rate ($r \gtrsim \beta$), there will be a wide range of $P$ for which growth is approximately deterministic and exponential.
 
 ## Sampling, sequencing, and detection
 
@@ -168,10 +168,11 @@ $$
 c(\hat{t} + t_d) \equiv C(\hat{t} + t_d) / N
 $$
 
-Because we're interested in population-scale quantities and because we've shown that our model is not accurate when there are only a few individuals, we will make two assumptions:
-
-- The prevalence at detection $P(t) = e^{rt} \sim N$, as $N \to \infty$.
-- We can neglect any smaller terms that do not scale with $N$.
+We're interested in taking samples from a large population ($N \gg 1$).
+In such a population, our ability to detect will depend not on the the raw number of people infected $P$, but on the proportion $p \equiv P / N$.
+At detection, $p$ will be at some typical magnitude that depends on our sensitivity but does not depend on $N$.
+We can simplify our equations by neglecting terms that are $\mathcal{O}(N^{-1})$ while keeping terms of order $p = e^{r t} / N$.
+This is valid because we've already assumed that $e^{r t} \gg 1$ so the latter are always larger than the former.
 
 Using the equations above for cumulative incidence, we have the following simplification:
 $$
@@ -205,7 +206,7 @@ Here, $\rho_i$ is a density that says how much of sample $i$ was collected at di
 and $b$ is a fixed conversion factor between prevalence and relative abundance.
 (Note $b = RA_p(1)$ in the P2RA manuscript.)
 
-From here on, it will simplify thing to specify two concrete sampling schemes.
+From here on, it will simplify things to specify two concrete sampling schemes.
 Both schemes collect evenly-spaced samples with the same depth:
 
 * $n_i = n$
@@ -216,7 +217,15 @@ Our two schemes differ in when the material for the samples is collected.
 They are:
 
 1. Continuous sampling: $\rho_i(t) = \frac{1}{\delta t}$ for $t \in [t_{i-1}, t_i)$.
-2. Grab sampling: $\rho_i(t) = \delta(t - t_i)$, i.e., the whole sample is collected at $t_i$.
+2. Grab sampling: $\rho_i(t) = \delta(t - t_i)$, i.e., the whole sample is collected at $t_i$. (Here, $\delta(t)$ is the Dirac delta function.)
+
+In the [next notebook](./2024-02-08_OptimalSamplingInterval.html#windowed-composite-sampling),
+we consider a third, intermediate scheme: windowed composite sampling.
+In this scheme, material is collected continuously for a fixed window, usually 24 hours.
+(In practice, it is not sampled continuously but at regular intervals over the window.)
+Derivation of this case is a straightforward extension of the cases considered here, using $\rho_i(t) = w^{-1}$ for $t \in [t_i - w, t_i)$ with window length $w$.
+For short windows ($w \to 0$), this case approaches grab sampling.
+For $w \to \delta t$ it approaches composite sampling.
 
 ### Continuous sampling
 
@@ -250,7 +259,9 @@ K_i & = \frac{nb}{\delta t}
 \end{align}
 $$
 
-One complication is that the sample $i$ that $K_i \geq \hat{K}$ depends on the precise timing of our samples.
+One somewhat subtle complication comes from the fact that we don't know how the start of the epidemic lines up with our sampling schedule.
+For example, if we sample weekly, the detection time will depend on which day of the week exponential growth effectively starts ($t=0$ in the model).
+When delay between the start of the epidemic and the first sample ($t_0$) is larger, we may eventually detect the virus one sample earlier than when the delay is smaller.
 In the figure below, the three colored series show $K_i$ for three series of samples that differ only by the relative timing of their sample collection (e.g., all samples are collected weekly, but one series collects on Mondays, another on Tuesdays, etc.)
 Note that the red figure, whose first sample was taken latest relative to the start of the pandemic, crosses the threshold (solid black line) one sample earlier than the others.
 
@@ -280,7 +291,9 @@ plt.legend(title = "$t_0$");
 We account for this effect by splitting $\hat{t}$ into two components:
 
 1. The earliest time possible to detect, $t^{\star}$, found by allowing $K$ to vary continously in time (dotted line above)
-2. The residual time waiting for the next sample to be collected. Because we have no reason to expect this waiting time to take any particular value, we average it over a uniform distribution.
+2. The residual time waiting for the next sample to be collected.
+   This waiting time depends on the arbitrary start time of the epidemic within our sampling cycle so we have reason to expect it to take any particular value.
+   Thus, we average it over a uniform distribution.
 
 First, we will find an implicit equation for $t^{\star}$:
 $$
@@ -304,18 +317,24 @@ $$
             + \mathcal{O}(N^{-1}) \\
 \end{align}
 $$
-The the third term in parentheses is the cost incurred from having widely spaced samples.
-As $r \delta t \to 0$, this cost goes to zero.
-When $r \delta t$ is large, this cost grows exponentially.
+
+This result has three components:
+
+1. The first two terms are the cumulative incidence at $t^{\star}$, the earliest possible detection time.
+2. The third term in parentheses is the cost incurred from having widely spaced samples.
+   As $r \delta t \to 0$, this cost goes to zero.
+   When $r \delta t$ is large, this cost grows exponentially.
+3. The final term is the multiplier from the delay between sample collection and analysis.
 
 Finally, we notice that the second term in parentheses appears in our implicit equation for $t^{\star}$ above.
-Substituting and rearranging gives the sequencing effort required to detect by cumulative incidence $\hat{c}$:
+Substituting and rearranging gives the sequencing effort (reads per unit time, $n / \delta t$) required to detect by cumulative incidence $\hat{c}$:
 $$
 \frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
     \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
     e^{r t_d}
     + \mathcal{O}(N^{-1})
 $$
+
 Some observations:
 
 1. Faster-growing and faster-recovering viruses require more sequencing because the current prevalence is a smaller fraction of the cumulative incidence.
@@ -350,6 +369,12 @@ The third term is the effect of grab sampling: because the sample is collected e
 
 Using this equation for $t^{\star}$, we find that the required sequencing effort for grab sampling is:
 $$
+\hat{c} = (r + \beta)
+            \left(\frac{e^{r t^{\star}}}{r N} \right)
+            \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
+            e^{r t_d}
+$$
+$$
 \frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
     \left(\frac
         {e^{-r\delta t} {\left(e^{r \delta t} - 1\right)}^2}
@@ -371,6 +396,12 @@ plt.title("Effect of wider sampling intervals")
 plt.xlabel("Sampling interval, $r \delta t$")
 plt.ylabel("Multiplicative effect on required sequencing depth");
 ```
+
+We can also see the difference between the cases by comparing the Taylor series of the sampling interval delay term:
+\begin{align}
+f_{\text{cont.}}(r \delta t) & \equiv \frac{e^{r \delta t} - 1}{r \delta t} = 1 + \frac{r \delta t}{2} + \frac{{(r \delta t)}^2}{6} \\
+f_{\text{grab}}(r \delta t) & \equiv \frac{e^{- r \delta t}{(e^{r \delta t} - 1)}^2}{r \delta t} = 1 + \frac{{(r \delta t)}^2}{12} \\
+\end{align}
 
 ## Numerical example
 
@@ -424,6 +455,7 @@ n_cont = depth_required(r, beta, k_hat, b, c_hat, delta_t, "continuous", t_d)
 n_grab = depth_required(r, beta, k_hat, b, c_hat, delta_t, "grab", t_d)
 plt.plot(delta_t, 30 * n_cont, label="continuous")
 plt.plot(delta_t, 30 * n_grab, label="grab")
+plt.ylim([0, 5.1e10])
 plt.legend(title="Sampling scheme")
 plt.ylabel("Reads required per month")
 plt.xlabel("Sampling interval (days)");
