@@ -190,14 +190,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="background" class="level2">
 <h2 class="anchored" data-anchor-id="background">Background</h2>
-<p><a href="./2024-02-02_CostEstimateMVP.html">Previously</a>, we have worked out a deterministic model of the sequencing depth required to detect a novel pandemic virus by the time it reaches a fixed cumulative incidence (number of people ever infected). However, in the real world, there are a number of sources of noise that will affect our ability to detect a virus. In this post, we ask the question: <strong>How much sequencing is required to have an <span class="math inline">\(x\)</span>% chance to detect a virus by the time it reaches a fixed cumulative incidence, given a particular model of the noise?</strong></p>
+<p><a href="./2024-02-02_CostEstimateMVP.html">Previously</a>, we have worked out a deterministic model of the sequencing depth required to detect a novel pandemic virus by the time it reaches a fixed cumulative incidence (number of people ever infected). However, in the real world, there are a number of sources of noise that will affect our ability to detect a virus. In this post, we ask the question: <strong>For a given level of sequencing, what is the cumulative incidence by which we have an x% chance of detecting a virus?</strong> We can use this result to modify our deterministic estimates of the level of sequencing required to detect by a given cumulative incidence.</p>
 </section>
 <section id="model" class="level2">
 <h2 class="anchored" data-anchor-id="model">Model</h2>
 <p>It is useful to categorize noise sources by how they behave as various parameters like the sequencing depth change. For example, three types of noise that are relevant to our problem are:</p>
 <ol type="1">
-<li>Noise whose coefficient of variation decreases as the sequencing depth increases. This includes poisson counting noise in the number of reads mapping to a sequence, due to finite sampling effects.</li>
-<li>Noise whose coefficient of variation goes to a constant value as the sequencing depth increases. For example, the relative abundances in a sequencing library depend on biases in enrichment efficiency. If there is a class of abundant sequences that are efficiently enriched by our lab protocol, random variation in the abundance of that class of sequences will generate noise in the counts of all the other sequences that is only weakly dependent on the total read depth.</li>
+<li>Noise whose coefficient of variation decreases as the sequencing depth increases. This includes poisson counting noise in the number of reads mapping to a sequence, due to finite sampling effects. Variation in the number of reads per sample likely takes this form as well.</li>
+<li>Noise whose coefficient of variation goes to a constant value as the sequencing depth increases. For example, random variation in the efficiency of the target will contribute this type of noise. Also, the relative abundances in a sequencing library depend on biases in enrichment efficiency. If there is a class of abundant sequences that are efficiently enriched by our lab protocol, random variation in the abundance of that class of sequences will generate noise in the counts of all the other sequences that is only weakly dependent on the total read depth.</li>
 <li>Noise that depends on the number of people contributing to a sample. For example, in the limit where each sample is taken from a single person, the noise in the counts of reads mapping to the pandemic virus will be dominated by whether that single person is infected or not.</li>
 </ol>
 <p>In the following, we consider noise classes 1 and 2. We neglect 3 for the moment because in well-mixed municipal wastewater samples, we expect this to be a small effect. However, similar analysis to that presented here could be applied in that case as well. (Update: see Appendix for update with a treatment of 3).</p>
@@ -285,7 +285,7 @@ K_X(z) &amp; = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} \left(\su
        &amp; \approx \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha \left(\frac{\alpha r \delta t e^{\alpha r \delta t}}{e^{\alpha r \delta t} - 1} \right) z^\alpha \\
        &amp; \approx \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha z^\alpha
 \end{align}
-\]</span> Where the first approximation requries the prevalence to be large compared to one, and the second approximation requires <span class="math inline">\(\alpha r \delta t \ll 1\)</span>. (TODO: generalize the second approximation.)</p>
+\]</span> Where the first approximation requires the prevalence to be large compared to one, and the second approximation requires <span class="math inline">\(\alpha r \delta t \ll 1\)</span>. (TODO: generalize the second approximation.)</p>
 <p>It is illuminating to parameterize the distribution of <span class="math inline">\(X\)</span> by its mean, <span class="math inline">\(\mu\)</span>, and a shape parameter <span class="math inline">\(\nu\)</span>: <span class="math display">\[
 \begin{align}
 \mu &amp; \equiv K_X'(0) \\
@@ -421,8 +421,8 @@ h_{11}(x) &amp; = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"$\mu$"</span>)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r"Variance of $Y$"</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="4">
-<pre><code>&lt;matplotlib.legend.Legend at 0x15bf66790&gt;</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="200">
+<pre><code>&lt;matplotlib.legend.Legend at 0x1514f2e10&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-5-output-2.png" width="593" height="429"></p>
@@ -661,11 +661,10 @@ h_{11}(x) &amp; = - \frac{2\text{He}_3(x) + \text{He}_1(x)}{36} \\
 </section>
 <section id="implications-for-cost" class="level2">
 <h2 class="anchored" data-anchor-id="implications-for-cost">Implications for cost</h2>
-<p>Sketch of implications:</p>
 <p>In the Poisson-dominated regime, a Gaussian approximation is pretty good, so <span class="math display">\[
 y(p) \approx \mu + \mu^{1/2} \Phi^{-1}(p)
-\]</span> Set <span class="math inline">\(p\)</span> to be one minus the target probability of detection, set <span class="math inline">\(y(p) = \hat{K}\)</span>, the detection threshold. Solve for <span class="math inline">\(\mu\)</span>. Then compare this <span class="math inline">\(\mu\)</span> to the deterministic model. Will predict that there’s a delay in detection due to having to wait for the mean to be larger than the threshold to have a high probability of detection.</p>
-<p>The Poisson regime will be more appropriate for small read counts and thus small thresholds. Let’s consider the effect of stochasticity on detection when the threshold <span class="math inline">\(\hat{K}\)</span> is low. If we detect when we observe two reads, the previous equation shows that we will need <span class="math inline">\(\mu geq 4.8\)</span> to detect 10% of the time. In contrast, our deterministic model predicts that we dectect when <span class="math inline">\(\mu = 2\)</span>. Thus, the Poisson noise costs us over a full doubling time in detection sensitivity.</p>
+\]</span> Note that this is true even when the detection threshold <span class="math inline">\(\hat{K} = 1\)</span> because the mean will have to be larger than one to have a high probability of detection. We can let <span class="math inline">\(p\)</span> be one minus the target probability of detection, set <span class="math inline">\(y(p) = \hat{K}\)</span>, and solve for <span class="math inline">\(\mu\)</span>. This allows us to calculate the delay in detection due to having to wait for the mean to be larger than the threshold.</p>
+<p>The Poisson regime will be more appropriate for small read counts and thus small thresholds. Let’s consider the effect of stochasticity on detection when the threshold <span class="math inline">\(\hat{K}\)</span> is low. If we detect when we observe two reads, the previous equation shows that we will need <span class="math inline">\(\mu \geq 4.8\)</span> to detect 10% of the time. In contrast, our deterministic model predicts that we detect when <span class="math inline">\(\mu = 2\)</span>. Thus, the Poisson noise costs us over a full doubling time in detection sensitivity.</p>
 <div class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> fsolve</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -685,23 +684,24 @@ y(p) \approx \mu + \mu^{1/2} \Phi^{-1}(p)
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, mu_10, <span class="st">"."</span>, label<span class="op">=</span><span class="st">"Pr</span><span class="sc">{detect}</span><span class="st">=0.1"</span>)</span>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, mu_05, <span class="st">"."</span>, label<span class="op">=</span><span class="st">"Pr</span><span class="sc">{detect}</span><span class="st">=0.05"</span>)</span>
 <span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, k_hat, <span class="st">"--k"</span>, label<span class="op">=</span><span class="st">"deterministic"</span>)</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r"$\mu$ at detection"</span>)</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Detection threshold $\hat</span><span class="sc">{K}</span><span class="vs">$"</span>)</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, mu_10 <span class="op">/</span> k_hat)</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, mu_05 <span class="op">/</span> k_hat)</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Inflation factor relative to deterministic"</span>)</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Detection threshold $\hat</span><span class="sc">{K}</span><span class="vs">$"</span>)</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">1</span>, <span class="fl">4.5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Poisson approximation"</span>)</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r"$\mu$ at detection"</span>)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Detection threshold $\hat</span><span class="sc">{K}</span><span class="vs">$"</span>)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, mu_10 <span class="op">/</span> k_hat)</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>plt.plot(k_hat, mu_05 <span class="op">/</span> k_hat)</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Inflation factor relative to deterministic"</span>)</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Detection threshold $\hat</span><span class="sc">{K}</span><span class="vs">$"</span>)</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">1</span>, <span class="fl">4.5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>4.810935246946804</code></pre>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-2.png" width="587" height="434"></p>
+<p><img src="2024-02-22_StochasticMVP_files/figure-html/cell-13-output-2.png" width="587" height="454"></p>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="12">
+<div class="cell-output cell-output-display" data-execution_count="208">
 <pre><code>(1.0, 4.5)</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -713,7 +713,7 @@ y(p) \approx \mu + \mu^{1/2} \Phi^{-1}(p)
 y(p) &amp; \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
      &amp; = \mu \left(1 +\frac{1}{{(2\nu)}^{1/2}} w_p(\nu)\right) \\
 \end{align}
-\]</span> Can caluclate <span class="math inline">\(w_p(\nu)\)</span> to as high order as we need, then solve for <span class="math inline">\(\mu\)</span> as in the Poisson regime Because <span class="math inline">\(w_p\)</span> will be negative (since <span class="math inline">\(p\)</span> is small), this will inflate the required <span class="math inline">\(\mu\)</span> for by a factor. This suggests a path for data analysis: if we can estimate <span class="math inline">\(\nu\)</span> from data (by estimating the overdispersion parameter <span class="math inline">\(\phi\)</span> in the read count distribution and then scaling by <span class="math inline">\(r \delta t\)</span>, we can estimate the inflation factor.</p>
+\]</span> Can calculate <span class="math inline">\(w_p(\nu)\)</span> to as high order as we need, then solve for <span class="math inline">\(\mu\)</span> as in the Poisson regime. Because <span class="math inline">\(w_p\)</span> will be negative (since <span class="math inline">\(p\)</span> is small), this will inflate the required <span class="math inline">\(\mu\)</span> for detection by a factor. This suggests a path for data analysis: if we can estimate <span class="math inline">\(\nu\)</span> from data (by estimating the overdispersion parameter <span class="math inline">\(\phi\)</span> in the read count distribution and then scaling by <span class="math inline">\(r \delta t\)</span>, we can estimate the inflation factor.</p>
 <div class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cf_latent(nu):</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> HermiteE((<span class="dv">1</span>, (<span class="dv">2</span> <span class="op">*</span> nu) <span class="op">**</span> (<span class="op">-</span><span class="dv">1</span> <span class="op">/</span> <span class="dv">2</span>), (<span class="dv">2</span> <span class="op">/</span> <span class="dv">9</span>) <span class="op">/</span> nu))</span>
@@ -728,7 +728,7 @@ y(p) &amp; \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Inflation factor relative to deterministic"</span>)</span>
 <span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Shape parameter $\nu$"</span>)</span>
 <span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">1</span>, <span class="fl">4.5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="209">
 <pre><code>(1.0, 4.5)</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -736,7 +736,8 @@ y(p) &amp; \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
 </div>
 </div>
 <p>This suggests that the deterministic approximation will be within a doubling when <span class="math inline">\(\nu \gtrapprox 5\)</span>. However, it is never very close.</p>
-<p>Putting these results together suggests that regardless of the regime, we expect the mean at detection to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.</p>
+<p>Putting these results together suggests that regardless of the regime, we expect the sequencing depth required to achieve detection probability of 0.9 or 0.95 at the target cumulative incidence to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.</p>
+<p>The above assumes that <span class="math inline">\(\nu &gt; 1.5\)</span> or so. For smaller <span class="math inline">\(\nu\)</span>, our approximations break down. However, smaller <span class="math inline">\(\nu\)</span> means more variability. Under those circumstances, the details of the distribution of sequencing outcomes likely matter in some detail.</p>
 </section>
 <section id="appendix-small-pool-noise" class="level1">
 <h1>Appendix: Small pool noise</h1>
@@ -774,7 +775,7 @@ Pr\{Y \geq \hat{K}\} &amp; = 1 - Pr\{Y = 0\} \\
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r"Viral reads per sick individual in pool, $a$"</span>)</span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r"Inflation of $\mu$ at detection"</span>)</span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="dv">10</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="14">
+<div class="cell-output cell-output-display" data-execution_count="210">
 <pre><code>(0.0, 10.0)</code></pre>
 </div>
 <div class="cell-output cell-output-display">

@@ -17,7 +17,8 @@ filters:
 [Previously](./2024-02-02_CostEstimateMVP.html), we have worked out a deterministic model of the sequencing depth required to detect a novel pandemic virus by the time it reaches a fixed cumulative incidence (number of people ever infected).
 However, in the real world, there are a number of sources of noise that will affect our ability to detect a virus.
 In this post, we ask the question:
-**How much sequencing is required to have an $x$% chance to detect a virus by the time it reaches a fixed cumulative incidence, given a particular model of the noise?**
+**For a given level of sequencing, what is the cumulative incidence by which we have an x% chance of detecting a virus?**
+We can use this result to modify our deterministic estimates of the level of sequencing required to detect by a given cumulative incidence.
 
 ## Model
 
@@ -27,8 +28,10 @@ For example, three types of noise that are relevant to our problem are:
 1. Noise whose coefficient of variation decreases as the sequencing depth increases.
    This includes poisson counting noise in the number of reads mapping to a sequence,
    due to finite sampling effects.
+   Variation in the number of reads per sample likely takes this form as well.
 2. Noise whose coefficient of variation goes to a constant value as the sequencing depth increases.
-   For example, the relative abundances in a sequencing library depend on biases in enrichment efficiency.
+   For example, random variation in the efficiency of the target will contribute this type of noise.
+   Also, the relative abundances in a sequencing library depend on biases in enrichment efficiency.
    If there is a class of abundant sequences that are efficiently enriched by our lab protocol, random variation in the abundance of that class of sequences will generate noise in the counts of all the other sequences that is only weakly dependent on the total read depth.
 3. Noise that depends on the number of people contributing to a sample.
    For example, in the limit where each sample is taken from a single person,
@@ -168,7 +171,7 @@ K_X(z) & = \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha} \left(\sum_{j
        & \approx \sum_{\alpha=1}^{\infty} \frac{\phi^{1-\alpha}}{\alpha^2 r \delta t} {\left(A e^{r i \delta t}\right)}^\alpha z^\alpha
 \end{align}
 $$
-Where the first approximation requries the prevalence to be large compared to one, and the second approximation requires $\alpha r \delta t \ll 1$.
+Where the first approximation requires the prevalence to be large compared to one, and the second approximation requires $\alpha r \delta t \ll 1$.
 (TODO: generalize the second approximation.)
 
 It is illuminating to parameterize the distribution of $X$ by its mean, $\mu$, and a shape parameter $\nu$:
@@ -506,21 +509,19 @@ Observations:
 
 ## Implications for cost
 
-Sketch of implications:
-
 In the Poisson-dominated regime, a Gaussian approximation is pretty good, so
 $$
 y(p) \approx \mu + \mu^{1/2} \Phi^{-1}(p)
 $$
-Set $p$ to be one minus the target probability of detection, set $y(p) = \hat{K}$, the detection threshold.
-Solve for $\mu$.
-Then compare this $\mu$ to the deterministic model.
-Will predict that there's a delay in detection due to having to wait for the mean to be larger than the threshold to have a high probability of detection.
+Note that this is true even when the detection threshold $\hat{K} = 1$ because the mean will have to be larger than one to have a high probability of detection.
+We can let $p$ be one minus the target probability of detection, set $y(p) = \hat{K}$, and
+solve for $\mu$.
+This allows us to calculate the delay in detection due to having to wait for the mean to be larger than the threshold.
 
 The Poisson regime will be more appropriate for small read counts and thus small thresholds.
 Let's consider the effect of stochasticity on detection when the threshold $\hat{K}$ is low.
-If we detect when we observe two reads, the previous equation shows that we will need $\mu geq 4.8$ to detect 10% of the time.
-In contrast, our deterministic model predicts that we dectect when $\mu = 2$.
+If we detect when we observe two reads, the previous equation shows that we will need $\mu \geq 4.8$ to detect 10% of the time.
+In contrast, our deterministic model predicts that we detect when $\mu = 2$.
 Thus, the Poisson noise costs us over a full doubling time in detection sensitivity.
 
 ```{python}
@@ -539,6 +540,7 @@ mu_05 = np.array([mu_at_detection(k, 0.05) for k in k_hat])
 plt.plot(k_hat, mu_10, ".", label="Pr{detect}=0.1")
 plt.plot(k_hat, mu_05, ".", label="Pr{detect}=0.05")
 plt.plot(k_hat, k_hat, "--k", label="deterministic")
+plt.title("Poisson approximation")
 plt.legend()
 plt.ylabel(r"$\mu$ at detection")
 plt.xlabel(r"Detection threshold $\hat{K}$")
@@ -558,8 +560,8 @@ y(p) & \approx \mu + \frac{\mu}{{(2\nu)}^{1/2}} w_p(\nu) \\
      & = \mu \left(1 +\frac{1}{{(2\nu)}^{1/2}} w_p(\nu)\right) \\
 \end{align}
 $$
-Can caluclate $w_p(\nu)$ to as high order as we need, then solve for $\mu$ as in the Poisson regime
-Because $w_p$ will be negative (since $p$ is small), this will inflate the required $\mu$ for by a factor.
+Can calculate $w_p(\nu)$ to as high order as we need, then solve for $\mu$ as in the Poisson regime.
+Because $w_p$ will be negative (since $p$ is small), this will inflate the required $\mu$ for detection by a factor.
 This suggests a path for data analysis: if we can estimate $\nu$ from data (by estimating the overdispersion parameter $\phi$ in the read count distribution and then scaling by $r \delta t$, we can estimate the inflation factor.
 
 ```{python}
@@ -580,7 +582,13 @@ plt.ylim([1, 4.5])
 This suggests that the deterministic approximation will be within a doubling when $\nu \gtrapprox 5$.
 However, it is never very close.
 
-Putting these results together suggests that regardless of the regime, we expect the mean at detection to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.
+Putting these results together suggests that regardless of the regime,
+we expect the sequencing depth required to achieve detection probability of 0.9 or 0.95 at the target cumulative incidence to be roughly 1.5 to 3.0 times higher under a stochastic model than under the deterministic approximation.
+
+The above assumes that $\nu > 1.5$ or so.
+For smaller $\nu$, our approximations break down.
+However, smaller $\nu$ means more variability.
+Under those circumstances, the details of the distribution of sequencing outcomes likely matter in some detail.
 
 # Appendix: Small pool noise
 
