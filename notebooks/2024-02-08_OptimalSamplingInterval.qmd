@@ -2,6 +2,7 @@
 title: "NAO Cost Estimate MVP -- Optimizing the sampling interval"
 author: "Dan Rice"
 date: 2024-02-13
+date-modified: last-modified
 format:
   html:
     code-fold: false
@@ -53,17 +54,13 @@ In our [previous post](https://data.securebio.org/dans-notebook/notebooks/2024-0
 we found that the read depth per time required to detect a virus by the time it reaches cumulative incidence $\hat{c}$ is:
 
 $$
-\begin{align}
-\frac{n}{\delta t} & = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}}\right) e^{r t_d} f(r \delta t) \\
-                   & = A f(r \delta t),
-\end{align}
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}}\right) e^{r t_d} f(r \delta t)
 $$
 
-where the function $f$ depends on the sampling scheme,
-and we've defined the constant $A$ to contain all the terms that do not depend on $\delta t$.
+where the function $f$ depends on the sampling scheme.
 Substituting this into the rate of spending, we have:
 $$
-\frac{d_{\text{tot}}}{T} = \frac{d_s}{\delta t} + A d_r f(r \delta t).
+\frac{d_{\text{tot}}}{T} = \frac{d_s}{\delta t} + (r + \beta) \left(\frac{\hat{K}}{b \hat{c}}\right) e^{r t_d} d_r f(r \delta t).
 $$
 
 In the next section, we will find the value of $\delta t$ that minimizes the rate of spending.
@@ -84,7 +81,7 @@ To find the optimal $\delta t$, we look for a zero of the derivative of spending
 
 $$
 \begin{align}
-\frac{d}{d \delta t} \frac{d_{\text{tot}}}{T} & = - \frac{d_s}{{\delta t}^2} + A d_r r f'(r\delta t).
+\frac{d}{d \delta t} \frac{d_{\text{tot}}}{T} & = - \frac{d_s}{{\delta t}^2} + (r + \beta) \left(\frac{\hat{K}}{b \hat{c}}\right) e^{r t_d} d_r r f'(r\delta t).
 \end{align}
 $$
 
@@ -145,7 +142,7 @@ $$
 An intermediate (and more realistic) model of sampling is windowed composite sampling.
 In this scheme, the sample at time $t$ is a composite sample taken over a window of width $w$ (e.g., 24hours) from $t - w$ to $t$.
 Notably, when the sampling interval ($\delta t$) increases, the length of the window does not.
-In this case we have [TODO: add derivation to other notebook]:
+In this case we have:
 
 $$
 \begin{align}
@@ -168,9 +165,9 @@ Note that for $\delta t \approx w$, i.e. $x \approx rw$, $f(x) \approx 1 + \frac
 
 In general, we have:
 $$
-r \delta t \approx {\left( a\frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d} \right)}^{1/b},
+r \delta t \approx {\left( a\frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\frac{r}{r + \beta}\right) e^{-r t_d} \right)}^{1 / \gamma},
 $$
-where $a$ and $b$ are positive constants that depend on the sampling scheme.
+where $a$ and $\gamma$ are positive constants that depend on the sampling scheme.
 We can observe some general features:
 
 * Faster-growing viruses (higher $r$) **decreases** the optimal sampling interval.
@@ -181,6 +178,14 @@ We can observe some general features:
 * Increasing the delay between sampling and detection $t_d$ **decreases** the optimal sampling interval.
 
 One general trend is: the more optimistic we are about our method (higher $b$, smaller $\hat{K}$, shorter $t_d$), the longer we can wait between samples.
+
+We can also substitute our equation for $n / \delta t$ into this equation, use $f(\delta t) \approx 1$ and rearrange to get:
+$$
+n d_r \approx \frac{a}{(r \delta t)}^{\gamma - 1} d_s.
+$$
+The left-hand side of this equation is the cost spent on sequencing per sample.
+For continuous sampling, $\gamma = 2$ and for grab sampling and windowed composite, $\gamma = 3$.
+Since $r \delta t \ll 1$, this tells us that we typically should spend more money on sequencing than sample processing.
 
 ## A numerical example
 
@@ -227,7 +232,12 @@ def optimal_interval(
 ```
 
 I asked the NAO in [Twist](https://twist.com/a/197793/ch/565514/t/5896609/) for info on sequencing and sample-processing costs.
-Based on their answers, a reasonable order-of-magnitude cost estimate is $500.
+Based on their answers, reasonable order-of-magnitude estimate are:
+
+    - sample costs: $500 / sample
+    - sequencing costs: $5K / billion reads
+
+Note that 1 billion reads cost roughly 10x the cost to prepare one sample.
 As discussed above, our cost model is highly simplified and the specifics of when samples are collected, transported, processed, and batched for sequencing will make this calculation much more complicated in practice.
 
 Let's use these numbers plus our virus model from the [last post](https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html#numerical-example) to find the optimal sampling interval:
@@ -292,7 +302,7 @@ Looks fine in both cases.
 ### Cost sensitivity to $\delta t$
 
 In a real system, we won't be able to optimize $\delta t$ exactly.
-Let's see how the cost varies with the sampling interval:
+Let's see how the cost varies with the sampling interval (using the exact $f$):
 
 ```{python}
 # | code-fold: true

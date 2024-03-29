@@ -2,6 +2,7 @@
 title: "NAO Cost Estimate MVP -- Adding noise"
 author: "Dan Rice"
 date: 2024-03-04
+date-modified: last-modified
 format:
   html:
     code-fold: false
