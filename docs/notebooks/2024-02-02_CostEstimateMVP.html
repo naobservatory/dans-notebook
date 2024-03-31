@@ -172,12 +172,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </div>
   </div>
   
-    <div>
-    <div class="quarto-title-meta-heading">Modified</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 29, 2024</p>
-    </div>
-  </div>
     
   </div>
   
@@ -192,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="epidemic-model">Epidemic model</h2>
 <section id="prevalence-and-incidence" class="level3">
 <h3 class="anchored" data-anchor-id="prevalence-and-incidence">Prevalence and incidence</h3>
-<p>Consider a population of <span class="math inline">\(N\)</span> individuals. We focus on the phase of the epidemic when it is growing exponentially. This will be approximately true at an intermediate time when the virus is common enough that we can neglect noise in reproduction, but rare enough that it is not running out of susceptible people to infect. Let the rate of new infections per infected persion per unit time be <span class="math inline">\(N \alpha\)</span> and the rate of recovery of an infected person to be <span class="math inline">\(\beta\)</span>. Then, we have the following ODE for the prevalence (the number of infected people, not the proportion of the population as in the P2RA report) <span class="math inline">\(P(t)\)</span>:</p>
+<p>Consider a population of <span class="math inline">\(N\)</span> individuals. We focus on the phase of the epidemic when it is growing exponentially. This will be approximately true at an intermediate time when the virus is common enough that we can neglect noise in reproduction, but rare enough that it is not running out of susceptible people to infect. Let the rate of new infections per interaction per unit time to be <span class="math inline">\(\alpha\)</span> and the rate of recovery of an infected person to be <span class="math inline">\(\beta\)</span>. Then, we have the following ODE for the prevalence <span class="math inline">\(P(t)\)</span>:</p>
 <p><span class="math display">\[
 \frac{dP}{dt} \approx \alpha N P - \beta P.
 \]</span></p>
@@ -226,7 +220,7 @@ C(t) &amp; \sim \frac{r + \beta}{r} P(t), \text{as } t \to \infty.
 </section>
 <section id="domain-of-validity" class="level3">
 <h3 class="anchored" data-anchor-id="domain-of-validity">Domain of validity</h3>
-<p>As described above, the approximation of deterministic exponential growth is valid when the number of infected individuals is large enough that the growth is roughly deterministic but small enough that most of the population is still susceptible. Here we’ll approximate those bounds.</p>
+<p>As described above, the approximation of deterministic exponential growth is valid when the number of infected individuals is large enough that the growth is roughly deteriminstic but small enough that most of the population is still susceptible. Here we’ll approximate those bounds.</p>
 <section id="deterministic-growth" class="level4">
 <h4 class="anchored" data-anchor-id="deterministic-growth">Deterministic growth</h4>
 <p>A simple stochastic model of the start of an epidemic is that infections and recoveries in a small increment of time <span class="math inline">\(dt\)</span> are independent of one another, that is: <span class="math display">\[
@@ -252,7 +246,7 @@ P \gg \frac{r + 2 \beta}{r^2 dt}.
 \]</span> It remains to choose a suitable increment of time. We expect the prevalence to change significantly (<span class="math inline">\(\mathbb{E}(\frac{dP}{P}) = 1\)</span>) on the timescale <span class="math inline">\(r^{-1}\)</span> so <span class="math inline">\(dt = r^{-1}\)</span> is a reasonable choice as long as <span class="math inline">\(r \gtrsim \beta\)</span>. This gives the condition <span class="math display">\[
 P \gg \frac{r + 2 \beta}{r} = 1 + 2 \beta / r.
 \]</span> When this condition is met, we expect the epidemic to grow approximately deterministically at rate <span class="math inline">\(r\)</span>.</p>
-<p>Note that this condition is violated at <span class="math inline">\(t = 0\)</span>. We must thus reinterpret <span class="math inline">\(t = 0\)</span> as the <em>effective</em> time that the epidemic would have infected a single person if our deterministic approximation for <span class="math inline">\(P \gg 1 + 2\beta/r\)</span> were extended backwards in time. [TODO: estimate the error in cumulative infections introduced by making this approximation.]</p>
+<p>Note that this condition is violated at <span class="math inline">\(t = 0\)</span>. We must thus reinterpret <span class="math inline">\(t = 0\)</span> as the <em>effective</em> time that the epidemic would have infected a single person if our derterministic approximation for <span class="math inline">\(P \gg 1 + 2\beta/r\)</span> were extended backwards in time. [TODO: estimate the error in cumulative infections introduced by making this approximation.]</p>
 </section>
 <section id="exponential-growth" class="level4">
 <h4 class="anchored" data-anchor-id="exponential-growth">Exponential growth</h4>
@@ -268,7 +262,7 @@ C(t) &amp; \ll N / 2.
 \]</span></p>
 <p>Using <span class="math inline">\(C = \frac{r + \beta}{r} P\)</span> in the exponential regime, we can put this together with our lower bound of the deterministic approximation to get the region of validity: <span class="math display">\[
 1 + 2\beta / r \ll P \ll \frac{N}{2 (1 + \beta / r)}.
-\]</span> This shows that as long as the population is large (<span class="math inline">\(N \gg 1\)</span>), and the growth rate is not too slow compared to the recovery rate (<span class="math inline">\(r \gtrsim \beta\)</span>), there will be a wide range of <span class="math inline">\(P\)</span> for which growth is approximately deterministic and exponential.</p>
+\]</span> This shows that as long as the population is large (<span class="math inline">\(N \gg 1\)</span>), and the growth rate is not too slow compared to the recovery rate (<span class="math inline">\(r \gtrsim \beta\)</span>), there will be a wide regime of approximately deterministic exponential growth.</p>
 </section>
 </section>
 </section>
@@ -281,7 +275,11 @@ K_i \equiv \sum_{j=0}^i k_j \geq \hat{K}.
 <p>We will assess the success of a method by the (population-scaled) cumulative incidence at the time of detection, accounting for the delay: <span class="math display">\[
 c(\hat{t} + t_d) \equiv C(\hat{t} + t_d) / N
 \]</span></p>
-<p>We’re interested in taking samples from a large population (<span class="math inline">\(N \gg 1\)</span>). In such a population, our ability to detect will depend not on the the raw number of people infected <span class="math inline">\(P\)</span>, but on the proportion <span class="math inline">\(p \equiv P / N\)</span>. At detection, <span class="math inline">\(p\)</span> will be at some typical magnitude that depends on our sensitivity but does not depend on <span class="math inline">\(N\)</span>. We can simplify our equations by neglecting terms that are <span class="math inline">\(\mathcal{O}(N^{-1})\)</span> while keeping terms of order <span class="math inline">\(p = e^{r t} / N\)</span>. This is valid because we’ve already assumed that <span class="math inline">\(e^{r t} \gg 1\)</span> so the latter are always larger than the former.</p>
+<p>Because we’re interested in population-scale quantities and because we’ve shown that our model is not accurate when there are only a few individuals, we will make two assumptions:</p>
+<ul>
+<li>The prevalence at detection <span class="math inline">\(P(t) = e^{rt} \sim N\)</span>, as <span class="math inline">\(N \to \infty\)</span>.</li>
+<li>We can neglect any smaller terms that do not scale with <span class="math inline">\(N\)</span>.</li>
+</ul>
 <p>Using the equations above for cumulative incidence, we have the following simplification: <span class="math display">\[
 \begin{align}
 c(t) &amp; = \frac{1 + \frac{r + \beta}{r}\left(e^{rt} - 1\right)}{N} \\
@@ -304,7 +302,7 @@ c(\hat{t} + t_d) = \frac{r + \beta}{r} \frac{e^{r\hat{t}}}{N} e^{r t_d}.
 a_i = b \int \frac{P(t)}{N} \rho_i(t) dt.
 \]</span> Here, <span class="math inline">\(\rho_i\)</span> is a density that says how much of sample <span class="math inline">\(i\)</span> was collected at different times, and <span class="math inline">\(b\)</span> is a fixed conversion factor between prevalence and relative abundance. (Note <span class="math inline">\(b = RA_p(1)\)</span> in the P2RA manuscript.)</li>
 </ol>
-<p>From here on, it will simplify things to specify two concrete sampling schemes. Both schemes collect evenly-spaced samples with the same depth:</p>
+<p>From here on, it will simplify thing to specify two concrete sampling schemes. Both schemes collect evenly-spaced samples with the same depth:</p>
 <ul>
 <li><span class="math inline">\(n_i = n\)</span></li>
 <li><span class="math inline">\(t_i - t_{i-1} = \delta t\)</span></li>
@@ -313,9 +311,8 @@ a_i = b \int \frac{P(t)}{N} \rho_i(t) dt.
 <p>Our two schemes differ in when the material for the samples is collected. They are:</p>
 <ol type="1">
 <li>Continuous sampling: <span class="math inline">\(\rho_i(t) = \frac{1}{\delta t}\)</span> for <span class="math inline">\(t \in [t_{i-1}, t_i)\)</span>.</li>
-<li>Grab sampling: <span class="math inline">\(\rho_i(t) = \delta(t - t_i)\)</span>, i.e., the whole sample is collected at <span class="math inline">\(t_i\)</span>. (Here, <span class="math inline">\(\delta(t)\)</span> is the Dirac delta function.)</li>
+<li>Grab sampling: <span class="math inline">\(\rho_i(t) = \delta(t - t_i)\)</span>, i.e., the whole sample is collected at <span class="math inline">\(t_i\)</span>.</li>
 </ol>
-<p>In the <a href="./2024-02-08_OptimalSamplingInterval.html#windowed-composite-sampling">next notebook</a>, we consider a third, intermediate scheme: windowed composite sampling. In this scheme, material is collected continuously for a fixed window, usually 24 hours. (In practice, it is not sampled continuously but at regular intervals over the window.) Derivation of this case is a straightforward extension of the cases considered here, using <span class="math inline">\(\rho_i(t) = w^{-1}\)</span> for <span class="math inline">\(t \in [t_i - w, t_i)\)</span> with window length <span class="math inline">\(w\)</span>. For short windows (<span class="math inline">\(w \to 0\)</span>), this case approaches grab sampling. For <span class="math inline">\(w \to \delta t\)</span> it approaches composite sampling.</p>
 </section>
 <section id="continuous-sampling" class="level3">
 <h3 class="anchored" data-anchor-id="continuous-sampling">Continuous sampling</h3>
@@ -338,7 +335,7 @@ K_i &amp; = \frac{nb}{\delta t} (r + \beta) \int_{0}^{t_i} \frac{I(t)}{N} dt \\
 K_i &amp; = \frac{nb}{\delta t}
 \end{align}
 \]</span></p>
-<p>One somewhat subtle complication comes from the fact that we don’t know how the start of the epidemic lines up with our sampling schedule. For example, if we sample weekly, the detection time will depend on which day of the week exponential growth effectively starts (<span class="math inline">\(t=0\)</span> in the model). When delay between the start of the epidemic and the first sample (<span class="math inline">\(t_0\)</span>) is larger, we may eventually detect the virus one sample earlier than when the delay is smaller. In the figure below, the three colored series show <span class="math inline">\(K_i\)</span> for three series of samples that differ only by the relative timing of their sample collection (e.g., all samples are collected weekly, but one series collects on Mondays, another on Tuesdays, etc.) Note that the red figure, whose first sample was taken latest relative to the start of the pandemic, crosses the threshold (solid black line) one sample earlier than the others.</p>
+<p>One complication is that the sample <span class="math inline">\(i\)</span> that <span class="math inline">\(K_i \geq \hat{K}\)</span> depends on the precise timing of our samples. In the figure below, the three colored series show <span class="math inline">\(K_i\)</span> for three series of samples that differ only by the relative timing of their sample collection (e.g., all samples are collected weekly, but one series collects on Mondays, another on Tuesdays, etc.) Note that the red figure, whose first sample was taken latest relative to the start of the pandemic, crosses the threshold (solid black line) one sample earlier than the others.</p>
 <div class="cell" data-execution_count="1">
 <details>
 <summary>Code</summary>
@@ -369,7 +366,7 @@ K_i &amp; = \frac{nb}{\delta t}
 <p>We account for this effect by splitting <span class="math inline">\(\hat{t}\)</span> into two components:</p>
 <ol type="1">
 <li>The earliest time possible to detect, <span class="math inline">\(t^{\star}\)</span>, found by allowing <span class="math inline">\(K\)</span> to vary continously in time (dotted line above)</li>
-<li>The residual time waiting for the next sample to be collected. This waiting time depends on the arbitrary start time of the epidemic within our sampling cycle so we have reason to expect it to take any particular value. Thus, we average it over a uniform distribution.</li>
+<li>The residual time waiting for the next sample to be collected. Because we have no reason to expect this waiting time to take any particular value, we average it over a uniform distribution.</li>
 </ol>
 <p>First, we will find an implicit equation for <span class="math inline">\(t^{\star}\)</span>: <span class="math display">\[
 \begin{align}
@@ -389,20 +386,13 @@ K_i &amp; = \frac{nb}{\delta t}
             e^{r t_d}
             + \mathcal{O}(N^{-1}) \\
 \end{align}
-\]</span></p>
-<p>This result has three components:</p>
-<ol type="1">
-<li>The first two terms are the cumulative incidence at <span class="math inline">\(t^{\star}\)</span>, the earliest possible detection time.</li>
-<li>The third term in parentheses is the cost incurred from having widely spaced samples. As <span class="math inline">\(r \delta t \to 0\)</span>, this cost goes to zero. When <span class="math inline">\(r \delta t\)</span> is large, this cost grows exponentially.</li>
-<li>The final term is the multiplier from the delay between sample collection and analysis.</li>
-</ol>
-<p>Finally, we notice that the second term in parentheses appears in our implicit equation for <span class="math inline">\(t^{\star}\)</span> above. Substituting and rearranging gives the sequencing effort (reads per unit time, <span class="math inline">\(n / \delta t\)</span>) required to detect by cumulative incidence <span class="math inline">\(\hat{c}\)</span>: <span class="math display">\[
+\]</span> The the third term in parentheses is the cost incurred from having widely spaced samples. As <span class="math inline">\(r \delta t \to 0\)</span>, this cost goes to zero. When <span class="math inline">\(r \delta t\)</span> is large, this cost grows exponentially.</p>
+<p>Finally, we notice that the second term in parentheses appears in our implicit equation for <span class="math inline">\(t^{\star}\)</span> above. Substituting and rearranging gives the sequencing effort required to detect by cumulative incidence <span class="math inline">\(\hat{c}\)</span>: <span class="math display">\[
 \frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
     \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
     e^{r t_d}
     + \mathcal{O}(N^{-1})
-\]</span></p>
-<p>Some observations:</p>
+\]</span> Some observations:</p>
 <ol type="1">
 <li>Faster-growing and faster-recovering viruses require more sequencing because the current prevalence is a smaller fraction of the cumulative incidence.</li>
 <li>Higher detection thresholds, lower P2RA factors (<span class="math inline">\(b\)</span>), and lower target cumulative incidence, require more sequencing.</li>
@@ -427,11 +417,6 @@ K_i &amp; = n \sum_{j=0}^{i} b \frac{P(t_i)}{N} \\
             + \mathcal{O}(N^{-1}).
 \]</span> The first two terms are identical to the continuous sampling case. The third term is the effect of grab sampling: because the sample is collected entirely at the end of the interval, the prevalence is higher than the average over the interval and you get more reads.</p>
 <p>Using this equation for <span class="math inline">\(t^{\star}\)</span>, we find that the required sequencing effort for grab sampling is: <span class="math display">\[
-\hat{c} = (r + \beta)
-            \left(\frac{e^{r t^{\star}}}{r N} \right)
-            \left(\frac{e^{r \delta t} - 1}{r \delta t}\right)
-            e^{r t_d}
-\]</span> <span class="math display">\[
 \frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
     \left(\frac
         {e^{-r\delta t} {\left(e^{r \delta t} - 1\right)}^2}
@@ -455,10 +440,6 @@ K_i &amp; = n \sum_{j=0}^{i} b \frac{P(t_i)}{N} \\
 <p><img src="2024-02-02_CostEstimateMVP_files/figure-html/cell-3-output-1.png" width="589" height="451"></p>
 </div>
 </div>
-<p>We can also see the difference between the cases by comparing the Taylor series of the sampling interval delay term: <span class="math display">\[\begin{align}
-f_{\text{cont.}}(r \delta t) &amp; \equiv \frac{e^{r \delta t} - 1}{r \delta t} = 1 + \frac{r \delta t}{2} + \frac{{(r \delta t)}^2}{6} \\
-f_{\text{grab}}(r \delta t) &amp; \equiv \frac{e^{- r \delta t}{(e^{r \delta t} - 1)}^2}{r \delta t} = 1 + \frac{{(r \delta t)}^2}{12} \\
-\end{align}\]</span></p>
 </section>
 </section>
 <section id="numerical-example" class="level2">
@@ -514,10 +495,9 @@ f_{\text{grab}}(r \delta t) &amp; \equiv \frac{e^{- r \delta t}{(e^{r \delta t} 
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>n_grab <span class="op">=</span> depth_required(r, beta, k_hat, b, c_hat, delta_t, <span class="st">"grab"</span>, t_d)</span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, <span class="dv">30</span> <span class="op">*</span> n_cont, label<span class="op">=</span><span class="st">"continuous"</span>)</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.plot(delta_t, <span class="dv">30</span> <span class="op">*</span> n_grab, label<span class="op">=</span><span class="st">"grab"</span>)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="dv">0</span>, <span class="fl">5.1e10</span>])</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">"Sampling scheme"</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Reads required per month"</span>)</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Sampling interval (days)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">"Sampling scheme"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Reads required per month"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Sampling interval (days)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="2024-02-02_CostEstimateMVP_files/figure-html/cell-5-output-1.png" width="578" height="443"></p>
 </div>
