@@ -14,7 +14,7 @@ filters:
 
 ## Background
 
-See [previous notebook](https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html).
+See [previous notebook](./2024-02-02_CostEstimateMVP.html).
 The goal of this notebook is to use our simple, deterministic cost estimate to answer the question:
 
 > How often should we process and sequence samples?
@@ -181,7 +181,7 @@ One general trend is: the more optimistic we are about our method (higher $b$, s
 
 We can also substitute our equation for $n / \delta t$ into this equation, use $f(\delta t) \approx 1$ and rearrange to get:
 $$
-n d_r \approx \frac{a}{(r \delta t)}^{\gamma - 1} d_s.
+n d_r \approx \frac{a}{{(r \delta t)}^{\gamma - 1}} d_s.
 $$
 The left-hand side of this equation is the cost spent on sequencing per sample.
 For continuous sampling, $\gamma = 2$ and for grab sampling and windowed composite, $\gamma = 3$.

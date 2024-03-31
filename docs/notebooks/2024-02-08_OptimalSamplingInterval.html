@@ -184,7 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 29, 2024</p>
+      <p class="date-modified">March 31, 2024</p>
     </div>
   </div>
     
@@ -195,7 +195,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="background" class="level2">
 <h2 class="anchored" data-anchor-id="background">Background</h2>
-<p>See <a href="https://data.securebio.org/dans-notebook/notebooks/2024-02-02_CostEstimateMVP.html">previous notebook</a>. The goal of this notebook is to use our simple, deterministic cost estimate to answer the question:</p>
+<p>See <a href="./2024-02-02_CostEstimateMVP.html">previous notebook</a>. The goal of this notebook is to use our simple, deterministic cost estimate to answer the question:</p>
 <blockquote class="blockquote">
 <p>How often should we process and sequence samples?</p>
 </blockquote>
@@ -306,7 +306,7 @@ r \delta t \approx {\left( a\frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}} \left(\fra
 </ul>
 <p>One general trend is: the more optimistic we are about our method (higher <span class="math inline">\(b\)</span>, smaller <span class="math inline">\(\hat{K}\)</span>, shorter <span class="math inline">\(t_d\)</span>), the longer we can wait between samples.</p>
 <p>We can also substitute our equation for <span class="math inline">\(n / \delta t\)</span> into this equation, use <span class="math inline">\(f(\delta t) \approx 1\)</span> and rearrange to get: <span class="math display">\[
-n d_r \approx \frac{a}{(r \delta t)}^{\gamma - 1} d_s.
+n d_r \approx \frac{a}{{(r \delta t)}^{\gamma - 1}} d_s.
 \]</span> The left-hand side of this equation is the cost spent on sequencing per sample. For continuous sampling, <span class="math inline">\(\gamma = 2\)</span> and for grab sampling and windowed composite, <span class="math inline">\(\gamma = 3\)</span>. Since <span class="math inline">\(r \delta t \ll 1\)</span>, this tells us that we typically should spend more money on sequencing than sample processing.</p>
 </section>
 </section>

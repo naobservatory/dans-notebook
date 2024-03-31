@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/notebooks/2024-03-25_CostEstimateSummary.html",
       "/notebooks/2024-02-22_StochasticMVP.html",
       "/notebooks/2024-02-08_OptimalSamplingInterval.html",
       "/notebooks/2024-02-02_CostEstimateMVP.html",
