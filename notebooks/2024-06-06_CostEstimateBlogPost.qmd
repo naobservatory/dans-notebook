@@ -1,0 +1,216 @@
+---
+title: "NAO Cost Estimate -- Blog post"
+draft: true
+author: "Dan Rice"
+date: 2024-06-06
+date-modified: last-modified
+format:
+  html:
+    code-fold: false
+    toc: true
+jupyter: python3
+filters:
+    - black-formatter
+---
+
+# Introduction
+
+At the Nucleic Acid Observatory (NAO), we're trying to develop methods for detecting emerging pandemic viruses from metagenomic samples.
+Sequencing at large scale is expensive, so we'd like to have a way of estimating the cost of running such a detection system at scale.
+In [link to P2RA ms](link), we estimated the relationship between viral prevalence and relative abundance in wastewater metagenomic sequencing data for a number of different viruses.
+We concluded with a rough estimate of the cost of monitoring for a few different pathogens given our results.
+
+Here, we extend our simple cost estimate to include more of the factors that are relevant for decision-making.
+In particular, we'd like to:
+
+- Estimate the cost of sampling and sequencing required to run an effective NAO.
+- Calculate the sequencing depth necessary to detect a virus by the time it reaches a target cumulative incidence.
+- Understand which parameters are most important to understand and/or optimize to determine the viability of an NAO.
+
+To this end, we developed a model of the different components of the detection problem:
+
+1. **An epidemiological model** of viral spread in a monitored population.
+2. **A model of data collection**, including when metagenomic samples are collected and how deeply they are sequenced.
+3. **A model of costs** involved in sequencing and sampling.
+4. **A model of sequencing data** generated, namely the number of reads in each sample matching the virus to be detected.
+5. **A model of detection**, where we count a sequence as “detected” when certain criteria on its count time series are met.
+
+We aimed for a model that was simple enough to be tractable but still captured the key aspects of the problem.
+
+We then analyzed the model to determine the required sampling depth, the optimal interval between samples, and the sensitivity of total cost to the various parameters.
+
+In this post, we summarize the model and our results. For more details, see our technical notebooks:
+
+1. [NAO Cost Estimate MVP](./2024-02-02_CostEstimateMVP.html)
+1. [NAO Cost Estimate -- Optimizing the sampling interval](./2024-02-08_OptimalSamplingInterval.html)
+1. [NAO Cost Estimate -- Adding noise](./2024-02-22_StochasticMVP.html)
+
+# The model
+
+## Epidemic
+
+We considered an exponentially growing epidemic.
+That is, we assumed that the prevalence of the virus grows exponentially and deterministically in a single well-mixed population.
+In this model, the viral prevalence, i.e. the fraction of people infected, at time $t$ and given by:
+$$
+p(t) = \frac{1}{N} e^{r t},
+$$
+where $N$ is the population size and $r$ is the pandemic growth rate.
+
+The cumulative incidence (the fraction of the population ever infected) in this model is:
+$$
+c(t) \approx \frac{r + \beta}{r} p(t),
+$$
+where $\beta$ is the rate at which infected people recover.
+Note that both prevalence and cumulative incidence grow exponentially,
+which is convenient for many of our calculations.
+Of course, exponential growth can't continue forever. Eventually, everyone will have been infected. Thus, our model is most realistic for the earliest stages of an epidemic.
+
+## Data collection
+
+We model samples collected from a single sampling site at regular intervals, spaced $\delta t$ apart.
+The material for the sample is collected uniformly over a window of length $w$.
+(When $w \to 0$, we have a single grab sample per collection, when $w \to \delta t$ we have continuous sampling.)
+Each sample is sequenced to a total depth of $n$ reads.
+
+We also consider the a delay of $t_d$ between the collection of the sample and the data processing.
+This delay accounts for sample transport, sample prep, sequencing, and data analysis.
+
+## Read counts
+
+We considered three different models of the number of reads in each sample from the epidemic virus:
+
+1. A deterministic model where the number of reads in a sample at time t is equal to its expected value:
+   $$
+   \text{\# reads} = \mu = n b \int_{t-w}^{t} p(t') \frac{dt'}{w},
+   $$
+   where $b$ is a factor that converts between prevalence and relative abundance.
+   This is the factor that we esotimated in [link to P2RA ms](link).
+   The integral represents the average prevalence over the sampling window.
+2. A stochastic model that accounts for Poisson counting noise and variation in the latent relative abundance.
+   In this model, the number of reads is a random variable drawn from a Poisson-gamma mixture with mean $\mu$ (as in 1.) and inverse overdispersion parameter $\phi$.
+   Large $\phi$ means that the relative abundance is well-predicted by our deterministic model, whereas small $\phi$ means that there is a lot of excess variation beyond what comes automatically from having a finite read depth.
+3. A stochastic model where we sequence a pooled sample of $n_p$ individuals.
+   This allows us to consider the effect of sampling a small number of, e.g., nasal swabs rather than wastewater.
+   We worked on a similiar model in [this blog post](https://naobservatory.org/blog/simulating-approaches-to-metagenomic-pandemic-identification).
+
+See [NAO Cost Estimate MVP](./2024-02-02_CostEstimateMVP.html) for details on the deterministic model,
+and [NAO Cost Estimate -- Adding noise](./2024-02-22_StochasticMVP.html) for details on the stochastic models.
+
+## Detection
+
+We model detection based on the cumulative number of viral reads over all samples.
+When this number reaches a threshold value $\hat{K}$, the virus is detected.
+
+This model of detection is much simpler than some of our ideas for detection, including looking for patterns of exponential growth in the read abundances.
+However, it captures the basic idea that all detection methods need some baseline number of reads to have any power.
+
+## Costs
+
+We considered two components of cost:
+
+1. The per-read cost of sequencing $d_r$
+2. The per-sample cost of collection and processing $d_s$
+
+See [NAO Cost Estimate -- Optimizing the sampling interval](./2024-02-08_OptimalSamplingInterval.html)
+for details.
+
+# Results
+
+## Sequencing effort required in a deterministic model
+
+In [NAO Cost Estimate MVP](./2024-02-02_CostEstimateMVP.html), we found the sampled depth per unit time required to detect a virus by the time it reaches cumulative incidence $\hat{c}$ to be:
+$$
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+    \left(\frac
+        {e^{-r\delta t} {\left(e^{r \delta t} - 1\right)}^2}
+        {{\left(r \delta t\right)}^2}
+        \right)
+    e^{r t_d}.
+$$
+This result is for grab sampling, which in our model is a good approximation for windowed-composite sampling when $r w \ll 1$.
+
+If we take the limit that $r \delta t$ and $r t_d$ go to zero, we have:
+$$
+\frac{n}{\delta t} \to (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+$$
+This is equivalent to the result of our simpler model in [link to P2RA](link).
+It shows that the required sampling depth is directly proportional to the detection threshold ($\hat{K}$) and inversely proportional to the number of reads expected per infected individual ($b$) and the target cumulative incidence ($\hat{c}$).
+Also, faster growing epidemics (larger $r$) require more sequencing depth than slower ones.
+This is because
+
+The third term in parentheses is an adustment factor for collecting samples at $\delta t$ intervals.
+It includes two factors:
+
+1. the delay between when the virus is theoretically detectable and the next sample taken, and
+2. the benefit of taking a grab sample late in the sampling interval when the prevalence is higher.
+
+This term has Taylor expansion $1 + \frac{{(r \delta t)}^2}{12} + \mathcal{O}{(r\delta t)}^3$.
+As long as $r \delta t \lesssim1$, this factor is small.
+
+The final term is the cost of the $t_d$ delay between sampling and data processing.
+Note that the cost grows exponentially with $t_d$, suggesting that minimizing this delay is important.
+
+## Optimal sampling interval
+
+In [NAO Cost Estimate -- Optimizing the sampling interval](./2024-02-08_OptimalSamplingInterval.html),
+we found the sampling interval $\delta t$ that minimized the total cost.
+Longer $\delta t$ between samples saves money on sample processing, but requires more depth to make up for the delay of waiting for the next sample after the virus becomes detectable.
+We found that the optimal $\delta t$ satisfies (again for grab sampling):
+
+$$
+r \delta t \approx {\left(
+    6 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}}
+    \left( \frac{r}{r + \beta} \right)
+    e^{- r t_d}
+    \right)}^{1/3}.
+$$
+
+Intuitively, the length of the optimal sampling interval increases with the cost of sample processing relative to the cost of sequencing.
+Also, if you have better data (higher $b$) or a lower detection threshold (smaller $\hat{K}$), you can tolerate longer intervals.
+On the other hand, longer delays (larger $t_d$) necessitate more frequent samples.
+
+## Additional sequencing required to ensure a high probability of detection
+
+In [NAO Cost Estimate -- Adding noise](./2024-02-22_StochasticMVP.html),
+we changed our detection criterion from requiring the expected number of reads to reach the threshold $\hat{K}$
+to requiring that the number of reads reach $\hat{K}$ with high probability, $p$.
+We investigated how much higher the cumulative incidence has to be to meet the second criterion than the first.
+
+We found that a key parameter is $\nu = \frac{\phi}{r \delta t}$, which measures the departure of the read count distribution from Poisson.
+When the inverse overdispersion parameter $\phi$ is small, $\nu$ is also small and the cumulative read count distribution is overdispersed relative to Poisson.
+On the other hand, when the sampling interval $\delta t$ is small so that the cumulative read count is the sum over many samples, $\nu$ is large and the cumulative read count distribution is approximately Poisson.
+
+Numerical exploration of these regimes suggests that we expect to need 1.5--3 times more sequencing than the deterministic model predicts to detect with 95% probability by the target cumulative incidence.
+
+## Small pool noise
+
+In the [Appendix](./2024-02-22_StochasticMVP.html#appendix-small-pool-noise) to the noise notebook,
+we showed that the effect of pooling a small number of samples is controlled by $a$, the average number of viral reads each infected person contributes to the sample.
+With fixed sampling depth, $a$ is inversely proportional to the pool size.
+We found that if the detection threshold is one read $\hat{K} = 1$, sequencing depth required to ensure a given probability of detection increases in proportion to
+$$
+\frac{a}{1 - e^{-a}}.
+$$
+We expect a similar result to hold for higher detection thresholds.
+
+In a recent [blog post](https://naobservatory.org/blog/simulating-approaches-to-metagenomic-pandemic-identification), we used simulations to address a similar question.
+
+# Conclusions
+
+- Our analysis here confirms the intuition that the ratio of expected relative abundance of sequence reads to viral prevalence (here $b$) is very important for cost. We found in [link to P2RA](link) that this factor varies over several orders of magnitude for different viruses and studies, suggesting that optimizing sequencing and sample processing protocols is crucial to a successful NAO.
+- The sampling interval is not expected to be very important for cost, assuming $r \delta t < 1$.
+  This is because the cost of delay from longer interval is partially offset by the benefit of sampling later when the prevalence is higher.
+- In constrast, the delay between sample collection and data analysis could matter a lot because it does not have a corresponding benefit. The required depth grows exponentially with $r t_d$.
+- We have sometimes considered the benefit to noise in the read count distribution.
+  Noisier distributions sometimes let us detect something while it is still too rare to detect on average.
+  However, our analysis here shows that if our goal is to detect by the target cumulative incidence with high probability, noise is unambiguously bad and could increase our required depth several times over.
+- We currently do not have any estimate of $\phi$, the inverse overdispersion of read counts relative to Poisson. We should try to measure it empirically in our sequence data.
+
+## Limitations and extensions
+
+- The current model considers only one epidemic location and one sampling site. For a global monitoring system, we would want to consider the effects of geographic structure. An extended model could be used to determine the optimal number and configuration of sampling locations.
+- The current epidemic model is completely deterministic. In practice, the spread of a virus is random. Because a population monitoring system can only hope to detect the virus when it has infected a sizeable number of people, this randomness should not have a large effect in a simple model like this one.
+- We would like consider a more sophisticated detection model than just cumulative reads.
+  In particular, we are interested in detection methods that use the pattern of read counts over time and space as a signal of increasing prevalence.
+- It would be useful to explore the noise distribution of real data and try to measure $\phi$ and whether the latent noise is mostly independent or correlated between samples.

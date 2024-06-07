@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dan Rice">
+<meta name="dcterms.date" content="2024-06-06">
+
+<title>NAO Cost Estimate – Blog post</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand navbar-dark ">
+      <div class="navbar-container container-fluid">
+          <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+</ul>
+          <div class="quarto-navbar-tools ms-auto">
+</div>
+            <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The model</a>
+  <ul class="collapse">
+  <li><a href="#epidemic" id="toc-epidemic" class="nav-link" data-scroll-target="#epidemic">Epidemic</a></li>
+  <li><a href="#data-collection" id="toc-data-collection" class="nav-link" data-scroll-target="#data-collection">Data collection</a></li>
+  <li><a href="#read-counts" id="toc-read-counts" class="nav-link" data-scroll-target="#read-counts">Read counts</a></li>
+  <li><a href="#detection" id="toc-detection" class="nav-link" data-scroll-target="#detection">Detection</a></li>
+  <li><a href="#costs" id="toc-costs" class="nav-link" data-scroll-target="#costs">Costs</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#sequencing-effort-required-in-a-deterministic-model" id="toc-sequencing-effort-required-in-a-deterministic-model" class="nav-link" data-scroll-target="#sequencing-effort-required-in-a-deterministic-model">Sequencing effort required in a deterministic model</a></li>
+  <li><a href="#optimal-sampling-interval" id="toc-optimal-sampling-interval" class="nav-link" data-scroll-target="#optimal-sampling-interval">Optimal sampling interval</a></li>
+  <li><a href="#additional-sequencing-required-to-ensure-a-high-probability-of-detection" id="toc-additional-sequencing-required-to-ensure-a-high-probability-of-detection" class="nav-link" data-scroll-target="#additional-sequencing-required-to-ensure-a-high-probability-of-detection">Additional sequencing required to ensure a high probability of detection</a></li>
+  <li><a href="#small-pool-noise" id="toc-small-pool-noise" class="nav-link" data-scroll-target="#small-pool-noise">Small pool noise</a></li>
+  </ul></li>
+  <li><a href="#conclusions" id="toc-conclusions" class="nav-link" data-scroll-target="#conclusions">Conclusions</a>
+  <ul class="collapse">
+  <li><a href="#limitations-and-extensions" id="toc-limitations-and-extensions" class="nav-link" data-scroll-target="#limitations-and-extensions">Limitations and extensions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">NAO Cost Estimate – Blog post</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dan Rice </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 6, 2024</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">June 7, 2024</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>At the Nucleic Acid Observatory (NAO), we’re trying to develop methods for detecting emerging pandemic viruses from metagenomic samples. Sequencing at large scale is expensive, so we’d like to have a way of estimating the cost of running such a detection system at scale. In <a href="link">link to P2RA ms</a>, we estimated the relationship between viral prevalence and relative abundance in wastewater metagenomic sequencing data for a number of different viruses. We concluded with a rough estimate of the cost of monitoring for a few different pathogens given our results.</p>
+<p>Here, we extend our simple cost estimate to include more of the factors that are relevant for decision-making. In particular, we’d like to:</p>
+<ul>
+<li>Estimate the cost of sampling and sequencing required to run an effective NAO.</li>
+<li>Calculate the sequencing depth necessary to detect a virus by the time it reaches a target cumulative incidence.</li>
+<li>Understand which parameters are most important to understand and/or optimize to determine the viability of an NAO.</li>
+</ul>
+<p>To this end, we developed a model of the different components of the detection problem:</p>
+<ol type="1">
+<li><strong>An epidemiological model</strong> of viral spread in a monitored population.</li>
+<li><strong>A model of data collection</strong>, including when metagenomic samples are collected and how deeply they are sequenced.</li>
+<li><strong>A model of costs</strong> involved in sequencing and sampling.</li>
+<li><strong>A model of sequencing data</strong> generated, namely the number of reads in each sample matching the virus to be detected.</li>
+<li><strong>A model of detection</strong>, where we count a sequence as “detected” when certain criteria on its count time series are met.</li>
+</ol>
+<p>We aimed for a model that was simple enough to be tractable but still captured the key aspects of the problem.</p>
+<p>We then analyzed the model to determine the required sampling depth, the optimal interval between samples, and the sensitivity of total cost to the various parameters.</p>
+<p>In this post, we summarize the model and our results. For more details, see our technical notebooks:</p>
+<ol type="1">
+<li><a href="./2024-02-02_CostEstimateMVP.html">NAO Cost Estimate MVP</a></li>
+<li><a href="./2024-02-08_OptimalSamplingInterval.html">NAO Cost Estimate – Optimizing the sampling interval</a></li>
+<li><a href="./2024-02-22_StochasticMVP.html">NAO Cost Estimate – Adding noise</a></li>
+</ol>
+</section>
+<section id="the-model" class="level1">
+<h1>The model</h1>
+<section id="epidemic" class="level2">
+<h2 class="anchored" data-anchor-id="epidemic">Epidemic</h2>
+<p>We considered an exponentially growing epidemic. That is, we assumed that the prevalence of the virus grows exponentially and deterministically in a single well-mixed population. In this model, the viral prevalence, i.e.&nbsp;the fraction of people infected, at time <span class="math inline">\(t\)</span> and given by: <span class="math display">\[
+p(t) = \frac{1}{N} e^{r t},
+\]</span> where <span class="math inline">\(N\)</span> is the population size and <span class="math inline">\(r\)</span> is the pandemic growth rate.</p>
+<p>The cumulative incidence (the fraction of the population ever infected) in this model is: <span class="math display">\[
+c(t) \approx \frac{r + \beta}{r} p(t),
+\]</span> where <span class="math inline">\(\beta\)</span> is the rate at which infected people recover. Note that both prevalence and cumulative incidence grow exponentially, which is convenient for many of our calculations. Of course, exponential growth can’t continue forever. Eventually, everyone will have been infected. Thus, our model is most realistic for the earliest stages of an epidemic.</p>
+</section>
+<section id="data-collection" class="level2">
+<h2 class="anchored" data-anchor-id="data-collection">Data collection</h2>
+<p>We model samples collected from a single sampling site at regular intervals, spaced <span class="math inline">\(\delta t\)</span> apart. The material for the sample is collected uniformly over a window of length <span class="math inline">\(w\)</span>. (When <span class="math inline">\(w \to 0\)</span>, we have a single grab sample per collection, when <span class="math inline">\(w \to \delta t\)</span> we have continuous sampling.) Each sample is sequenced to a total depth of <span class="math inline">\(n\)</span> reads.</p>
+<p>We also consider the a delay of <span class="math inline">\(t_d\)</span> between the collection of the sample and the data processing. This delay accounts for sample transport, sample prep, sequencing, and data analysis.</p>
+</section>
+<section id="read-counts" class="level2">
+<h2 class="anchored" data-anchor-id="read-counts">Read counts</h2>
+<p>We considered three different models of the number of reads in each sample from the epidemic virus:</p>
+<ol type="1">
+<li>A deterministic model where the number of reads in a sample at time t is equal to its expected value: <span class="math display">\[
+\text{\# reads} = \mu = n b \int_{t-w}^{t} p(t') \frac{dt'}{w},
+\]</span> where <span class="math inline">\(b\)</span> is a factor that converts between prevalence and relative abundance. This is the factor that we esotimated in <a href="link">link to P2RA ms</a>. The integral represents the average prevalence over the sampling window.</li>
+<li>A stochastic model that accounts for Poisson counting noise and variation in the latent relative abundance. In this model, the number of reads is a random variable drawn from a Poisson-gamma mixture with mean <span class="math inline">\(\mu\)</span> (as in 1.) and inverse overdispersion parameter <span class="math inline">\(\phi\)</span>. Large <span class="math inline">\(\phi\)</span> means that the relative abundance is well-predicted by our deterministic model, whereas small <span class="math inline">\(\phi\)</span> means that there is a lot of excess variation beyond what comes automatically from having a finite read depth.</li>
+<li>A stochastic model where we sequence a pooled sample of <span class="math inline">\(n_p\)</span> individuals. This allows us to consider the effect of sampling a small number of, e.g., nasal swabs rather than wastewater. We worked on a similiar model in <a href="https://naobservatory.org/blog/simulating-approaches-to-metagenomic-pandemic-identification">this blog post</a>.</li>
+</ol>
+<p>See <a href="./2024-02-02_CostEstimateMVP.html">NAO Cost Estimate MVP</a> for details on the deterministic model, and <a href="./2024-02-22_StochasticMVP.html">NAO Cost Estimate – Adding noise</a> for details on the stochastic models.</p>
+</section>
+<section id="detection" class="level2">
+<h2 class="anchored" data-anchor-id="detection">Detection</h2>
+<p>We model detection based on the cumulative number of viral reads over all samples. When this number reaches a threshold value <span class="math inline">\(\hat{K}\)</span>, the virus is detected.</p>
+<p>This model of detection is much simpler than some of our ideas for detection, including looking for patterns of exponential growth in the read abundances. However, it captures the basic idea that all detection methods need some baseline number of reads to have any power.</p>
+</section>
+<section id="costs" class="level2">
+<h2 class="anchored" data-anchor-id="costs">Costs</h2>
+<p>We considered two components of cost:</p>
+<ol type="1">
+<li>The per-read cost of sequencing <span class="math inline">\(d_r\)</span></li>
+<li>The per-sample cost of collection and processing <span class="math inline">\(d_s\)</span></li>
+</ol>
+<p>See <a href="./2024-02-08_OptimalSamplingInterval.html">NAO Cost Estimate – Optimizing the sampling interval</a> for details.</p>
+</section>
+</section>
+<section id="results" class="level1">
+<h1>Results</h1>
+<section id="sequencing-effort-required-in-a-deterministic-model" class="level2">
+<h2 class="anchored" data-anchor-id="sequencing-effort-required-in-a-deterministic-model">Sequencing effort required in a deterministic model</h2>
+<p>In <a href="./2024-02-02_CostEstimateMVP.html">NAO Cost Estimate MVP</a>, we found the sampled depth per unit time required to detect a virus by the time it reaches cumulative incidence <span class="math inline">\(\hat{c}\)</span> to be: <span class="math display">\[
+\frac{n}{\delta t} = (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+    \left(\frac
+        {e^{-r\delta t} {\left(e^{r \delta t} - 1\right)}^2}
+        {{\left(r \delta t\right)}^2}
+        \right)
+    e^{r t_d}.
+\]</span> This result is for grab sampling, which in our model is a good approximation for windowed-composite sampling when <span class="math inline">\(r w \ll 1\)</span>.</p>
+<p>If we take the limit that <span class="math inline">\(r \delta t\)</span> and <span class="math inline">\(r t_d\)</span> go to zero, we have: <span class="math display">\[
+\frac{n}{\delta t} \to (r + \beta) \left(\frac{\hat{K}}{b \hat{c}} \right)
+\]</span> This is equivalent to the result of our simpler model in <a href="link">link to P2RA</a>. It shows that the required sampling depth is directly proportional to the detection threshold (<span class="math inline">\(\hat{K}\)</span>) and inversely proportional to the number of reads expected per infected individual (<span class="math inline">\(b\)</span>) and the target cumulative incidence (<span class="math inline">\(\hat{c}\)</span>). Also, faster growing epidemics (larger <span class="math inline">\(r\)</span>) require more sequencing depth than slower ones. This is because</p>
+<p>The third term in parentheses is an adustment factor for collecting samples at <span class="math inline">\(\delta t\)</span> intervals. It includes two factors:</p>
+<ol type="1">
+<li>the delay between when the virus is theoretically detectable and the next sample taken, and</li>
+<li>the benefit of taking a grab sample late in the sampling interval when the prevalence is higher.</li>
+</ol>
+<p>This term has Taylor expansion <span class="math inline">\(1 + \frac{{(r \delta t)}^2}{12} + \mathcal{O}{(r\delta t)}^3\)</span>. As long as <span class="math inline">\(r \delta t \lesssim1\)</span>, this factor is small.</p>
+<p>The final term is the cost of the <span class="math inline">\(t_d\)</span> delay between sampling and data processing. Note that the cost grows exponentially with <span class="math inline">\(t_d\)</span>, suggesting that minimizing this delay is important.</p>
+</section>
+<section id="optimal-sampling-interval" class="level2">
+<h2 class="anchored" data-anchor-id="optimal-sampling-interval">Optimal sampling interval</h2>
+<p>In <a href="./2024-02-08_OptimalSamplingInterval.html">NAO Cost Estimate – Optimizing the sampling interval</a>, we found the sampling interval <span class="math inline">\(\delta t\)</span> that minimized the total cost. Longer <span class="math inline">\(\delta t\)</span> between samples saves money on sample processing, but requires more depth to make up for the delay of waiting for the next sample after the virus becomes detectable. We found that the optimal <span class="math inline">\(\delta t\)</span> satisfies (again for grab sampling):</p>
+<p><span class="math display">\[
+r \delta t \approx {\left(
+    6 \frac{d_s}{d_r} \frac{b \hat{c}}{\hat{K}}
+    \left( \frac{r}{r + \beta} \right)
+    e^{- r t_d}
+    \right)}^{1/3}.
+\]</span></p>
+<p>Intuitively, the length of the optimal sampling interval increases with the cost of sample processing relative to the cost of sequencing. Also, if you have better data (higher <span class="math inline">\(b\)</span>) or a lower detection threshold (smaller <span class="math inline">\(\hat{K}\)</span>), you can tolerate longer intervals. On the other hand, longer delays (larger <span class="math inline">\(t_d\)</span>) necessitate more frequent samples.</p>
+</section>
+<section id="additional-sequencing-required-to-ensure-a-high-probability-of-detection" class="level2">
+<h2 class="anchored" data-anchor-id="additional-sequencing-required-to-ensure-a-high-probability-of-detection">Additional sequencing required to ensure a high probability of detection</h2>
+<p>In <a href="./2024-02-22_StochasticMVP.html">NAO Cost Estimate – Adding noise</a>, we changed our detection criterion from requiring the expected number of reads to reach the threshold <span class="math inline">\(\hat{K}\)</span> to requiring that the number of reads reach <span class="math inline">\(\hat{K}\)</span> with high probability, <span class="math inline">\(p\)</span>. We investigated how much higher the cumulative incidence has to be to meet the second criterion than the first.</p>
+<p>We found that a key parameter is <span class="math inline">\(\nu = \frac{\phi}{r \delta t}\)</span>, which measures the departure of the read count distribution from Poisson. When the inverse overdispersion parameter <span class="math inline">\(\phi\)</span> is small, <span class="math inline">\(\nu\)</span> is also small and the cumulative read count distribution is overdispersed relative to Poisson. On the other hand, when the sampling interval <span class="math inline">\(\delta t\)</span> is small so that the cumulative read count is the sum over many samples, <span class="math inline">\(\nu\)</span> is large and the cumulative read count distribution is approximately Poisson.</p>
+<p>Numerical exploration of these regimes suggests that we expect to need 1.5–3 times more sequencing than the deterministic model predicts to detect with 95% probability by the target cumulative incidence.</p>
+</section>
+<section id="small-pool-noise" class="level2">
+<h2 class="anchored" data-anchor-id="small-pool-noise">Small pool noise</h2>
+<p>In the <a href="./2024-02-22_StochasticMVP.html#appendix-small-pool-noise">Appendix</a> to the noise notebook, we showed that the effect of pooling a small number of samples is controlled by <span class="math inline">\(a\)</span>, the average number of viral reads each infected person contributes to the sample. With fixed sampling depth, <span class="math inline">\(a\)</span> is inversely proportional to the pool size. We found that if the detection threshold is one read <span class="math inline">\(\hat{K} = 1\)</span>, sequencing depth required to ensure a given probability of detection increases in proportion to <span class="math display">\[
+\frac{a}{1 - e^{-a}}.
+\]</span> We expect a similar result to hold for higher detection thresholds.</p>
+<p>In a recent <a href="https://naobservatory.org/blog/simulating-approaches-to-metagenomic-pandemic-identification">blog post</a>, we used simulations to address a similar question.</p>
+</section>
+</section>
+<section id="conclusions" class="level1">
+<h1>Conclusions</h1>
+<ul>
+<li>Our analysis here confirms the intuition that the ratio of expected relative abundance of sequence reads to viral prevalence (here <span class="math inline">\(b\)</span>) is very important for cost. We found in <a href="link">link to P2RA</a> that this factor varies over several orders of magnitude for different viruses and studies, suggesting that optimizing sequencing and sample processing protocols is crucial to a successful NAO.</li>
+<li>The sampling interval is not expected to be very important for cost, assuming <span class="math inline">\(r \delta t &lt; 1\)</span>. This is because the cost of delay from longer interval is partially offset by the benefit of sampling later when the prevalence is higher.</li>
+<li>In constrast, the delay between sample collection and data analysis could matter a lot because it does not have a corresponding benefit. The required depth grows exponentially with <span class="math inline">\(r t_d\)</span>.</li>
+<li>We have sometimes considered the benefit to noise in the read count distribution. Noisier distributions sometimes let us detect something while it is still too rare to detect on average. However, our analysis here shows that if our goal is to detect by the target cumulative incidence with high probability, noise is unambiguously bad and could increase our required depth several times over.</li>
+<li>We currently do not have any estimate of <span class="math inline">\(\phi\)</span>, the inverse overdispersion of read counts relative to Poisson. We should try to measure it empirically in our sequence data.</li>
+</ul>
+<section id="limitations-and-extensions" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-and-extensions">Limitations and extensions</h2>
+<ul>
+<li>The current model considers only one epidemic location and one sampling site. For a global monitoring system, we would want to consider the effects of geographic structure. An extended model could be used to determine the optimal number and configuration of sampling locations.</li>
+<li>The current epidemic model is completely deterministic. In practice, the spread of a virus is random. Because a population monitoring system can only hope to detect the virus when it has infected a sizeable number of people, this randomness should not have a large effect in a simple model like this one.</li>
+<li>We would like consider a more sophisticated detection model than just cumulative reads. In particular, we are interested in detection methods that use the pattern of read counts over time and space as a signal of increasing prevalence.</li>
+<li>It would be useful to explore the noise distribution of real data and try to measure <span class="math inline">\(\phi\)</span> and whether the latent noise is mostly independent or correlated between samples.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
